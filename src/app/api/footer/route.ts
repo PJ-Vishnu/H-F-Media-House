@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import type { FooterData } from '@/lib/definitions';
+import type { FooterData } from '@/modules/footer/footer.schema';
 
 // GET /api/footer
 export async function GET() {

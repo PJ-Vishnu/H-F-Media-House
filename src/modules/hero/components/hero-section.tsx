@@ -1,5 +1,4 @@
-
-import type { HeroData } from '@/lib/definitions';
+import type { HeroData } from '@/modules/hero/hero.schema';
 import { Button } from '@/components/ui/button';
 import { CylinderCarousel } from '@/components/shared/cylinder-carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';

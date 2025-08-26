@@ -1,7 +1,7 @@
 import Image from 'next/image';
-import type { AboutData } from '@/lib/definitions';
+import type { AboutData } from '@/modules/about/about.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 type AboutSectionProps = {

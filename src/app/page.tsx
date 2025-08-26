@@ -1,12 +1,12 @@
 import { db } from '@/lib/db';
-import { HeroSection } from '@/components/sections/hero-section';
-import { AboutSection } from '@/components/sections/about-section';
-import { GallerySection } from '@/components/sections/gallery-section';
-import { ServicesSection } from '@/components/sections/services-section';
-import { PortfolioSection } from '@/components/sections/portfolio-section';
-import { TestimonialsSection } from '@/components/sections/testimonials-section';
-import { ContactSection } from '@/components/sections/contact-section';
-import { Footer } from '@/components/sections/footer';
+import { HeroSection } from '@/modules/hero/components/hero-section';
+import { AboutSection } from '@/modules/about/components/about-section';
+import { GallerySection } from '@/modules/gallery/components/gallery-section';
+import { ServicesSection } from '@/modules/services/components/services-section';
+import { PortfolioSection } from '@/modules/portfolio/components/portfolio-section';
+import { TestimonialsSection } from '@/modules/testimonials/components/testimonials-section';
+import { ContactSection } from '@/modules/contact/components/contact-section';
+import { Footer } from '@/modules/footer/components/footer';
 import { Header } from '@/components/sections/header';
 
 export default async function Home() {
@@ -38,6 +38,7 @@ export default async function Home() {
       <AboutSection data={aboutData} />
       <ServicesSection data={servicesData} />
       <GallerySection data={galleryData} />
+      <PortfolioSection data={portfolioData} />
       <TestimonialsSection data={testimonialsData} />
       <ContactSection contactData={contactData} />
       <Footer data={footerData} />

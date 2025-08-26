@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import type { GalleryImage } from '@/lib/definitions';
+import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 
 type GallerySectionProps = {

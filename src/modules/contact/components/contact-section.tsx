@@ -1,10 +1,10 @@
-import type { ContactData } from '@/lib/definitions';
+import type { ContactData } from '@/modules/contact/contact.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import Image from 'next/image';
 
 type ContactSectionProps = {

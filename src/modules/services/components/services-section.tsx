@@ -1,4 +1,4 @@
-import type { Service } from '@/lib/definitions';
+import type { Service } from '@/modules/services/services.schema';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Camera, Video, Wand, BrainCircuit } from 'lucide-react';

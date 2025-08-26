@@ -1,4 +1,5 @@
-import type { FooterData, ContactData } from '@/lib/definitions';
+import type { FooterData } from '@/modules/footer/footer.schema';
+import type { ContactData } from '@/modules/contact/contact.schema';
 import { Logo } from '@/components/shared/logo';
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';

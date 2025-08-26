@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import type { ContactData } from '@/lib/definitions';
+import type { ContactData } from '@/modules/contact/contact.schema';
 
 // GET /api/contact
 export async function GET() {

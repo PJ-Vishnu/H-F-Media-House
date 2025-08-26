@@ -1,75 +1,11 @@
+// This file is now a central export point for all module-specific definitions.
 
-export type HeroData = {
-  headline: string;
-  subheadline: string;
-  ctaText: string;
-  ctaLink: string;
-  images: { src: string; alt: string; 'data-ai-hint': string }[];
-};
-
-export type GalleryImage = {
-  id: string;
-  src: string;
-  alt: string;
-  'data-ai-hint': string;
-  order: number;
-};
-
-export type AboutData = {
-  title: string;
-  content: string;
-  imageUrl: string;
-  'data-ai-hint': string;
-};
-
-export type Service = {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-};
-
-export type PortfolioItem = {
-  id: string;
-  title: string;
-  description: string;
-  imageUrl: string;
-  'data-ai-hint': string;
-  category: string;
-  order: number;
-};
-
-export type Testimonial = {
-  id: string;
-  quote: string;
-  author: string;
-  company: string;
-};
-
-export type ContactData = {
-  email: string;
-  phone: string;
-  address: string;
-  socials: {
-    facebook: string;
-    twitter: string;
-    instagram: string;
-    linkedin: string;
-  };
-};
-
-export type FooterData = {
-  copyright: string;
-  links: {
-    title: string;
-    url: string;
-  }[];
-};
-
-export type AdminUser = {
-  email: string;
-  password_DO_NOT_STORE_IN_PLAIN_TEXT: string;
-};
-
-// This can be removed later, it's to avoid breaking changes in db.ts temporarily
-export type WithId<T> = T & { _id: any };
+export type { AboutData } from '@/modules/about/about.schema';
+export type { AdminUser } from '@/modules/admin/admin.schema';
+export type { ContactData } from '@/modules/contact/contact.schema';
+export type { FooterData } from '@/modules/footer/footer.schema';
+export type { GalleryImage } from '@/modules/gallery/gallery.schema';
+export type { HeroData } from '@/modules/hero/hero.schema';
+export type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
+export type { Service } from '@/modules/services/services.schema';
+export type { Testimonial } from '@/modules/testimonials/testimonials.schema';

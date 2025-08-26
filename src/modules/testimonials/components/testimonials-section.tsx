@@ -1,6 +1,6 @@
 "use client";
 
-import type { Testimonial } from '@/lib/definitions';
+import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
@@ -56,14 +56,15 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
             opts={{
                 align: "center",
                 loop: true,
+                slidesPerView: isMobile ? 1 : 3,
             }}
             plugins={[autoplayPlugin.current]}
-            className="w-full max-w-4xl mx-auto"
+            className="w-full max-w-6xl mx-auto"
         >
             <CarouselContent>
                 {data.map((testimonial, index) => (
                     <CarouselItem key={testimonial.id} className="basis-full md:basis-1/2 lg:basis-1/3">
-                        <div className="p-1">
+                        <div className="p-4">
                             <Card className={cn(
                                 "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
                                 !isMobile && index === current ? 'bg-yellow-300' : 'bg-white',

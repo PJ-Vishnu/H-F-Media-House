@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
-import type { GalleryImage } from '@/lib/definitions';
+import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 
 // GET /api/gallery
 export async function GET() {
