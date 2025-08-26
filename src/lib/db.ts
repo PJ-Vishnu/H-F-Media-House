@@ -110,7 +110,7 @@ export const db = {
   // ABOUT
   getAbout: async (): Promise<AboutData> => {
     const db = await connectToDb();
-    if (!db) return { title: 'About Us', content: 'Please connect to database.', imageUrl: '', 'data-ai-hint': ''};
+    if (!db) return { title: 'About Us', content: 'Please connect to database.', imageUrl: 'https://picsum.photos/1200/800', 'data-ai-hint': 'placeholder'};
     const data = await db.collection<AboutData>('about').findOne({});
     return data ?? { title: '', content: '', imageUrl: '', 'data-ai-hint': ''};
   },
@@ -141,7 +141,7 @@ export const db = {
     const count = await db.collection('portfolio').countDocuments();
     const newItem = { ...item, order: count + 1 };
     const result = await db.collection('portfolio').insertOne(newItem);
-    return mapDoc({ ...newImage, _id: result.insertedId });
+    return mapDoc({ ...newItem, _id: result.insertedId });
   },
   deletePortfolioItem: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();

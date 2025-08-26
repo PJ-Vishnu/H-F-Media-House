@@ -14,13 +14,15 @@ export function AboutSection({ data }: AboutSectionProps) {
       <ScrollFadeIn className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <div className="w-full h-80 lg:h-[500px] relative rounded-xl overflow-hidden shadow-2xl">
-            <Image
-              src={data.imageUrl}
-              alt="About H&F Media House"
-              fill
-              data-ai-hint={data['data-ai-hint']}
-              className="object-cover"
-            />
+            {data.imageUrl && (
+              <Image
+                src={data.imageUrl}
+                alt="About H&F Media House"
+                fill
+                data-ai-hint={data['data-ai-hint']}
+                className="object-cover"
+              />
+            )}
           </div>
           <div className="text-center lg:text-left">
             <p className="text-primary font-semibold tracking-widest uppercase mb-2">Positive Company Process</p>
