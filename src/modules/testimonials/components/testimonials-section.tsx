@@ -56,18 +56,18 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
             opts={{
                 align: "center",
                 loop: true,
+                slidesPerView: isMobile ? 1 : 3,
             }}
             plugins={[autoplayPlugin.current]}
             className="w-full max-w-6xl mx-auto"
         >
             <CarouselContent>
                 {data.map((testimonial, index) => (
-                    <CarouselItem key={testimonial.id} className="basis-full md:basis-1/2 lg:basis-1/3">
+                    <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
                         <div className="p-4">
                             <Card className={cn(
                                 "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
-                                !isMobile && index === current ? 'bg-yellow-300' : 'bg-white',
-                                isMobile ? 'bg-white' : 'bg-secondary/50'
+                                !isMobile && index === current ? 'bg-primary/10' : 'bg-card',
                             )}>
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
@@ -78,7 +78,7 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                                         </div>
                                     </div>
                                     <div className="flex mb-4">
-                                        {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-500 fill-current" />)}
+                                        {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />)}
                                     </div>
                                     <blockquote className="text-lg font-medium leading-relaxed">
                                         “{testimonial.quote}”
