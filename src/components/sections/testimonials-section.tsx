@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { useEffect, useState, useRef } from 'react';
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type TestimonialsSectionProps = {
   data: Testimonial[];
@@ -17,6 +18,7 @@ type TestimonialsSectionProps = {
 export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
+  const isMobile = useIsMobile();
   
   const autoplayPlugin = useRef(
     Autoplay({ delay: 4000, stopOnInteraction: true })
@@ -60,11 +62,12 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
         >
             <CarouselContent>
                 {data.map((testimonial, index) => (
-                    <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
+                    <CarouselItem key={testimonial.id} className="basis-full md:basis-1/2 lg:basis-1/3">
                         <div className="p-1">
                             <Card className={cn(
                                 "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
-                                index === current ? 'bg-yellow-300' : 'bg-secondary/50'
+                                !isMobile && index === current ? 'bg-yellow-300' : 'bg-white',
+                                isMobile ? 'bg-white' : 'bg-secondary/50'
                             )}>
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
