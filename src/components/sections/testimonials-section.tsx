@@ -2,7 +2,7 @@
 
 import type { Testimonial } from '@/lib/definitions';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, type CarouselApi, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
@@ -56,7 +56,7 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                 loop: true,
             }}
             plugins={[autoplayPlugin.current]}
-            className="w-full"
+            className="w-full max-w-4xl mx-auto"
         >
             <CarouselContent>
                 {data.map((testimonial, index) => (
@@ -86,6 +86,8 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                     </CarouselItem>
                 ))}
             </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
         </Carousel>
       </ScrollFadeIn>
     </section>
