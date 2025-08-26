@@ -26,7 +26,7 @@ async function connectToDb(): Promise<Db | null> {
     return dbInstance;
   }
   try {
-    client = new MongoClient(uri);
+    client = new MongoClient(uri, { serverSelectionTimeoutMS: 5000 });
     await client.connect();
     dbInstance = client.db("hf-media-house");
     isConnected = true;
@@ -50,7 +50,7 @@ export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser> => {
     const db = await connectToDb();
-    if (!db) return { email: '', password_DO_NOT_STORE_IN_PLAIN_TEXT: '' };
+    if (!db) return { email: 'admin@example.com', password_DO_NOT_STORE_IN_PLAIN_TEXT: 'password' };
     const admin = await db.collection<AdminUser>('admin').findOne({});
     return admin ?? { email: '', password_DO_NOT_STORE_IN_PLAIN_TEXT: '' };
   },
@@ -58,7 +58,17 @@ export const db = {
   // HERO
   getHero: async (): Promise<HeroData> => {
     const db = await connectToDb();
-    if (!db) return { headline: 'Welcome', subheadline: 'Please connect to database.', ctaText: 'Setup', ctaLink: '#', images: [] };
+    if (!db) return {
+      headline: 'Creating Stories',
+      subheadline: 'We are a creative film and photo production house. Please connect to a database to see full content.',
+      ctaText: 'Explore Now',
+      ctaLink: '#portfolio',
+      images: [
+        { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
+        { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
+        { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
+      ],
+    };
     const data = await db.collection<HeroData>('hero').findOne({});
     return data ?? { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] };
   },
@@ -72,7 +82,10 @@ export const db = {
   // GALLERY
   getGallery: async (): Promise<GalleryImage[]> => {
     const db = await connectToDb();
-    if (!db) return [];
+    if (!db) return [
+        { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
+        { id: '2', src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
+    ];
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
     return images.map(mapDoc);
   },
@@ -110,7 +123,12 @@ export const db = {
   // ABOUT
   getAbout: async (): Promise<AboutData> => {
     const db = await connectToDb();
-    if (!db) return { title: 'About Us', content: 'Please connect to database.', imageUrl: 'https://picsum.photos/1200/800', 'data-ai-hint': 'placeholder'};
+    if (!db) return { 
+        title: 'Our Story Behind the Lens', 
+        content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
+        imageUrl: 'https://picsum.photos/1200/800?random=20', 
+        'data-ai-hint': 'camera lens'
+    };
     const data = await db.collection<AboutData>('about').findOne({});
     return data ?? { title: '', content: '', imageUrl: '', 'data-ai-hint': ''};
   },
@@ -124,14 +142,20 @@ export const db = {
   // SERVICES
   getServices: async (): Promise<Service[]> => {
     const db = await connectToDb();
-    if (!db) return [];
+    if (!db) return [
+        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera' },
+        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video' },
+    ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
   },
   
   // PORTFOLIO
   getPortfolio: async (): Promise<PortfolioItem[]> => {
     const db = await connectToDb();
-    if (!db) return [];
+    if (!db) return [
+      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
+      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
+    ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
     return items.map(mapDoc);
   },
@@ -178,14 +202,22 @@ export const db = {
   // TESTIMONIALS
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
-    if (!db) return [];
+    if (!db) return [
+      { id: '1', quote: 'It was a very good experience.', author: 'Leo', company: 'Marketer' },
+      { id: '2', quote: 'It was a very good experience.', author: 'Ana', company: 'Photographer' },
+    ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
   },
 
   // CONTACT
   getContact: async (): Promise<ContactData> => {
     const db = await connectToDb();
-    if (!db) return { email: '', phone: '', address: '', socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }};
+    if (!db) return { 
+        email: 'hello@hfmedia.house', 
+        phone: '+1 (234) 567-890', 
+        address: '123 Media Lane, Creative City, 10001', 
+        socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }
+    };
     const data = await db.collection<ContactData>('contact').findOne({});
     return data ?? { email: '', phone: '', address: '', socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }};
   },
@@ -199,7 +231,13 @@ export const db = {
   // FOOTER
   getFooter: async (): Promise<FooterData> => {
     const db = await connectToDb();
-    if (!db) return { copyright: '© 2024 Your Company', links: [] };
+    if (!db) return { 
+        copyright: `Copyright @${new Date().getFullYear()} H&F Media. All rights reserved.`, 
+        links: [
+            { title: 'Home', url: '/' },
+            { title: 'About', url: '#about' },
+        ] 
+    };
     const data = await db.collection<FooterData>('footer').findOne({});
     return data ?? { copyright: '', links: [] };
   },
