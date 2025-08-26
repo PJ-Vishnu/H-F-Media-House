@@ -1,4 +1,3 @@
-
 "use client";
 
 import Image from "next/image";
@@ -35,7 +34,7 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
       <div className="w-full h-full [perspective:1000px]">
         <div
           className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-1000 ease-in-out"
-          style={{ transform: `rotateY(${rotation}deg) translateZ(-${radius}px)` }}
+          style={{ transform: `rotateY(${rotation}deg)` }}
         >
           {images.map((image, i) => (
             <div
@@ -46,10 +45,10 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
               }}
             >
               <Image
-                src={image.src}
+                src={image.src.replace(/(\d+)\/(\d+)/, '800/600')}
                 alt={image.alt}
-                width={400}
-                height={250}
+                width={800}
+                height={600}
                 data-ai-hint={image['data-ai-hint']}
                 className="object-cover w-full h-full"
               />
