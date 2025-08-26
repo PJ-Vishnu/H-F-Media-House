@@ -1,140 +1,172 @@
+import { MongoClient, Db, WithId } from 'mongodb';
 import type { HeroData, GalleryImage, AboutData, Service, PortfolioItem, Testimonial, ContactData, FooterData, AdminUser } from '@/lib/definitions';
-import fs from 'node:fs/promises';
-import path from 'node:path';
 
-const DB_PATH = path.join(process.cwd(), 'src', 'lib', 'db');
+// Ensure the MONGODB_URI is set in your environment variables
+const uri = process.env.MONGODB_URI;
+if (!uri) {
+  throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+}
 
-async function readJsonFile<T>(filename: string, defaultValue: T): Promise<T> {
-  const filePath = path.join(DB_PATH, filename);
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data) as T;
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      console.warn(`WARN: Database file ${filename} not found. Returning default value. Did you run the 'npm run seed' script?`);
-      return defaultValue;
-    }
-    console.error(`Error reading or parsing ${filename}:`, error);
-    throw error;
+let client: MongoClient;
+let dbInstance: Db;
+
+async function getDb(): Promise<Db> {
+  if (!client || !client.topology || !client.topology.isConnected()) {
+    client = new MongoClient(uri);
+    await client.connect();
+    dbInstance = client.db("hf-media-house"); // You can change your database name here
   }
+  return dbInstance;
 }
 
-async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
-  await fs.writeFile(path.join(DB_PATH, filename), JSON.stringify(data, null, 2), 'utf-8');
+// Helper to remove _id and set id
+function mapDoc<T>(doc: WithId<any>): T {
+  const { _id, ...rest } = doc;
+  return { ...rest, id: _id.toHexString() } as T;
 }
 
-// Mock "DB" methods
-const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
-
+// Mock "DB" methods, now interacting with MongoDB
 export const db = {
   // ADMIN
-  getAdmin: async () => { await delay(50); return await readJsonFile<AdminUser>('admin.json', { email: '', password_DO_NOT_STORE_IN_PLAIN_TEXT: '' }); },
+  getAdmin: async (): Promise<AdminUser> => {
+    const db = await getDb();
+    const admin = await db.collection<AdminUser>('admin').findOne({});
+    return admin ?? { email: '', password_DO_NOT_STORE_IN_PLAIN_TEXT: '' };
+  },
 
   // HERO
-  getHero: async () => { await delay(50); return await readJsonFile<HeroData>('hero.json', { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] }); },
-  updateHero: async (data: HeroData) => { await delay(100); await writeJsonFile('hero.json', data); return data; },
+  getHero: async (): Promise<HeroData> => {
+    const db = await getDb();
+    const data = await db.collection<HeroData>('hero').findOne({});
+    return data ?? { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] };
+  },
+  updateHero: async (data: HeroData) => {
+    const db = await getDb();
+    await db.collection<HeroData>('hero').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
   
   // GALLERY
-  getGallery: async () => { 
-    await delay(50); 
-    const images = await readJsonFile<GalleryImage[]>('gallery.json', []);
-    return images.sort((a, b) => a.order - b.order); 
+  getGallery: async (): Promise<GalleryImage[]> => {
+    const db = await getDb();
+    const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
+    return images.map(mapDoc);
   },
-  addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>) => {
-    await delay(100);
-    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json', []);
-    const newImage: GalleryImage = {
-      ...image,
-      id: Date.now().toString(),
-      order: galleryImages.length + 1,
-    };
-    galleryImages.push(newImage);
-    await writeJsonFile('gallery.json', galleryImages);
-    return newImage;
+  addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>): Promise<GalleryImage> => {
+    const db = await getDb();
+    const count = await db.collection('gallery').countDocuments();
+    const newImage = { ...image, order: count + 1 };
+    const result = await db.collection('gallery').insertOne(newImage);
+    return mapDoc({ ...newImage, _id: result.insertedId });
   },
-  updateGalleryImage: async (id: string, data: Partial<GalleryImage>) => {
-    await delay(100);
-    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json', []);
-    galleryImages = galleryImages.map(img => img.id === id ? { ...img, ...data } : img);
-    await writeJsonFile('gallery.json', galleryImages);
-    return galleryImages.find(img => img.id === id);
-  },
-  deleteGalleryImage: async (id: string) => {
-    await delay(100);
-    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json', []);
-    galleryImages = galleryImages.filter(img => img.id !== id);
-    await writeJsonFile('gallery.json', galleryImages);
+  deleteGalleryImage: async (id: string): Promise<{ success: boolean }> => {
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+    await db.collection('gallery').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
   },
-  reorderGallery: async (orderedIds: string[]) => {
-    await delay(100);
-    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json', []);
-    const newOrderMap = new Map(orderedIds.map((id, index) => [id, index + 1]));
-    galleryImages.forEach(img => {
-      img.order = newOrderMap.get(img.id) ?? img.order;
-    });
-    await writeJsonFile('gallery.json', galleryImages.sort((a,b) => a.order - b.order));
-    return galleryImages;
+  reorderGallery: async (orderedIds: string[]): Promise<GalleryImage[]> => {
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+    const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(id) },
+        update: { $set: { order: index + 1 } },
+      },
+    }));
+    if(bulkOps.length > 0) {
+        await db.collection('gallery').bulkWrite(bulkOps);
+    }
+    return db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc));
   },
 
   // ABOUT
-  getAbout: async () => { await delay(50); return await readJsonFile<AboutData>('about.json', { title: '', content: '', imageUrl: '', 'data-ai-hint': ''}); },
-  updateAbout: async (data: AboutData) => { await delay(100); await writeJsonFile('about.json', data); return data; },
+  getAbout: async (): Promise<AboutData> => {
+    const db = await getDb();
+    const data = await db.collection<AboutData>('about').findOne({});
+    return data ?? { title: '', content: '', imageUrl: '', 'data-ai-hint': ''};
+  },
+  updateAbout: async (data: AboutData): Promise<AboutData> => {
+    const db = await getDb();
+    await db.collection('about').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
 
   // SERVICES
-  getServices: async () => { await delay(50); return await readJsonFile<Service[]>('services.json', []); },
+  getServices: async (): Promise<Service[]> => {
+    const db = await getDb();
+    return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
+  },
   
   // PORTFOLIO
-  getPortfolio: async () => { 
-    await delay(50); 
-    const items = await readJsonFile<PortfolioItem[]>('portfolio.json', []);
-    return items.sort((a, b) => a.order - b.order); 
+  getPortfolio: async (): Promise<PortfolioItem[]> => {
+    const db = await getDb();
+    const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
+    return items.map(mapDoc);
   },
-  addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>) => {
-    await delay(100);
-    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json', []);
-    const newItem: PortfolioItem = {
-      ...item,
-      id: Date.now().toString(),
-      order: portfolioItems.length + 1,
-    };
-    portfolioItems.push(newItem);
-    await writeJsonFile('portfolio.json', portfolioItems);
-    return newItem;
+  addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>): Promise<PortfolioItem> => {
+    const db = await getDb();
+    const count = await db.collection('portfolio').countDocuments();
+    const newItem = { ...item, order: count + 1 };
+    const result = await db.collection('portfolio').insertOne(newItem);
+    return mapDoc({ ...newItem, _id: result.insertedId });
   },
-  deletePortfolioItem: async (id: string) => {
-    await delay(100);
-    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json', []);
-    portfolioItems = portfolioItems.filter(item => item.id !== id);
-    await writeJsonFile('portfolio.json', portfolioItems);
+  deletePortfolioItem: async (id: string): Promise<{ success: boolean }> => {
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+    await db.collection('portfolio').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
   },
-  reorderPortfolio: async (orderedIds: string[]) => {
-    await delay(100);
-    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json', []);
-    const newOrderMap = new Map(orderedIds.map((id, index) => [id, index + 1]));
-    portfolioItems.forEach(item => {
-      item.order = newOrderMap.get(item.id) ?? item.order;
-    });
-    await writeJsonFile('portfolio.json', portfolioItems.sort((a,b) => a.order - b.order));
-    return portfolioItems;
+  reorderPortfolio: async (orderedIds: string[]): Promise<PortfolioItem[]> => {
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+     const bulkOps = orderedIds.map((id, index) => ({
+      updateOne: {
+        filter: { _id: new ObjectId(id) },
+        update: { $set: { order: index + 1 } },
+      },
+    }));
+    if(bulkOps.length > 0) {
+        await db.collection('portfolio').bulkWrite(bulkOps);
+    }
+    return db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc));
   },
-  updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>) => {
-    await delay(100);
-    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json', []);
-    portfolioItems = portfolioItems.map(item => item.id === id ? { ...item, ...data } : item);
-    await writeJsonFile('portfolio.json', portfolioItems);
-    return portfolioItems.find(item => item.id === id);
+  updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>): Promise<PortfolioItem | undefined> => {
+    const db = await getDb();
+    const { ObjectId } = await import('mongodb');
+    const { _id, ...updateData } = data; // Prevent _id from being in $set
+    await db.collection('portfolio').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const updatedDoc = await db.collection('portfolio').findOne({ _id: new ObjectId(id) });
+    return updatedDoc ? mapDoc(updatedDoc) : undefined;
   },
 
   // TESTIMONIALS
-  getTestimonials: async () => { await delay(50); return await readJsonFile<Testimonial[]>('testimonials.json', []); },
+  getTestimonials: async (): Promise<Testimonial[]> => {
+    const db = await getDb();
+    return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
+  },
 
   // CONTACT
-  getContact: async () => { await delay(50); return await readJsonFile<ContactData>('contact.json', { email: '', phone: '', address: '', socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }}); },
-  updateContact: async (data: ContactData) => { await delay(100); await writeJsonFile('contact.json', data); return data; },
+  getContact: async (): Promise<ContactData> => {
+    const db = await getDb();
+    const data = await db.collection<ContactData>('contact').findOne({});
+    return data ?? { email: '', phone: '', address: '', socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }};
+  },
+  updateContact: async (data: ContactData): Promise<ContactData> => {
+    const db = await getDb();
+    await db.collection('contact').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
 
   // FOOTER
-  getFooter: async () => { await delay(50); return await readJsonFile<FooterData>('footer.json', { copyright: '', links: [] }); },
-  updateFooter: async (data: FooterData) => { await delay(100); await writeJsonFile('footer.json', data); return data; },
+  getFooter: async (): Promise<FooterData> => {
+    const db = await getDb();
+    const data = await db.collection<FooterData>('footer').findOne({});
+    return data ?? { copyright: '', links: [] };
+  },
+  updateFooter: async (data: FooterData): Promise<FooterData> => {
+    const db = await getDb();
+    await db.collection('footer').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
 };

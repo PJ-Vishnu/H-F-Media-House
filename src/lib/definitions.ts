@@ -69,4 +69,7 @@ export type FooterData = {
 export type AdminUser = {
   email: string;
   password_DO_NOT_STORE_IN_PLAIN_TEXT: string;
-}
+};
+
+// This can be removed later, it's to avoid breaking changes in db.ts temporarily
+export type WithId<T> = T & { _id: any };

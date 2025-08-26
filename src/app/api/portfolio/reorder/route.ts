@@ -11,6 +11,7 @@ export async function POST(req: Request) {
     const updatedPortfolio = await db.reorderPortfolio(orderedIds);
     return NextResponse.json(updatedPortfolio);
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
