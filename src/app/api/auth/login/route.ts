@@ -1,16 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createToken } from '@/lib/auth';
+import { db } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
+    const admin = await db.getAdmin();
 
-    // In a real app, you'd look up the user in a database and verify the password hash.
-    // For this demo, we'll use hardcoded credentials.
-    const MOCK_USER = 'admin@example.com';
-    const MOCK_PASSWORD = 'password';
-
-    if (email === MOCK_USER && password === MOCK_PASSWORD) {
+    // NOTE: This is a highly insecure way to check passwords and is for demo purposes only.
+    // In a real app, you would use a library like bcrypt to compare a hashed password.
+    if (email === admin.email && password === admin.password_DO_NOT_STORE_IN_PLAIN_TEXT) {
       const token = await createToken({ username: email });
 
       const response = NextResponse.json({ success: true, message: 'Login successful' });

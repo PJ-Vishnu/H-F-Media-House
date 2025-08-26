@@ -1,155 +1,144 @@
-import type { HeroData, GalleryImage, AboutData, Service, PortfolioItem, Testimonial, ContactData, FooterData } from '@/lib/definitions';
+import type { HeroData, GalleryImage, AboutData, Service, PortfolioItem, Testimonial, ContactData, FooterData, AdminUser } from '@/lib/definitions';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 
-// Mock Data
-let heroData: HeroData = {
-  headline: 'Creating Stories',
-  subheadline: 'We are a creative film and photo production house based in New York. We are committed to capturing your most precious moments and turning them into cinematic stories you can cherish forever.',
-  ctaText: 'Explore Now',
-  ctaLink: '#portfolio',
-  images: [
-    { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
-    { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
-    { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
-    { src: 'https://picsum.photos/600/800?random=4', alt: 'Drone flying over a landscape', 'data-ai-hint': 'drone videography' },
-    { src: 'https://picsum.photos/600/800?random=5', alt: 'Podcast recording microphone', 'data-ai-hint': 'podcast setup' },
-    { src: 'https://picsum.photos/600/800?random=6', alt: 'Photographer in action', 'data-ai-hint': 'photographer action' },
-  ],
-};
+const DB_PATH = path.join(process.cwd(), 'src', 'lib', 'db');
 
-let galleryImages: GalleryImage[] = [
-  { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
-  { id: '2', src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
-  { id: '3', src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
-  { id: '4', src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
-];
+async function readJsonFile<T>(filename: string): Promise<T> {
+  const filePath = path.join(DB_PATH, filename);
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data) as T;
+  } catch (error) {
+    console.error(`Error reading or parsing ${filename}:`, error);
+    // Depending on the use case, you might want to return a default value or re-throw
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      console.error(`Database file ${filename} not found. Did you run the seeder script?`);
+      // Return empty array or object for GET requests to avoid crashing the app if DB is not seeded.
+      if(filename.endsWith('s.json')) return [] as T;
+      return {} as T;
+    }
+    throw error;
+  }
+}
 
-let aboutData: AboutData = {
-  title: 'Our Story Behind the Lens',
-  content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using Content here, content here, making it look like readable English.',
-  imageUrl: 'https://picsum.photos/1200/800?random=20',
-  'data-ai-hint': 'camera lens',
-};
+async function writeJsonFile<T>(filename: string, data: T): Promise<void> {
+  await fs.writeFile(path.join(DB_PATH, filename), JSON.stringify(data, null, 2), 'utf-8');
+}
 
-let services: Service[] = [
-  { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera' },
-  { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video' },
-  { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand' },
-];
-
-let portfolioItems: PortfolioItem[] = [
-  { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
-  { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
-  { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: 'https://picsum.photos/600/400?random=33', 'data-ai-hint': 'animated explainer', category: 'Animation', order: 3 },
-  { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: 'https://picsum.photos/600/400?random=34', 'data-ai-hint': 'music festival', category: 'Video', order: 4 },
-];
-
-let testimonials: Testimonial[] = [
-  { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'Leo', company: 'Marketer' },
-  { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'Ana', company: 'Photographer' },
-  { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'John', company: 'Videographer' },
-];
-
-let contactData: ContactData = {
-  email: 'hello@hfmedia.house',
-  phone: '+1 (234) 567-890',
-  address: '123 Media Lane, Creative City, 10001',
-  socials: {
-    facebook: '#',
-    twitter: '#',
-    instagram: '#',
-    linkedin: '#',
-  },
-};
-
-let footerData: FooterData = {
-  copyright: `Copyright @${new Date().getFullYear()} H&F Media. All rights reserved.`,
-  links: [
-    { title: 'Home', url: '/' },
-    { title: 'About', url: '#about' },
-    { title: 'Services', url: '#services' },
-    { title: 'Contact', url: '#contact' },
-  ]
-};
 
 // Mock "DB" methods
 const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 export const db = {
-  getHero: async () => { await delay(50); return heroData; },
-  updateHero: async (data: HeroData) => { await delay(100); heroData = data; return heroData; },
+  // ADMIN
+  getAdmin: async () => { await delay(50); return await readJsonFile<AdminUser>('admin.json'); },
+
+  // HERO
+  getHero: async () => { await delay(50); return await readJsonFile<HeroData>('hero.json'); },
+  updateHero: async (data: HeroData) => { await delay(100); await writeJsonFile('hero.json', data); return data; },
   
-  getGallery: async () => { await delay(50); return galleryImages.sort((a, b) => a.order - b.order); },
+  // GALLERY
+  getGallery: async () => { 
+    await delay(50); 
+    const images = await readJsonFile<GalleryImage[]>('gallery.json');
+    return images.sort((a, b) => a.order - b.order); 
+  },
   addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>) => {
     await delay(100);
+    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json');
     const newImage: GalleryImage = {
       ...image,
       id: Date.now().toString(),
       order: galleryImages.length + 1,
     };
     galleryImages.push(newImage);
+    await writeJsonFile('gallery.json', galleryImages);
     return newImage;
   },
   updateGalleryImage: async (id: string, data: Partial<GalleryImage>) => {
     await delay(100);
+    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json');
     galleryImages = galleryImages.map(img => img.id === id ? { ...img, ...data } : img);
+    await writeJsonFile('gallery.json', galleryImages);
     return galleryImages.find(img => img.id === id);
   },
   deleteGalleryImage: async (id: string) => {
     await delay(100);
+    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json');
     galleryImages = galleryImages.filter(img => img.id !== id);
+    await writeJsonFile('gallery.json', galleryImages);
     return { success: true };
   },
   reorderGallery: async (orderedIds: string[]) => {
     await delay(100);
+    let galleryImages = await readJsonFile<GalleryImage[]>('gallery.json');
     const newOrderMap = new Map(orderedIds.map((id, index) => [id, index + 1]));
     galleryImages.forEach(img => {
       img.order = newOrderMap.get(img.id) ?? img.order;
     });
-    return galleryImages.sort((a,b) => a.order - b.order);
+    await writeJsonFile('gallery.json', galleryImages.sort((a,b) => a.order - b.order));
+    return galleryImages;
   },
 
-  getAbout: async () => { await delay(50); return aboutData; },
-  updateAbout: async (data: AboutData) => { await delay(100); aboutData = data; return aboutData; },
+  // ABOUT
+  getAbout: async () => { await delay(50); return await readJsonFile<AboutData>('about.json'); },
+  updateAbout: async (data: AboutData) => { await delay(100); await writeJsonFile('about.json', data); return data; },
 
-  getServices: async () => { await delay(50); return services; },
-  // ... more service methods if needed
-
-  getPortfolio: async () => { await delay(50); return portfolioItems.sort((a, b) => a.order - b.order); },
+  // SERVICES
+  getServices: async () => { await delay(50); return await readJsonFile<Service[]>('services.json'); },
+  
+  // PORTFOLIO
+  getPortfolio: async () => { 
+    await delay(50); 
+    const items = await readJsonFile<PortfolioItem[]>('portfolio.json');
+    return items.sort((a, b) => a.order - b.order); 
+  },
   addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>) => {
     await delay(100);
+    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json');
     const newItem: PortfolioItem = {
       ...item,
       id: Date.now().toString(),
       order: portfolioItems.length + 1,
     };
     portfolioItems.push(newItem);
+    await writeJsonFile('portfolio.json', portfolioItems);
     return newItem;
   },
   deletePortfolioItem: async (id: string) => {
     await delay(100);
+    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json');
     portfolioItems = portfolioItems.filter(item => item.id !== id);
+    await writeJsonFile('portfolio.json', portfolioItems);
     return { success: true };
   },
   reorderPortfolio: async (orderedIds: string[]) => {
     await delay(100);
+    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json');
     const newOrderMap = new Map(orderedIds.map((id, index) => [id, index + 1]));
     portfolioItems.forEach(item => {
       item.order = newOrderMap.get(item.id) ?? item.order;
     });
-    return portfolioItems.sort((a,b) => a.order - b.order);
+    await writeJsonFile('portfolio.json', portfolioItems.sort((a,b) => a.order - b.order));
+    return portfolioItems;
   },
   updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>) => {
     await delay(100);
+    let portfolioItems = await readJsonFile<PortfolioItem[]>('portfolio.json');
     portfolioItems = portfolioItems.map(item => item.id === id ? { ...item, ...data } : item);
+    await writeJsonFile('portfolio.json', portfolioItems);
     return portfolioItems.find(item => item.id === id);
   },
 
-  getTestimonials: async () => { await delay(50); return testimonials; },
-  // ... more testimonial methods
+  // TESTIMONIALS
+  getTestimonials: async () => { await delay(50); return await readJsonFile<Testimonial[]>('testimonials.json'); },
 
-  getContact: async () => { await delay(50); return contactData; },
-  updateContact: async (data: ContactData) => { await delay(100); contactData = data; return contactData; },
+  // CONTACT
+  getContact: async () => { await delay(50); return await readJsonFile<ContactData>('contact.json'); },
+  updateContact: async (data: ContactData) => { await delay(100); await writeJsonFile('contact.json', data); return data; },
 
-  getFooter: async () => { await delay(50); return footerData; },
-  updateFooter: async (data: FooterData) => { await delay(100); footerData = data; return footerData; },
+  // FOOTER
+  getFooter: async () => { await delay(50); return await readJsonFile<FooterData>('footer.json'); },
+  updateFooter: async (data: FooterData) => { await delay(100); await writeJsonFile('footer.json', data); return data; },
 };
