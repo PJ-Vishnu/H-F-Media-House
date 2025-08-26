@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import type { HeroData } from '@/lib/definitions';
+import type { HeroData } from '@/modules/hero/hero.schema';
 
 // GET /api/hero
 export async function GET() {

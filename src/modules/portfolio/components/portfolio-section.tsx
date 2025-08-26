@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import type { PortfolioItem } from '@/lib/definitions';
+import type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';

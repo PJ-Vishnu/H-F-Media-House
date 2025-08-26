@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import type { AboutData } from '@/lib/definitions';
+import type { AboutData } from '@/modules/about/about.schema';
 
 // GET /api/about
 export async function GET() {
