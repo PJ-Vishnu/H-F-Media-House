@@ -18,7 +18,8 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
   const radius = 400; // Radius of the cylinder
 
   const rotate = useCallback((direction: "next" | "prev") => {
-    // Rotating in the opposite direction gives a more natural "looking around" feel
+    // To feel like we are inside and looking around, rotating the scene
+    // should feel like turning our head.
     setRotation((prev) => prev + (direction === "next" ? -angle : angle));
   }, [angle]);
 
@@ -34,14 +35,14 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
       <div className="w-full h-full [perspective:1000px]">
         <div
           className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-1000 ease-in-out"
-          style={{ transform: `rotateY(${rotation}deg)` }}
+          style={{ transform: `translateZ(-${radius}px) rotateY(${rotation}deg)` }}
         >
           {images.map((image, i) => (
             <div
               key={i}
               className="absolute w-[480px] h-[300px] top-1/2 left-1/2 -mt-[150px] -ml-[240px] overflow-hidden rounded-xl shadow-2xl"
               style={{
-                transform: `rotateY(${i * angle}deg) translateZ(${radius}px) rotateY(180deg)`,
+                transform: `rotateY(${i * angle}deg) translateZ(${radius}px)`,
               }}
             >
               <Image
