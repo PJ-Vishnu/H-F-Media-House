@@ -56,7 +56,6 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
             opts={{
                 align: "center",
                 loop: true,
-                slidesPerView: isMobile ? 1 : 3,
             }}
             plugins={[autoplayPlugin.current]}
             className="w-full max-w-6xl mx-auto"
