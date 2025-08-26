@@ -141,7 +141,7 @@ export const db = {
     const count = await db.collection('portfolio').countDocuments();
     const newItem = { ...item, order: count + 1 };
     const result = await db.collection('portfolio').insertOne(newItem);
-    return mapDoc({ ...newItem, _id: result.insertedId });
+    return mapDoc({ ...newImage, _id: result.insertedId });
   },
   deletePortfolioItem: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
