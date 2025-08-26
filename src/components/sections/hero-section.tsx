@@ -1,3 +1,4 @@
+
 import type { HeroData } from '@/lib/definitions';
 import { Button } from '@/components/ui/button';
 import { CylinderCarousel } from '@/components/shared/cylinder-carousel';
@@ -10,7 +11,7 @@ type HeroSectionProps = {
 
 export function HeroSection({ data }: HeroSectionProps) {
   return (
-    <section id="hero" className="w-full py-20 md:py-32 lg:py-40 bg-background overflow-hidden">
+    <section id="hero" className="w-full pt-20 md:pt-32 lg:pt-40 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
         <div className="flex flex-col items-center text-center">
             <ScrollFadeIn>
@@ -27,9 +28,9 @@ export function HeroSection({ data }: HeroSectionProps) {
                     </Button>
                 </Link>
             </ScrollFadeIn>
-            <ScrollFadeIn className="relative w-full h-96 mt-16">
+            <div className="relative w-full h-[500px] mt-16 -mb-48">
                 <CylinderCarousel images={data.images} />
-            </ScrollFadeIn>
+            </div>
         </div>
       </div>
     </section>
