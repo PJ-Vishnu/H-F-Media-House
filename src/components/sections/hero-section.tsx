@@ -10,25 +10,26 @@ type HeroSectionProps = {
 
 export function HeroSection({ data }: HeroSectionProps) {
   return (
-    <section id="hero" className="w-full py-20 md:py-32 lg:py-40 bg-secondary/50 overflow-hidden">
+    <section id="hero" className="w-full py-20 md:py-32 lg:py-40 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <ScrollFadeIn className="flex flex-col items-center lg:items-start text-center lg:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold font-headline tracking-tighter leading-tight mb-4">
-              {data.headline}
-            </h1>
-            <p className="max-w-xl text-lg md:text-xl text-muted-foreground mb-8">
-              {data.subheadline}
-            </p>
-            <Link href={data.ctaLink}>
-              <Button size="lg" className="bg-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105">
-                {data.ctaText}
-              </Button>
-            </Link>
-          </ScrollFadeIn>
-          <ScrollFadeIn className="relative w-full h-96">
-            <CylinderCarousel images={data.images} />
-          </ScrollFadeIn>
+        <div className="flex flex-col items-center text-center">
+            <ScrollFadeIn>
+                <p className="text-primary font-semibold tracking-widest uppercase mb-2">Capturing Moments</p>
+                <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold font-headline tracking-tighter leading-tight mb-4">
+                    {data.headline}
+                </h1>
+                <p className="max-w-2xl text-lg md:text-xl text-muted-foreground mb-8">
+                    {data.subheadline}
+                </p>
+                <Link href={data.ctaLink}>
+                    <Button size="lg" className="bg-primary text-primary-foreground font-bold text-lg px-8 py-6 rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105">
+                        {data.ctaText}
+                    </Button>
+                </Link>
+            </ScrollFadeIn>
+            <ScrollFadeIn className="relative w-full h-96 mt-16">
+                <CylinderCarousel images={data.images} />
+            </ScrollFadeIn>
         </div>
       </div>
     </section>

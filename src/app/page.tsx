@@ -7,6 +7,7 @@ import { PortfolioSection } from '@/components/sections/portfolio-section';
 import { TestimonialsSection } from '@/components/sections/testimonials-section';
 import { ContactSection } from '@/components/sections/contact-section';
 import { Footer } from '@/components/sections/footer';
+import { Header } from '@/components/sections/header';
 
 export default async function Home() {
   // In a real app, you might have a single API call that fetches all page data.
@@ -32,13 +33,13 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
+      <Header />
       <HeroSection data={heroData} />
       <AboutSection data={aboutData} />
       <ServicesSection data={servicesData} />
       <GallerySection data={galleryData} />
-      <PortfolioSection data={portfolioData} />
       <TestimonialsSection data={testimonialsData} />
-      <ContactSection data={contactData} />
+      <ContactSection contactData={contactData} />
       <Footer data={footerData} />
     </main>
   );

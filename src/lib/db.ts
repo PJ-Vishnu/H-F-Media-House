@@ -2,9 +2,9 @@ import type { HeroData, GalleryImage, AboutData, Service, PortfolioItem, Testimo
 
 // Mock Data
 let heroData: HeroData = {
-  headline: 'Innovative Media, Unforgettable Stories.',
-  subheadline: 'H&F Media House crafts compelling narratives that captivate and inspire. Discover the power of visual storytelling.',
-  ctaText: 'Explore Our Work',
+  headline: 'Creating Stories',
+  subheadline: 'We are a creative film and photo production house based in New York. We are committed to capturing your most precious moments and turning them into cinematic stories you can cherish forever.',
+  ctaText: 'Explore Now',
   ctaLink: '#portfolio',
   images: [
     { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
@@ -17,26 +17,23 @@ let heroData: HeroData = {
 };
 
 let galleryImages: GalleryImage[] = [
-  { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Abstract art', 'data-ai-hint': 'abstract art', order: 1 },
-  { id: '2', src: 'https://picsum.photos/800/600?random=12', alt: 'Cityscape at night', 'data-ai-hint': 'cityscape night', order: 2 },
-  { id: '3', src: 'https://picsum.photos/800/600?random=13', alt: 'Nature landscape', 'data-ai-hint': 'nature landscape', order: 3 },
-  { id: '4', src: 'https://picsum.photos/800/600?random=14', alt: 'Corporate event', 'data-ai-hint': 'corporate event', order: 4 },
-  { id: '5', src: 'https://picsum.photos/800/600?random=15', alt: 'Product photography', 'data-ai-hint': 'product photography', order: 5 },
-  { id: '6', src: 'https://picsum.photos/800/600?random=16', alt: 'Wedding photo', 'data-ai-hint': 'wedding photography', order: 6 },
+  { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
+  { id: '2', src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
+  { id: '3', src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
+  { id: '4', src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
 ];
 
 let aboutData: AboutData = {
-  title: 'About H&F Media House',
-  content: 'Founded in 2010, H&F Media House has been at the forefront of digital media production. Our team of creatives, strategists, and technicians work collaboratively to bring your vision to life. We believe in the power of story to connect brands with their audiences in meaningful ways.',
+  title: 'Our Story Behind the Lens',
+  content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using Content here, content here, making it look like readable English.',
   imageUrl: 'https://picsum.photos/1200/800?random=20',
-  'data-ai-hint': 'creative team',
+  'data-ai-hint': 'camera lens',
 };
 
 let services: Service[] = [
-  { id: '1', title: 'Video Production', description: 'Full-service video production, from concept to final cut. Commercials, documentaries, and corporate videos.', icon: 'Video' },
-  { id: '2', title: 'Photography', description: 'Professional photography for events, products, and branding. Capturing moments that matter.', icon: 'Camera' },
-  { id: '3', title: 'Animation & VFX', description: '2D and 3D animation, motion graphics, and visual effects to make your content stand out.', icon: 'Wand' },
-  { id: '4', title: 'Content Strategy', description: 'Developing data-driven content strategies that align with your business goals and engage your target audience.', icon: 'BrainCircuit' },
+  { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera' },
+  { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video' },
+  { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand' },
 ];
 
 let portfolioItems: PortfolioItem[] = [
@@ -47,8 +44,9 @@ let portfolioItems: PortfolioItem[] = [
 ];
 
 let testimonials: Testimonial[] = [
-  { id: '1', quote: 'H&F Media House transformed our brand presence online. Their creativity and professionalism are second to none.', author: 'Jane Doe', company: 'Innovate Corp' },
-  { id: '2', quote: 'The team was a pleasure to work with. They delivered beyond our expectations on a tight deadline.', author: 'John Smith', company: 'Tech Solutions' },
+  { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'Leo', company: 'Marketer' },
+  { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'Ana', company: 'Photographer' },
+  { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'John', company: 'Videographer' },
 ];
 
 let contactData: ContactData = {
@@ -64,7 +62,7 @@ let contactData: ContactData = {
 };
 
 let footerData: FooterData = {
-  copyright: `© ${new Date().getFullYear()} H&F Media House. All Rights Reserved.`,
+  copyright: `Copyright @${new Date().getFullYear()} H&F Media. All rights reserved.`,
   links: [
     { title: 'Home', url: '/' },
     { title: 'About', url: '#about' },
