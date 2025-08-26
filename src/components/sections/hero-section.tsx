@@ -28,7 +28,7 @@ export function HeroSection({ data }: HeroSectionProps) {
                     </Button>
                 </Link>
             </ScrollFadeIn>
-            <div className="relative w-full h-[500px] mt-16 -mb-48">
+            <div className="relative w-full h-[500px] mt-16">
                 <CylinderCarousel images={data.images} />
             </div>
         </div>

@@ -19,7 +19,7 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
   const radius = 280; // Radius of the cylinder
 
   const rotate = useCallback((direction: "next" | "prev") => {
-    setRotation((prev) => prev + (direction === "next" ? -angle : angle));
+    setRotation((prev) => prev + (direction === "next" ? angle : -angle));
   }, [angle]);
 
   useEffect(() => {
@@ -31,10 +31,10 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
 
   return (
     <div className={cn("relative h-full w-full flex items-center justify-center group", className)}>
-      <div className="w-full h-full [perspective:800px]">
+      <div className="w-full h-full [perspective:1000px]">
         <div
           className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-1000 ease-in-out"
-          style={{ transform: `rotateY(${rotation}deg)` }}
+          style={{ transform: `translateZ(-${radius}px) rotateY(${rotation}deg)` }}
         >
           {images.map((image, i) => (
             <div
