@@ -23,6 +23,23 @@ export async function POST(req: Request) {
     }
 }
 
+// PUT /api/gallery?id=...
+export async function PUT(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        if (!id) {
+            return NextResponse.json({ message: 'Image ID is required' }, { status: 400 });
+        }
+        const body: Partial<GalleryImage> = await req.json();
+        const updatedImage = await db.updateGalleryImage(id, body);
+        return NextResponse.json(updatedImage, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+
 // DELETE /api/gallery?id=...
 export async function DELETE(req: NextRequest) {
     try {

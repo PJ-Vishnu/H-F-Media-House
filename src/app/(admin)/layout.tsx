@@ -27,7 +27,8 @@ import {
   Footprints,
   Contact,
   LogOut,
-  Settings
+  Settings,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
@@ -55,6 +56,7 @@ const menuItems = [
         items: [
             { href: "/admin/contact", label: "Contact", icon: Contact },
             { href: "/admin/footer", label: "Footer", icon: Footprints },
+            { href: "/admin/seo", label: "SEO", icon: Search },
         ]
     }
 ];

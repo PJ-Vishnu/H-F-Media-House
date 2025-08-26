@@ -8,6 +8,7 @@ import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
 import type { ContactData } from '@/modules/contact/contact.schema';
 import type { FooterData } from '@/modules/footer/footer.schema';
 import type { AdminUser } from '@/modules/admin/admin.schema';
+import type { SEOData } from '@/modules/seo/seo.schema';
 
 
 // Ensure the MONGODB_URI is set in your environment variables
@@ -96,6 +97,15 @@ export const db = {
     const newImage = { ...image, order: count + 1 };
     const result = await db.collection('gallery').insertOne(newImage);
     return mapDoc({ ...newImage, _id: result.insertedId });
+  },
+  updateGalleryImage: async (id: string, data: Partial<GalleryImage>): Promise<GalleryImage | undefined> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    const { _id, ...updateData } = data as any; // Prevent _id from being in $set
+    await db.collection('gallery').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const updatedDoc = await db.collection('gallery').findOne({ _id: new ObjectId(id) });
+    return updatedDoc ? mapDoc(updatedDoc) : undefined;
   },
   deleteGalleryImage: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
@@ -245,6 +255,26 @@ export const db = {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
     await db.collection('footer').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
+
+  // SEO
+  getSEO: async (): Promise<SEOData> => {
+    const db = await connectToDb();
+    if (!db) return { 
+        title: 'H&F Media House | Fallback Title', 
+        description: 'This is fallback description for when the database is not connected.',
+        keywords: 'media, photography, video',
+        url: 'https://example.com',
+        ogImage: 'https://picsum.photos/1200/630'
+    };
+    const data = await db.collection<SEOData>('seo').findOne({});
+    return data ?? { title: '', description: '', keywords: '', url: '', ogImage: '' };
+  },
+  updateSEO: async (data: SEOData): Promise<SEOData> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    await db.collection('seo').updateOne({}, { $set: data }, { upsert: true });
     return data;
   },
 };

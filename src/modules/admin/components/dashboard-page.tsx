@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Contact,
   Footprints,
+  Search,
 } from "lucide-react";
 
 const sections = [
@@ -20,6 +21,7 @@ const sections = [
   { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
   { name: "Contact", href: "/admin/contact", icon: Contact },
   { name: "Footer", href: "/admin/footer", icon: Footprints },
+  { name: "SEO", href: "/admin/seo", icon: Search },
 ];
 
 export default function DashboardPage() {
