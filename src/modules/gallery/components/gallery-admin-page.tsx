@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import type { GalleryImage } from "@/modules/gallery/gallery.schema";
 import { GripVertical, PlusCircle, Trash2, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
+import { useDebouncedCallback } from "use-debounce";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,7 @@ import { Input } from "@/components/ui/input";
 export default function GalleryAdminPage() {
   const { toast } = useToast();
   const [images, setImages] = useState<GalleryImage[] | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
 
@@ -61,7 +62,7 @@ export default function GalleryAdminPage() {
 
   const handleSaveOrder = async () => {
     if (!images) return;
-    setIsSaving(true);
+    setIsSavingOrder(true);
     try {
         const orderedIds = images.map(img => img.id);
         const res = await fetch('/api/gallery/reorder', {
@@ -76,12 +77,11 @@ export default function GalleryAdminPage() {
     } catch (error) {
         toast({ variant: 'destructive', title: "Failed to save order." });
     } finally {
-        setIsSaving(false);
+        setIsSavingOrder(false);
     }
   };
 
   const handleAddImage = async () => {
-    // This is a placeholder for a real upload flow
     const newImage = {
         src: `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 100)}`,
         alt: "New placeholder image",
@@ -102,6 +102,20 @@ export default function GalleryAdminPage() {
     }
   }
 
+  const debouncedUpdateAltText = useDebouncedCallback(async (id: string, alt: string) => {
+    try {
+        const res = await fetch(`/api/gallery?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ alt })
+        });
+        if (!res.ok) throw new Error("Failed to update alt text");
+        toast({ title: 'Alt text updated' });
+    } catch (error) {
+        toast({ variant: 'destructive', title: "Failed to update alt text" });
+    }
+  }, 500);
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -110,8 +124,8 @@ export default function GalleryAdminPage() {
             <Button onClick={handleAddImage} variant="outline" className="mr-2">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Image
             </Button>
-            <Button onClick={handleSaveOrder} disabled={isSaving}>
-                {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button onClick={handleSaveOrder} disabled={isSavingOrder}>
+                {isSavingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Order
             </Button>
         </div>
@@ -119,7 +133,7 @@ export default function GalleryAdminPage() {
       <Card>
         <CardHeader>
           <CardTitle>Gallery Images</CardTitle>
-          <CardDescription>Drag and drop (using arrows) to reorder images. Changes are not saved until you click "Save Order".</CardDescription>
+          <CardDescription>Use arrows to reorder images. Changes to alt text are saved automatically.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -132,16 +146,21 @@ export default function GalleryAdminPage() {
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveImage(index, 'up')} disabled={index === 0}>
                         <ArrowUp className="h-4 w-4" />
                     </Button>
-                    <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab" />
+                    <GripVertical className="h-5 w-5 text-muted-foreground" />
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveImage(index, 'down')} disabled={index === images.length - 1}>
                         <ArrowDown className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="relative h-20 w-32 rounded-md overflow-hidden">
+                  <div className="relative h-20 w-32 rounded-md overflow-hidden flex-shrink-0">
                     <Image src={image.src} alt={image.alt} fill className="object-cover" />
                   </div>
                   <div className="flex-grow">
-                    <Input defaultValue={image.alt} className="border-0 focus-visible:ring-1" placeholder="Image alt text" />
+                    <Input 
+                      defaultValue={image.alt}
+                      onChange={(e) => debouncedUpdateAltText(image.id, e.target.value)}
+                      className="border-0 focus-visible:ring-1" 
+                      placeholder="Image alt text" 
+                    />
                   </div>
                   <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(image.id)}>
                     <Trash2 className="h-5 w-5 text-destructive" />

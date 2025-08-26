@@ -118,7 +118,7 @@ export default function ContactAdminPage() {
                   <FormItem><FormLabel>Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/..." {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="socials.linkedin" render={({ field }) => (
-                  <FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/..." {...field} /></FormControl><FormMessage /></FormMessage>
               )} />
             </CardContent>
           </Card>

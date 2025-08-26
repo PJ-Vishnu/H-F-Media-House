@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Poppins } from 'next/font/google'
+import { db } from '@/lib/db';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -9,10 +10,39 @@ const poppins = Poppins({
 })
 
 
-export const metadata: Metadata = {
-  title: 'H&F Media House CMS',
-  description: 'Content Management System for H&F Media House',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const seoData = await db.getSEO();
+  
+  const title = seoData?.title || 'H&F Media House';
+  const description = seoData?.description || 'Creative Film & Photo Production';
+
+  return {
+    title,
+    description,
+    keywords: seoData?.keywords,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      url: seoData?.url || '/',
+      images: [
+        {
+          url: seoData?.ogImage || 'https://picsum.photos/1200/630',
+          width: 1200,
+          height: 630,
+          alt: 'H&F Media House',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [seoData?.ogImage || 'https://picsum.photos/1200/630'],
+    },
+  };
+}
+
 
 export default function RootLayout({
   children,
