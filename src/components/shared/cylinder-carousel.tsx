@@ -20,7 +20,7 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
 
   const rotate = useCallback((direction: "next" | "prev") => {
     // Rotating in the opposite direction gives a more natural "looking around" feel
-    setRotation((prev) => prev - (direction === "next" ? angle : -angle));
+    setRotation((prev) => prev + (direction === "next" ? angle : -angle));
   }, [angle]);
 
   useEffect(() => {
@@ -35,12 +35,12 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
       <div className="w-full h-full [perspective:1000px]">
         <div
           className="w-full h-full relative [transform-style:preserve-3d] transition-transform duration-1000 ease-in-out"
-          style={{ transform: `rotateY(${rotation}deg)` }}
+          style={{ transform: `rotateY(${rotation}deg) translateZ(-${radius}px)` }}
         >
           {images.map((image, i) => (
             <div
               key={i}
-              className="absolute w-[240px] h-[360px] top-1/2 left-1/2 -mt-[180px] -ml-[120px] overflow-hidden rounded-xl shadow-2xl"
+              className="absolute w-[400px] h-[250px] top-1/2 left-1/2 -mt-[125px] -ml-[200px] overflow-hidden rounded-xl shadow-2xl"
               style={{
                 transform: `rotateY(${i * angle}deg) translateZ(${radius}px)`,
               }}
@@ -48,8 +48,8 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
               <Image
                 src={image.src}
                 alt={image.alt}
-                width={600}
-                height={800}
+                width={400}
+                height={250}
                 data-ai-hint={image['data-ai-hint']}
                 className="object-cover w-full h-full"
               />
