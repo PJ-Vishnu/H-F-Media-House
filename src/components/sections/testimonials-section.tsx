@@ -6,7 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/com
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Autoplay from "embla-carousel-autoplay";
 import { cn } from '@/lib/utils';
 
@@ -17,6 +17,10 @@ type TestimonialsSectionProps = {
 export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   const [api, setApi] = useState<CarouselApi>()
   const [current, setCurrent] = useState(0)
+  
+  const autoplayPlugin = useRef(
+    Autoplay({ delay: 4000, stopOnInteraction: true })
+  );
 
   useEffect(() => {
     if (!api) {
@@ -51,12 +55,7 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                 align: "center",
                 loop: true,
             }}
-            plugins={[
-                Autoplay({
-                  delay: 4000,
-                  stopOnInteraction: true,
-                }),
-            ]}
+            plugins={[autoplayPlugin.current]}
             className="w-full"
         >
             <CarouselContent>
@@ -64,7 +63,7 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                     <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
                         <div className="p-1">
                             <Card className={cn(
-                                "rounded-xl shadow-lg p-8 h-full transition-colors duration-500",
+                                "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
                                 index === current ? 'bg-yellow-300' : 'bg-secondary/50'
                             )}>
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
