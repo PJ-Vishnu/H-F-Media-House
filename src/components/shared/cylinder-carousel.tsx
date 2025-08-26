@@ -15,11 +15,11 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
   const [rotation, setRotation] = useState(0);
   const totalImages = images.length;
   const angle = 360 / totalImages;
-  const radius = 280; // Radius of the cylinder
+  const radius = 400; // Radius of the cylinder
 
   const rotate = useCallback((direction: "next" | "prev") => {
     // Rotating in the opposite direction gives a more natural "looking around" feel
-    setRotation((prev) => prev + (direction === "next" ? angle : -angle));
+    setRotation((prev) => prev + (direction === "next" ? -angle : angle));
   }, [angle]);
 
   useEffect(() => {
@@ -39,9 +39,9 @@ export function CylinderCarousel({ images, className }: CylinderCarouselProps) {
           {images.map((image, i) => (
             <div
               key={i}
-              className="absolute w-[400px] h-[250px] top-1/2 left-1/2 -mt-[125px] -ml-[200px] overflow-hidden rounded-xl shadow-2xl"
+              className="absolute w-[480px] h-[300px] top-1/2 left-1/2 -mt-[150px] -ml-[240px] overflow-hidden rounded-xl shadow-2xl"
               style={{
-                transform: `rotateY(${i * angle}deg) translateZ(${radius}px)`,
+                transform: `rotateY(${i * angle}deg) translateZ(${radius}px) rotateY(180deg)`,
               }}
             >
               <Image
