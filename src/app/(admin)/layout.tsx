@@ -62,16 +62,16 @@ const menuItems = [
 ];
 
 
-export default function AdminLayout({ children }: { children: ReactNode }) {
-  const layout = cookies().get("react-resizable-panels:layout");
-  const collapsed = cookies().get("react-resizable-panels:collapsed");
+export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const layout = (await cookies()).get("react-resizable-panels:layout");
+  const collapsed = (await cookies()).get("react-resizable-panels:collapsed");
 
   const defaultLayout = layout ? JSON.parse(layout.value) : undefined;
   const defaultCollapsed = collapsed ? JSON.parse(collapsed.value) : undefined;
 
   async function handleLogout() {
     "use server";
-    cookies().set("user-token", "", { expires: new Date(0) });
+    (await cookies()).set("user-token", "", { expires: new Date(0) });
     redirect("/login");
   }
 

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "1",
+    "src": "https://picsum.photos/800/600?random=11",
+    "alt": "Couple walking on a hill",
+    "data-ai-hint": "couple landscape",
+    "order": 1
+  },
+  {
+    "id": "2",
+    "src": "https://picsum.photos/400/300?random=12",
+    "alt": "Black and white wedding photo",
+    "data-ai-hint": "wedding black-white",
+    "order": 2
+  },
+  {
+    "id": "3",
+    "src": "https://picsum.photos/400/300?random=13",
+    "alt": "Couple reflected in a window",
+    "data-ai-hint": "couple reflection",
+    "order": 3
+  },
+  {
+    "id": "4",
+    "src": "https://picsum.photos/800/300?random=14",
+    "alt": "Wedding rings",
+    "data-ai-hint": "wedding rings",
+    "order": 4
+  }
+]

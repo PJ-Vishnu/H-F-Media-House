@@ -1,8 +1,6 @@
-import Image from 'next/image';
-import type { AboutData } from '@/modules/about/about.schema';
-import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import Image from "next/image";
+import type { AboutData } from "@/modules/about/about.schema";
+import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
 
 type AboutSectionProps = {
   data: AboutData;
@@ -12,27 +10,49 @@ export function AboutSection({ data }: AboutSectionProps) {
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">
       <ScrollFadeIn className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div className="w-full h-80 lg:h-[500px] relative rounded-xl overflow-hidden shadow-2xl">
-            {data.imageUrl && (
-              <Image
-                src={data.imageUrl}
-                alt="About H&F Media House"
-                fill
-                data-ai-hint={data['data-ai-hint']}
-                className="object-cover"
-              />
-            )}
-          </div>
-          <div className="text-center lg:text-left">
-            <p className="text-primary font-semibold tracking-widest uppercase mb-2">Positive Company Process</p>
-            <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">{data.title}</h2>
-            <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-              {data.content}
-            </p>
-            <Button asChild size="lg" variant="outline" className="rounded-full font-bold">
-                <Link href="#contact">More About Us</Link>
-            </Button>
+        {/* Section heading */}
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <p className="text-primary font-semibold tracking-widest uppercase mb-2">
+            Passion. Creativity. Precision.
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
+            {data.title}
+          </h2>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            {data.content}
+          </p>
+        </div>
+
+        {/* Full-width image with overlayed cards */}
+        <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
+          {data.imageUrl && (
+            <Image
+              src={data.imageUrl}
+              alt="About H&F Media House"
+              fill
+              priority
+              data-ai-hint={data["data-ai-hint"]}
+              className="object-cover"
+            />
+          )}
+
+          {/* Overlayed cards */}
+          <div className="absolute inset-0 flex items-end justify-center gap-6 p-6">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 backdrop-blur-sm"
+              >
+                <h3 className="text-lg font-semibold mb-2">
+                  Creative & Emotional
+                </h3>
+                <p className="text-sm leading-relaxed">
+                  We believe every moment has a story to tell. At H&F Media
+                  House, we turn your special moments into timeless memories
+                  through powerful visuals that inspire and connect.
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </ScrollFadeIn>

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "title": "Photography",
+    "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
+    "icon": "Camera"
+  },
+  {
+    "id": "2",
+    "title": "Videography",
+    "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
+    "icon": "Video"
+  },
+  {
+    "id": "3",
+    "title": "Content Creation",
+    "description": "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
+    "icon": "Wand"
+  }
+]
