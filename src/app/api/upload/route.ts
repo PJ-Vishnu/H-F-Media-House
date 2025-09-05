@@ -29,7 +29,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for videos
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
       cb(null, true);
@@ -50,6 +50,14 @@ const runMiddleware = (req: any, res: any, fn: any) => {
       return resolve(result);
     });
   });
+};
+
+export const config = {
+  api: {
+    bodyParser: false, // Disallow body parsing, let multer handle it
+    // Increase timeout for large file uploads
+    responseLimit: false,
+  },
 };
 
 export async function POST(req: NextRequest) {
@@ -84,6 +92,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, filePath }, { status: 200 });
 
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.error("Upload Error:", error);
+    return NextResponse.json({ success: false, message: `Upload failed: ${error.message}` }, { status: 500 });
   }
 }

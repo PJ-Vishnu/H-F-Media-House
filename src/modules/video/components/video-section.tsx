@@ -11,22 +11,17 @@ type VideoSectionProps = {
 };
 
 const getYouTubeEmbedUrl = (url: string): string | null => {
-  if (!url) return null;
-  let videoId = null;
-  // Standard watch URL
-  const urlParams = new URLSearchParams(new URL(url).search);
-  if (urlParams.has('v')) {
-    videoId = urlParams.get('v');
-  } else {
-    // Shortened youtu.be URL or embed URL
-    const match = url.match(/(?:youtu\.be\/|embed\/)([\w-]{11})/);
-    if (match) {
-      videoId = match[1];
-    }
-  }
+    if (!url) return null;
 
-  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+    // This regex is designed to capture the video ID from various YouTube URL formats.
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+
+    const videoId = (match && match[2].length === 11) ? match[2] : null;
+    
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
 };
+
 
 const VideoPlayer = ({ data }: VideoSectionProps) => {
   const [baseUrl, setBaseUrl] = useState('');
@@ -74,8 +69,8 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
         <video
           controls
           src={videoSrc}
-          poster={data.videoThumbnail}
-          className="w-full h-full object-cover"
+          poster={data.videoThumbnail ? (data.videoThumbnail.startsWith('http') ? data.videoThumbnail : `${baseUrl}${data.videoThumbnail}`) : ''}
+          className="w-full h-full object-cover bg-black"
         >
           Your browser does not support the video tag.
         </video>
