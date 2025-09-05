@@ -209,7 +209,7 @@ export default function PortfolioAdminPage() {
                       <div className="w-48 space-y-2 flex-shrink-0">
                          <Image src={form.getValues(`items.${index}.imageUrl`)} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
                          <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
-                         {isUploading === index && <p>Uploading...</p>}
+                         {isUploading === index && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
                       </div>
 
                       <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">

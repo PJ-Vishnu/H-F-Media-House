@@ -240,7 +240,7 @@ export default function HeroAdminPage() {
                                         <FormControl>
                                              <Input type="file" onChange={(e) => handleFileChange(e, index)} className="mb-2" disabled={isUploading === index}/>
                                         </FormControl>
-                                        {isUploading === index && <p className="text-sm text-muted-foreground">Uploading...</p>}
+                                        {isUploading === index && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
                                         <Input type="hidden" {...imageField} />
                                         <FormMessage />
                                     </FormItem>

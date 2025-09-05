@@ -156,7 +156,7 @@ export default function AboutAdminPage() {
                     <FormControl>
                         <div>
                             <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
-                            {isUploading && <p>Uploading...</p>}
+                            {isUploading && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
                             {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
                             <Input type="hidden" {...field} />
                         </div>

@@ -167,7 +167,7 @@ export default function GalleryAdminPage() {
         <CardContent>
             <Input type="file" onChange={handleFileChange} disabled={isUploading} />
             {isUploading && (
-                <div className="flex items-center mt-2">
+                <div className="flex items-center mt-2 text-sm text-muted-foreground">
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     <span>Uploading...</span>
                 </div>

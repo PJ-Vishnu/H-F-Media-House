@@ -203,7 +203,7 @@ export default function TestimonialsAdminPage() {
                                             <Image src={avatarField.value || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
                                             <div className="flex-grow">
                                                 <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
-                                                {isUploading === index && <p className="text-sm mt-1">Uploading...</p>}
+                                                {isUploading === index && <div className="flex items-center text-sm text-muted-foreground mt-1"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
                                             </div>
                                         </div>
                                         <FormMessage/>

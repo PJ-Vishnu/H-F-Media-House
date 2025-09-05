@@ -203,7 +203,7 @@ export default function ServicesAdminPage() {
                                         <Image src={imageField.value} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square"/>
                                         <div className="flex-grow">
                                             <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index} />
-                                            {isUploading === index && <p className="text-sm mt-1">Uploading...</p>}
+                                            {isUploading === index && <div className="flex items-center text-sm text-muted-foreground mt-1"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
                                         </div>
                                     </div>
                                     <FormMessage />

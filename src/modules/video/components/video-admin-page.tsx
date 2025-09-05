@@ -30,7 +30,9 @@ export default function VideoAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<VideoData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+
 
   const form = useForm<z.infer<typeof videoSchema>>({
     resolver: zodResolver(videoSchema),
@@ -57,6 +59,7 @@ export default function VideoAdminPage() {
     if (!file) return;
 
     setIsUploading(true);
+    setUploadProgress(0);
     const formData = new FormData();
     formData.append('file', file);
 
@@ -68,6 +71,10 @@ export default function VideoAdminPage() {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
+          setUploadProgress(percentCompleted);
+        }
       });
       form.setValue(fieldToUpdate, res.data.filePath, { shouldDirty: true });
       toast({ title: `${isVideo ? 'Video' : 'Thumbnail'} upload successful` });
@@ -199,7 +206,13 @@ export default function VideoAdminPage() {
                                 disabled={isUploading}
                             />
                             </FormControl>
-                            {field.value && <p className="text-sm text-muted-foreground mt-2">Current file: {field.value}</p>}
+                            {isUploading && (
+                              <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                <span>Uploading... ({uploadProgress}%)</span>
+                              </div>
+                            )}
+                            {field.value && !isUploading && <p className="text-sm text-muted-foreground mt-2">Current file: {field.value}</p>}
                             <FormMessage />
                         </FormItem>
                         )}
@@ -213,7 +226,12 @@ export default function VideoAdminPage() {
                              <FormControl>
                                 <div>
                                     <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, false)} className="mb-2" disabled={isUploading}/>
-                                    {isUploading && <p>Uploading...</p>}
+                                    {isUploading && field.name === 'videoThumbnail' && (
+                                      <div className="flex items-center text-sm text-muted-foreground">
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        <span>Uploading...</span>
+                                      </div>
+                                    )}
                                     {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
                                 </div>
                             </FormControl>
