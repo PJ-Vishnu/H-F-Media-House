@@ -75,7 +75,7 @@ export const db = {
       ],
     };
     const data = await db.collection<HeroData>('hero').findOne({});
-    return data ?? { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] };
+    return data ? JSON.parse(JSON.stringify(data)) : { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] };
   },
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
@@ -150,7 +150,7 @@ export const db = {
         ]
     };
     const data = await db.collection<AboutData>('about').findOne({});
-    return data ?? { title: '', content: '', imageUrl: '', features: []};
+    return data ? JSON.parse(JSON.stringify(data)) : { title: '', content: '', imageUrl: '', features: []};
   },
   updateAbout: async (data: AboutData): Promise<AboutData> => {
     const db = await connectToDb();
@@ -287,8 +287,8 @@ export const db = {
         videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
         videoThumbnail: 'https://picsum.photos/1280/720?random=51'
     };
-    const data = await db.collection<VideoData>('video').findOne({});
-    return data ?? { title: '', description: '' };
+    const data = await db.collection('video').findOne({});
+    return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '' };
   },
   updateVideo: async (data: VideoData): Promise<VideoData> => {
     const db = await connectToDb();
@@ -307,7 +307,7 @@ export const db = {
         socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' },
     };
     const data = await db.collection<ContactData>('contact').findOne({});
-    return data ?? { email: '', phone: '', address: '', socials: {}};
+    return data ? JSON.parse(JSON.stringify(data)) : { email: '', phone: '', address: '', socials: {}};
   },
   updateContact: async (data: ContactData): Promise<ContactData> => {
     const db = await connectToDb();
@@ -329,7 +329,7 @@ export const db = {
         ] 
     };
     const data = await db.collection<FooterData>('footer').findOne({});
-    return data ?? { copyright: '', links: [] };
+    return data ? JSON.parse(JSON.stringify(data)) : { copyright: '', links: [] };
   },
   updateFooter: async (data: FooterData): Promise<FooterData> => {
     const db = await connectToDb();
@@ -349,7 +349,7 @@ export const db = {
         ogImage: '/uploads/seo/og-image.jpg'
     };
     const data = await db.collection<SEOData>('seo').findOne({});
-    return data ?? { title: '', description: '', keywords: '', url: '', ogImage: '' };
+    return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '', keywords: '', url: '', ogImage: '' };
   },
   updateSEO: async (data: SEOData): Promise<SEOData> => {
     const db = await connectToDb();
