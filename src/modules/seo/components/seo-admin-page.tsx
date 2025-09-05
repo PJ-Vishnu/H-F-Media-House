@@ -60,10 +60,11 @@ export default function SEOAdminPage() {
     setStagedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
+      const result = reader.result as string;
+      setPreviewUrl(result);
+      form.setValue('ogImage', result, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
-    form.markAsDirty();
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -218,3 +219,5 @@ export default function SEOAdminPage() {
     </div>
   );
 }
+
+    

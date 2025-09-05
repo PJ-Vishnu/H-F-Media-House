@@ -69,10 +69,11 @@ export default function AboutAdminPage() {
     setStagedFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setPreviewUrl(reader.result as string);
+      const result = reader.result as string;
+      setPreviewUrl(result);
+      form.setValue('imageUrl', result, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
-    form.markAsDirty();
   };
 
   const uploadFile = async (file: File): Promise<string | null> => {
@@ -233,3 +234,5 @@ export default function AboutAdminPage() {
     </div>
   );
 }
+
+    

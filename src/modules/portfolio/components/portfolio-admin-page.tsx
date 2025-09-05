@@ -92,11 +92,12 @@ export default function PortfolioAdminPage() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
+      const previewUrl = e.target?.result as string;
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: e.target?.result as string }];
+        return [...others, { index, file, preview: previewUrl }];
       });
-      form.markAsDirty();
+      form.setValue(`items.${index}.imageUrl`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -159,7 +160,7 @@ export default function PortfolioAdminPage() {
       setStagedFiles([]);
 
     } catch (error) {
-      toast({ variant: 'destructive', title: "Failed to save portfolio.", description: error instanceof Error ? error.message : "An unknown error occurred." });
+      toast({ variant: 'destructive', title: "Failed to save portfolio.", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -275,3 +276,5 @@ export default function PortfolioAdminPage() {
     </div>
   );
 }
+
+    

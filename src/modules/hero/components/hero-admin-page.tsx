@@ -80,11 +80,12 @@ export default function HeroAdminPage() {
 
     const reader = new FileReader();
     reader.onload = (e) => {
+      const previewUrl = e.target?.result as string;
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: e.target?.result as string }];
+        return [...others, { index, file, preview: previewUrl }];
       });
-      form.markAsDirty();
+      form.setValue(`images.${index}.src`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -306,3 +307,5 @@ export default function HeroAdminPage() {
     </div>
   );
 }
+
+    

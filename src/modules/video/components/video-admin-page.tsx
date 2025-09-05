@@ -67,12 +67,16 @@ export default function VideoAdminPage() {
         const reader = new FileReader();
         reader.onload = (e) => {
             setStagedFiles(prev => ({ ...prev, thumbnail: { file, preview: e.target?.result as string }}));
+            // Use setValue to manually update a field and mark form as dirty
+            form.setValue('videoThumbnail', e.target?.result as string, { shouldDirty: true });
         };
         reader.readAsDataURL(file);
     } else {
         setStagedFiles(prev => ({ ...prev, video: { file }}));
+        // Use setValue for file inputs; though we don't have a field, this marks it dirty.
+        // A better way is just to manage state and check it on submit, but this works to enable the save button.
+        form.setValue('videoUrl', 'new-file-staged', { shouldDirty: true });
     }
-    form.markAsDirty();
   };
 
   const uploadFile = async (file: File, section: string, onProgress?: (percent: number) => void): Promise<string | null> => {
@@ -260,3 +264,5 @@ export default function VideoAdminPage() {
     </div>
   );
 }
+
+    
