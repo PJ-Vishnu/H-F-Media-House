@@ -11,6 +11,7 @@ type FooterProps = {
 
 export async function Footer({ data }: FooterProps) {
   const contactData: ContactData = await db.getContact();
+  const socials = contactData.socials || {};
 
   const exploreLinks = [
     { title: 'Home', url: '/' },
@@ -58,10 +59,10 @@ export async function Footer({ data }: FooterProps) {
              <div>
                 <h4 className="font-bold text-white mb-4">SOCIAL MEDIA</h4>
                 <div className="flex gap-4">
-                  <Link href={contactData.socials.facebook}><Facebook className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={contactData.socials.twitter}><Twitter className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={contactData.socials.instagram}><Instagram className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={contactData.socials.linkedin}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>
+                  <Link href={socials.facebook || '#'}><Facebook className="h-6 w-6 hover:text-white transition-colors" /></Link>
+                  <Link href={socials.twitter || '#'}><Twitter className="h-6 w-6 hover:text-white transition-colors" /></Link>
+                  <Link href={socials.instagram || '#'}><Instagram className="h-6 w-6 hover:text-white transition-colors" /></Link>
+                  <Link href={socials.linkedin || '#'}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>
                 </div>
             </div>
         </div>

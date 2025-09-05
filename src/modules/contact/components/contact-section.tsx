@@ -9,6 +9,61 @@ type ContactSectionProps = {
   contactData: ContactData;
 };
 
+const VideoPlayer = ({ contactData }: ContactSectionProps) => {
+  if (!contactData.videoUrl) {
+    return (
+      <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+        <p className="text-muted-foreground">No video configured.</p>
+      </div>
+    );
+  }
+
+  if (contactData.videoType === 'youtube') {
+    return (
+      <div className="aspect-video relative rounded-xl overflow-hidden">
+        <iframe
+          src={contactData.videoUrl}
+          title="YouTube video player"
+          frameBorder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className="w-full h-full"
+        ></iframe>
+      </div>
+    );
+  }
+
+  if (contactData.videoType === 'upload') {
+    return (
+      <div className="aspect-video relative rounded-xl overflow-hidden">
+        <video
+          controls
+          src={contactData.videoUrl}
+          poster={contactData.videoThumbnail}
+          className="w-full h-full object-cover"
+        >
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    );
+  }
+  
+  // Fallback for old data or if type is not set
+  return (
+     <div className="aspect-video relative rounded-xl overflow-hidden">
+        <Image src={contactData.videoThumbnail || "https://picsum.photos/1280/720?random=51"} alt="Video thumbnail" fill style={{objectFit: 'cover'}}/>
+        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white w-8 h-8 ml-1">
+                    <path d="M5 4.5V19.5L19 12L5 4.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                </svg>
+            </Button>
+        </div>
+    </div>
+  );
+};
+
+
 export function ContactSection({ contactData }: ContactSectionProps) {
   return (
     <section id="contact" className="w-full py-24 bg-background">
@@ -37,21 +92,12 @@ export function ContactSection({ contactData }: ContactSectionProps) {
                 </form>
             </div>
             <div className="relative w-full h-96 lg:h-full rounded-xl overflow-hidden shadow-2xl">
-              <Image src="https://picsum.photos/600/800?random=50" alt="Camera gear" data-ai-hint="camera gear" fill style={{objectFit: 'cover'}}/>
+              <Image src="https://picsum.photos/600/800?random=50" alt="Camera gear" fill style={{objectFit: 'cover'}}/>
             </div>
         </div>
         
         <ScrollFadeIn className="mt-24">
-            <div className="aspect-video relative rounded-xl overflow-hidden">
-                <Image src="https://picsum.photos/1280/720?random=51" alt="Wedding couple" data-ai-hint="wedding couple" fill style={{objectFit: 'cover'}}/>
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                    <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white w-8 h-8 ml-1">
-                            <path d="M5 4.5V19.5L19 12L5 4.5Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                        </svg>
-                    </Button>
-                </div>
-            </div>
+            <VideoPlayer contactData={contactData} />
         </ScrollFadeIn>
       </ScrollFadeIn>
     </section>

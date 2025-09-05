@@ -8,4 +8,7 @@ export type ContactData = {
     instagram: string;
     linkedin: string;
   };
+  videoType?: 'youtube' | 'upload';
+  videoUrl?: string;
+  videoThumbnail?: string;
 };

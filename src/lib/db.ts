@@ -283,10 +283,13 @@ export const db = {
         email: 'hello@hfmedia.house', 
         phone: '+1 (234) 567-890', 
         address: '123 Media Lane, Creative City, 10001', 
-        socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }
+        socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' },
+        videoType: 'youtube',
+        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        videoThumbnail: 'https://picsum.photos/1280/720?random=51'
     };
     const data = await db.collection<ContactData>('contact').findOne({});
-    return data ?? { email: '', phone: '', address: '', socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' }};
+    return data ?? { email: '', phone: '', address: '', socials: {}};
   },
   updateContact: async (data: ContactData): Promise<ContactData> => {
     const db = await connectToDb();

@@ -106,6 +106,9 @@ async function seed() {
             instagram: '#',
             linkedin: '#',
           },
+          videoType: 'youtube',
+          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          videoThumbnail: 'https://picsum.photos/1280/720?random=51'
         });
         console.log('✓ Seeded contact');
 
