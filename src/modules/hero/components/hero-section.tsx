@@ -21,11 +21,11 @@ export function HeroSection({ data }: HeroSectionProps) {
                 <p className="max-w-2xl text-lg md:text-xl text-muted-foreground mb-8">
                     {data.subheadline}
                 </p>
-                <Link href={data.ctaLink}>
-                    <Button size="lg" className="bg-primary text-primary-foreground font-bold text-lg px-8 rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105">
+                <Button size="lg" asChild className="bg-primary text-primary-foreground font-bold text-lg px-8 rounded-full shadow-lg hover:bg-primary/90 transition-transform hover:scale-105">
+                    <Link href={data.ctaLink}>
                         {data.ctaText}
-                    </Button>
-                </Link>
+                    </Link>
+                </Button>
             </ScrollFadeIn>
             <div className="relative w-full h-[500px] mt-4">
                 <Carousel images={data.images} />
