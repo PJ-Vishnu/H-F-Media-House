@@ -127,7 +127,6 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             {/* Can add breadcrumbs or title here */}
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="outline" size="sm">Publish Changes</Button>
             <Settings />
           </div>
         </header>
