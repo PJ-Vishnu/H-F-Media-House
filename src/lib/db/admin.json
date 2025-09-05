@@ -1,4 +1,4 @@
 {
   "email": "admin@example.com",
-  "password_DO_NOT_STORE_IN_PLAIN_TEXT": "password"
+  "passwordHash": "password"
 }
