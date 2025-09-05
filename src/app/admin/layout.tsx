@@ -1,3 +1,4 @@
+
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -94,7 +95,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                     <SidebarMenu>
                     {group.items.map(item => (
                         <SidebarMenuItem key={item.href}>
-                            <Link href={item.href} legacyBehavior passHref>
+                            <Link href={item.href}>
                                 <SidebarMenuButton tooltip={item.label}>
                                     <item.icon />
                                     <span>{item.label}</span>
