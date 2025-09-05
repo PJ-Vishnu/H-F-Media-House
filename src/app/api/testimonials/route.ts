@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
+import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
 
 // GET /api/testimonials
 export async function GET() {
@@ -9,4 +10,46 @@ export async function GET() {
   } catch (error) {
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
+}
+
+// POST /api/testimonials
+export async function POST(req: Request) {
+    try {
+        const body: Omit<Testimonial, 'id'> = await req.json();
+        const newItem = await db.addTestimonial(body);
+        return NextResponse.json(newItem, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+// PUT /api/testimonials?id=...
+export async function PUT(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        if (!id) {
+            return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
+        }
+        const body: Partial<Testimonial> = await req.json();
+        const updatedItem = await db.updateTestimonial(id, body);
+        return NextResponse.json(updatedItem, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
+
+// DELETE /api/testimonials?id=...
+export async function DELETE(req: NextRequest) {
+    try {
+        const { searchParams } = new URL(req.url);
+        const id = searchParams.get('id');
+        if (!id) {
+            return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
+        }
+        await db.deleteTestimonial(id);
+        return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
 }

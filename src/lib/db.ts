@@ -153,10 +153,32 @@ export const db = {
   getServices: async (): Promise<Service[]> => {
     const db = await connectToDb();
     if (!db) return [
-        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera' },
-        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video' },
+        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: 'https://picsum.photos/600/800?random=41', 'data-ai-hint': 'photography service' },
+        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: 'https://picsum.photos/600/800?random=42', 'data-ai-hint': 'videography service' },
     ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
+  },
+  addService: async (item: Omit<Service, 'id'>): Promise<Service> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const result = await db.collection('services').insertOne(item);
+    return mapDoc({ ...item, _id: result.insertedId });
+  },
+  updateService: async (id: string, data: Partial<Service>): Promise<Service | undefined> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    const { _id, ...updateData } = data as any;
+    await db.collection('services').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const updatedDoc = await db.collection('services').findOne({ _id: new ObjectId(id) });
+    return updatedDoc ? mapDoc(updatedDoc) : undefined;
+  },
+  deleteService: async (id: string): Promise<{ success: boolean }> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    await db.collection('services').deleteOne({ _id: new ObjectId(id) });
+    return { success: true };
   },
   
   // PORTFOLIO
@@ -213,10 +235,36 @@ export const db = {
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', quote: 'It was a very good experience.', author: 'Leo', company: 'Marketer' },
-      { id: '2', quote: 'It was a very good experience.', author: 'Ana', company: 'Photographer' },
+      { id: '1', quote: 'It was a very good experience.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
+      { id: '2', quote: 'It was a very good experience.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
+  },
+  addTestimonial: async (item: Omit<Testimonial, 'id'>): Promise<Testimonial> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const newItem = { ...item, avatar: `https://i.pravatar.cc/150?u=${item.author}` };
+    const result = await db.collection('testimonials').insertOne(newItem);
+    return mapDoc({ ...newItem, _id: result.insertedId });
+  },
+  updateTestimonial: async (id: string, data: Partial<Testimonial>): Promise<Testimonial | undefined> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    const { _id, ...updateData } = data as any;
+    if (updateData.author) {
+        updateData.avatar = `https://i.pravatar.cc/150?u=${updateData.author}`
+    }
+    await db.collection('testimonials').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
+    const updatedDoc = await db.collection('testimonials').findOne({ _id: new ObjectId(id) });
+    return updatedDoc ? mapDoc(updatedDoc) : undefined;
+  },
+  deleteTestimonial: async (id: string): Promise<{ success: boolean }> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    await db.collection('testimonials').deleteOne({ _id: new ObjectId(id) });
+    return { success: true };
   },
 
   // CONTACT

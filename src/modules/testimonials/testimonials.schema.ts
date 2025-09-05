@@ -3,4 +3,5 @@ export type Testimonial = {
   quote: string;
   author: string;
   company: string;
+  avatar?: string;
 };

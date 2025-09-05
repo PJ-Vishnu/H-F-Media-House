@@ -71,7 +71,7 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
                             )}>
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
-                                        <Image src={`https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full" />
+                                        <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full" />
                                         <div className="ml-4">
                                            <div className="font-bold text-lg">{testimonial.author}</div>
                                            <div className="text-sm text-muted-foreground">{testimonial.company}</div>
