@@ -137,10 +137,15 @@ export const db = {
         title: 'Our Story Behind the Lens', 
         content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
         imageUrl: 'https://picsum.photos/1200/800?random=20', 
-        'data-ai-hint': 'camera lens'
+        'data-ai-hint': 'camera lens',
+        features: [
+          { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
+          { title: 'Modern & Professional', description: 'We use the latest technology and techniques to produce high-quality content that exceeds expectations.' },
+          { title: 'Passionate & Dedicated', description: 'Our team is passionate about storytelling and dedicated to delivering exceptional results for every client.' },
+        ]
     };
     const data = await db.collection<AboutData>('about').findOne({});
-    return data ?? { title: '', content: '', imageUrl: '', 'data-ai-hint': ''};
+    return data ?? { title: '', content: '', imageUrl: '', 'data-ai-hint': '', features: []};
   },
   updateAbout: async (data: AboutData): Promise<AboutData> => {
     const db = await connectToDb();

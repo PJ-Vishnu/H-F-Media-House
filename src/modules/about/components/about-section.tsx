@@ -38,18 +38,16 @@ export function AboutSection({ data }: AboutSectionProps) {
 
           {/* Overlayed cards */}
           <div className="absolute inset-0 flex items-end justify-center gap-6 p-6">
-            {[1, 2, 3].map((i) => (
+            {(data.features || []).map((feature, i) => (
               <div
                 key={i}
                 className="bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 backdrop-blur-sm"
               >
                 <h3 className="text-lg font-semibold mb-2">
-                  Creative & Emotional
+                  {feature.title}
                 </h3>
                 <p className="text-sm leading-relaxed">
-                  We believe every moment has a story to tell. At H&F Media
-                  House, we turn your special moments into timeless memories
-                  through powerful visuals that inspire and connect.
+                  {feature.description}
                 </p>
               </div>
             ))}

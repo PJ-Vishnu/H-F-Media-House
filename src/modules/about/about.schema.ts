@@ -3,4 +3,8 @@ export type AboutData = {
   content: string;
   imageUrl: string;
   'data-ai-hint': string;
+  features: {
+    title: string;
+    description: string;
+  }[];
 };

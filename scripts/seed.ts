@@ -61,6 +61,11 @@ async function seed() {
           content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using Content here, content here, making it look like readable English.',
           imageUrl: 'https://picsum.photos/1200/800?random=20',
           'data-ai-hint': 'camera lens',
+          features: [
+            { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
+            { title: 'Modern & Professional', description: 'We use the latest technology and techniques to produce high-quality content that exceeds expectations.' },
+            { title: 'Passionate & Dedicated', description: 'Our team is passionate about storytelling and dedicated to delivering exceptional results for every client.' },
+          ]
         });
         console.log('✓ Seeded about');
         

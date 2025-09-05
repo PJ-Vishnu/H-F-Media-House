@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
@@ -20,6 +20,10 @@ const aboutSchema = z.object({
   content: z.string().min(1, "Content is required"),
   imageUrl: z.string().url("Must be a valid image URL"),
   'data-ai-hint': z.string().optional(),
+  features: z.array(z.object({
+    title: z.string().min(1, "Feature title is required"),
+    description: z.string().min(1, "Feature description is required"),
+  })).max(3, "You can have a maximum of 3 features."),
 });
 
 export default function AboutAdminPage() {
@@ -30,6 +34,11 @@ export default function AboutAdminPage() {
   const form = useForm<z.infer<typeof aboutSchema>>({
     resolver: zodResolver(aboutSchema),
   });
+  
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: "features"
+  });
 
   useEffect(() => {
     async function fetchData() {
@@ -37,7 +46,12 @@ export default function AboutAdminPage() {
         const res = await fetch("/api/about");
         const fetchedData: AboutData = await res.json();
         setData(fetchedData);
-        form.reset(fetchedData);
+        // Ensure features is always an array of 3 for the form
+        const features = fetchedData.features || [];
+        while (features.length < 3) {
+          features.push({ title: "", description: "" });
+        }
+        form.reset({ ...fetchedData, features: features.slice(0, 3) });
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch data" });
       }
@@ -65,27 +79,27 @@ export default function AboutAdminPage() {
   }
 
   if (!data) {
-    return <Skeleton className="w-full h-96" />;
+    return <Skeleton className="w-full h-[60rem]" />;
   }
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Manage About Section</h1>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Save Changes
-        </Button>
-      </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-bold">Manage About Section</h1>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Save Changes
+            </Button>
+          </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>About Us Content</CardTitle>
-          <CardDescription>Update the text and image for the about section.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Card className="mb-8">
+            <CardHeader>
+              <CardTitle>About Us Content</CardTitle>
+              <CardDescription>Update the text and image for the about section.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <FormField
                 control={form.control}
                 name="title"
@@ -130,10 +144,46 @@ export default function AboutAdminPage() {
                   </FormItem>
                 )}
               />
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Overlay Features</CardTitle>
+              <CardDescription>Update the content for the 3 feature cards that overlay the image.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {fields.map((field, index) => (
+                 <div key={field.id} className="p-4 border rounded-lg space-y-4">
+                    <h3 className="font-semibold">Feature Card {index + 1}</h3>
+                    <FormField
+                      control={form.control}
+                      name={`features.${index}.title`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title</FormLabel>
+                          <FormControl><Input {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={`features.${index}.description`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl><Textarea rows={3} {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                 </div>
+              ))}
+            </CardContent>
+          </Card>
+        </form>
+      </Form>
     </div>
   );
 }
