@@ -103,10 +103,11 @@ async function seed() {
           title: 'Check Out Our Latest Work',
           description: 'A showcase of our recent projects, capturing unique stories and breathtaking moments. See our passion in action.',
           videoType: 'youtube',
-          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
           videoThumbnail: 'https://picsum.photos/1280/720?random=51'
         });
         console.log('✓ Seeded video');
+
 
         // Contact Data
         await db.collection('contact').insertOne({
@@ -145,5 +146,3 @@ async function seed() {
 }
 
 seed();
-
-    

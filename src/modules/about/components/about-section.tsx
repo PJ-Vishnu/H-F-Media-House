@@ -36,11 +36,11 @@ export function AboutSection({ data }: AboutSectionProps) {
           )}
 
           {/* Overlayed cards */}
-          <div className="absolute inset-0 flex items-end justify-center gap-6 p-6">
+          <div className="absolute inset-0 flex flex-col md:flex-row items-stretch justify-center gap-6 p-6">
             {(data.features || []).map((feature, i) => (
               <div
                 key={i}
-                className="bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 backdrop-blur-sm"
+                className="flex flex-col bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 backdrop-blur-sm"
               >
                 <h3 className="text-lg font-semibold mb-2">
                   {feature.title}
