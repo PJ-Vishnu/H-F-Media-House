@@ -52,7 +52,7 @@ export default function VideoAdminPage() {
     fetchData();
   }, [form, toast]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -60,7 +60,6 @@ export default function VideoAdminPage() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const isVideo = file.type.startsWith('video/');
     const fieldToUpdate = isVideo ? 'videoUrl' : 'videoThumbnail';
     const section = isVideo ? 'video-files' : 'video-thumbnails';
 
@@ -196,7 +195,7 @@ export default function VideoAdminPage() {
                             <Input 
                                 type="file" 
                                 accept="video/*" 
-                                onChange={handleFileChange} 
+                                onChange={(e) => handleFileChange(e, true)}
                                 disabled={isUploading}
                             />
                             </FormControl>
@@ -213,7 +212,7 @@ export default function VideoAdminPage() {
                             <FormLabel>Video Thumbnail</FormLabel>
                              <FormControl>
                                 <div>
-                                    <Input type="file" accept="image/*" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
+                                    <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, false)} className="mb-2" disabled={isUploading}/>
                                     {isUploading && <p>Uploading...</p>}
                                     {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
                                 </div>
