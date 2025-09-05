@@ -9,7 +9,6 @@ import fs from 'fs';
 export const config = {
   api: {
     bodyParser: false,
-    responseLimit: false,
   },
 };
 
@@ -22,15 +21,14 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 }
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // The section is now correctly read from the searchParams
-    const section = (req as any).query?.section || 'general';
-    const sectionDir = path.join(UPLOADS_DIR, section);
-    if (!fs.existsSync(sectionDir)) {
-      fs.mkdirSync(sectionDir, { recursive: true });
-    }
-    cb(null, sectionDir);
-  },
+    destination: (req, file, cb) => {
+        const section = (req as any).section || 'general';
+        const sectionDir = path.join(UPLOADS_DIR, section);
+        if (!fs.existsSync(sectionDir)) {
+          fs.mkdirSync(sectionDir, { recursive: true });
+        }
+        cb(null, sectionDir);
+      },
   filename: (req, file, cb) => {
     const timestamp = Date.now();
     const originalName = path.basename(file.originalname, path.extname(file.originalname));
@@ -54,36 +52,26 @@ const upload = multer({
   }
 });
 
-// We need to wrap multer in a way that works with Next.js Edge/Node.js runtimes.
-const runMiddleware = (req: any, res: any, fn: any) => {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
+// Helper to process the upload
+const processUpload = (req: NextRequest & { section: string }) => {
+    const parser = upload.single('file');
+    return new Promise<{ file?: Express.Multer.File }>((resolve, reject) => {
+      parser(req as any, {} as any, (err) => {
+        if (err) return reject(err);
+        resolve({ file: (req as any).file });
+      });
     });
-  });
-};
+  };
 
 export async function POST(req: NextRequest) {
   const section = req.nextUrl.searchParams.get('section') || 'general';
 
-  // We need to create a mock response object for multer
-  const res: any = {
-    status: (code: number) => res,
-    json: (body: any) => {},
-    setHeader: (name: string, value: string) => {},
-    end: () => {},
-  };
-
   try {
-    // Attach query to the request object for multer's destination function
-    (req as any).query = { section };
+    // Attach section to the request so multer's destination function can access it
+    (req as any).section = section;
+
+    const { file } = await processUpload(req as any);
     
-    await runMiddleware(req, res, upload.single('file'));
-    
-    const file = (req as any).file;
     if (!file) {
       return NextResponse.json({ success: false, message: 'File not uploaded.' }, { status: 400 });
     }
