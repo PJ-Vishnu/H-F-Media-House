@@ -68,6 +68,9 @@ export const db = {
         { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
         { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
         { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
+        { src: 'https://picsum.photos/600/800?random=4', alt: 'Drone flying over a landscape', 'data-ai-hint': 'drone videography' },
+        { src: 'https://picsum.photos/600/800?random=5', alt: 'Podcast recording microphone', 'data-ai-hint': 'podcast setup' },
+        { src: 'https://picsum.photos/600/800?random=6', alt: 'Photographer in action', 'data-ai-hint': 'photographer action' },
       ],
     };
     const data = await db.collection<HeroData>('hero').findOne({});
@@ -86,6 +89,8 @@ export const db = {
     if (!db) return [
         { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
         { id: '2', src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
+        { id: '3', src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
+        { id: '4', src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
     ];
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
     return images.map(mapDoc);
@@ -160,6 +165,7 @@ export const db = {
     if (!db) return [
         { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: 'https://picsum.photos/600/800?random=41', 'data-ai-hint': 'photography service' },
         { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: 'https://picsum.photos/600/800?random=42', 'data-ai-hint': 'videography service' },
+        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: 'https://picsum.photos/600/800?random=43', 'data-ai-hint': 'content creation' },
     ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
   },
@@ -192,6 +198,8 @@ export const db = {
     if (!db) return [
       { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
       { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
+      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: 'https://picsum.photos/600/400?random=33', 'data-ai-hint': 'animated explainer', category: 'Animation', order: 3 },
+      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: 'https://picsum.photos/600/400?random=34', 'data-ai-hint': 'music festival', category: 'Video', order: 4 },
     ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
     return items.map(mapDoc);
@@ -240,8 +248,9 @@ export const db = {
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', quote: 'It was a very good experience.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
-      { id: '2', quote: 'It was a very good experience.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
+      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
+      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
+      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: 'https://i.pravatar.cc/150?u=John' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
   },
@@ -299,6 +308,8 @@ export const db = {
         links: [
             { title: 'Home', url: '/' },
             { title: 'About', url: '#about' },
+            { title: 'Services', url: '#services' },
+            { title: 'Contact', url: '#contact' },
         ] 
     };
     const data = await db.collection<FooterData>('footer').findOne({});
