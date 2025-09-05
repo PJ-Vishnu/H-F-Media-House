@@ -66,9 +66,9 @@ export function Carousel({ images, className }: CarouselProps) {
         className
       )}
     >
-      {/* -------------------------
+      {/* --------------------------
           MD+ marquee (3 on md, 4 on lg+). arcs shown.
-          ------------------------- */}
+          -------------------------- */}
       <div
         ref={containerRef}
         className="hidden md:block relative w-full h-full overflow-hidden"
