@@ -9,6 +9,7 @@ import type { ContactData } from '@/modules/contact/contact.schema';
 import type { FooterData } from '@/modules/footer/footer.schema';
 import type { AdminUser } from '@/modules/admin/admin.schema';
 import type { SEOData } from '@/modules/seo/seo.schema';
+import type { VideoData } from '@/modules/video/video.schema';
 
 
 // Ensure the MONGODB_URI is set in your environment variables
@@ -276,6 +277,26 @@ export const db = {
     return { success: true };
   },
 
+  // VIDEO
+  getVideo: async (): Promise<VideoData> => {
+    const db = await connectToDb();
+    if (!db) return { 
+        title: 'Check Out Our Latest Work',
+        description: 'A showcase of our recent projects, capturing unique stories and breathtaking moments. See our passion in action.',
+        videoType: 'youtube',
+        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+        videoThumbnail: 'https://picsum.photos/1280/720?random=51'
+    };
+    const data = await db.collection<VideoData>('video').findOne({});
+    return data ?? { title: '', description: '' };
+  },
+  updateVideo: async (data: VideoData): Promise<VideoData> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    await db.collection('video').updateOne({}, { $set: data }, { upsert: true });
+    return data;
+  },
+  
   // CONTACT
   getContact: async (): Promise<ContactData> => {
     const db = await connectToDb();
@@ -284,9 +305,6 @@ export const db = {
         phone: '+1 (234) 567-890', 
         address: '123 Media Lane, Creative City, 10001', 
         socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' },
-        videoType: 'youtube',
-        videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        videoThumbnail: 'https://picsum.photos/1280/720?random=51'
     };
     const data = await db.collection<ContactData>('contact').findOne({});
     return data ?? { email: '', phone: '', address: '', socials: {}};

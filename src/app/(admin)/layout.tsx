@@ -29,6 +29,7 @@ import {
   LogOut,
   Settings,
   Search,
+  Video,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
@@ -49,6 +50,7 @@ const menuItems = [
             { href: "/admin/services", label: "Services", icon: Briefcase },
             { href: "/admin/portfolio", label: "Portfolio", icon: Users },
             { href: "/admin/testimonials", label: "Testimonials", icon: MessageSquare },
+            { href: "/admin/video", label: "Video", icon: Video },
         ]
     },
     {

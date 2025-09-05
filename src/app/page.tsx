@@ -5,6 +5,7 @@ import { GallerySection } from '@/modules/gallery/components/gallery-section';
 import { ServicesSection } from '@/modules/services/components/services-section';
 import { PortfolioSection } from '@/modules/portfolio/components/portfolio-section';
 import { TestimonialsSection } from '@/modules/testimonials/components/testimonials-section';
+import { VideoSection } from '@/modules/video/components/video-section';
 import { ContactSection } from '@/modules/contact/components/contact-section';
 import { Footer } from '@/modules/footer/components/footer';
 import { Header } from '@/components/sections/header';
@@ -18,6 +19,7 @@ export default async function Home() {
     servicesData,
     portfolioData,
     testimonialsData,
+    videoData,
     contactData,
     footerData,
   ] = await Promise.all([
@@ -27,6 +29,7 @@ export default async function Home() {
     db.getServices(),
     db.getPortfolio(),
     db.getTestimonials(),
+    db.getVideo(),
     db.getContact(),
     db.getFooter(),
   ]);
@@ -40,6 +43,7 @@ export default async function Home() {
       <GallerySection data={galleryData} />
       <PortfolioSection data={portfolioData} />
       <TestimonialsSection data={testimonialsData} />
+      <VideoSection data={videoData} />
       <ContactSection contactData={contactData} />
       <Footer data={footerData} />
     </main>

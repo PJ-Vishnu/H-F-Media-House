@@ -94,6 +94,16 @@ async function seed() {
           { quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sed metus id magna efficitur similique.', author: 'John', company: 'Videographer', avatar: 'https://i.pravatar.cc/150?u=John' },
         ]);
         console.log('✓ Seeded testimonials');
+        
+        // Video Data
+        await db.collection('video').insertOne({
+          title: 'Check Out Our Latest Work',
+          description: 'A showcase of our recent projects, capturing unique stories and breathtaking moments. See our passion in action.',
+          videoType: 'youtube',
+          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
+          videoThumbnail: 'https://picsum.photos/1280/720?random=51'
+        });
+        console.log('✓ Seeded video');
 
         // Contact Data
         await db.collection('contact').insertOne({
@@ -106,9 +116,6 @@ async function seed() {
             instagram: '#',
             linkedin: '#',
           },
-          videoType: 'youtube',
-          videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-          videoThumbnail: 'https://picsum.photos/1280/720?random=51'
         });
         console.log('✓ Seeded contact');
 
