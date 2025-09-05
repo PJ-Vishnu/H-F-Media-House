@@ -14,6 +14,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { ConfirmationDialog } from "@/components/admin/confirmation-dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Label } from "@/components/ui/label";
+
 
 export default function GalleryAdminPage() {
   const { toast } = useToast();
@@ -36,6 +45,10 @@ export default function GalleryAdminPage() {
   useEffect(() => {
     fetchGallery();
   }, [fetchGallery]);
+  
+  const updateImage = (id: string, data: Partial<GalleryImage>) => {
+    setImages(prev => prev?.map(img => img.id === id ? {...img, ...data} : img) || null)
+  }
 
   const handleDeleteClick = (id: string) => {
     setImageToDelete(id);
@@ -63,6 +76,20 @@ export default function GalleryAdminPage() {
     [newImages[index], newImages[targetIndex]] = [newImages[targetIndex], newImages[index]];
     setImages(newImages);
   };
+
+  const debouncedUpdateGalleryItem = useDebouncedCallback(async (id: string, data: Partial<GalleryImage>) => {
+    try {
+        const res = await fetch(`/api/gallery?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error("Failed to update item");
+        toast({ title: 'Update saved' });
+    } catch (error) {
+        toast({ variant: 'destructive', title: "Failed to update item" });
+    }
+  }, 500);
 
   const handleSaveOrder = async () => {
     if (!images) return;
@@ -95,12 +122,15 @@ export default function GalleryAdminPage() {
 
     try {
       const res = await axios.post('/api/upload?section=gallery', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       const newImage = {
         src: res.data.filePath,
         alt: "New uploaded image",
-        'data-ai-hint': 'uploaded image',
+        colSpan: 1,
+        rowSpan: 1,
       };
       const addRes = await fetch('/api/gallery', {
         method: 'POST',
@@ -117,19 +147,6 @@ export default function GalleryAdminPage() {
     }
   };
 
-  const debouncedUpdateAltText = useDebouncedCallback(async (id: string, alt: string) => {
-    try {
-        const res = await fetch(`/api/gallery?id=${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ alt })
-        });
-        if (!res.ok) throw new Error("Failed to update alt text");
-        toast({ title: 'Alt text updated' });
-    } catch (error) {
-        toast({ variant: 'destructive', title: "Failed to update alt text" });
-    }
-  }, 500);
 
   return (
     <div>
@@ -145,7 +162,7 @@ export default function GalleryAdminPage() {
       <Card className="mb-6">
         <CardHeader>
             <CardTitle>Upload New Image</CardTitle>
-            <CardDescription>Upload a new image to add to the gallery.</CardDescription>
+            <CardDescription>Upload a new image to add to the gallery. It will be added to the end of the list.</CardDescription>
         </CardHeader>
         <CardContent>
             <Input type="file" onChange={handleFileChange} disabled={isUploading} />
@@ -160,7 +177,7 @@ export default function GalleryAdminPage() {
       <Card>
         <CardHeader>
           <CardTitle>Gallery Images</CardTitle>
-          <CardDescription>Use arrows to reorder images. Changes to alt text are saved automatically.</CardDescription>
+          <CardDescription>Drag to reorder images. Changes to alt text and layout are saved automatically.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -168,8 +185,8 @@ export default function GalleryAdminPage() {
               Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />)
             ) : (
               images.map((image, index) => (
-                <div key={image.id} className="flex items-center gap-4 p-2 border rounded-lg bg-background">
-                  <div className="flex flex-col">
+                <div key={image.id} className="flex items-center gap-4 p-4 border rounded-lg bg-background">
+                  <div className="flex flex-col items-center">
                     <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveImage(index, 'up')} disabled={index === 0}>
                         <ArrowUp className="h-4 w-4" />
                     </Button>
@@ -181,15 +198,61 @@ export default function GalleryAdminPage() {
                   <div className="relative h-20 w-32 rounded-md overflow-hidden flex-shrink-0">
                     <Image src={image.src} alt={image.alt} fill className="object-cover" />
                   </div>
-                  <div className="flex-grow">
-                    <Input 
+                  <div className="flex-grow space-y-2">
+                    <Label htmlFor={`alt-${image.id}`}>Alt Text</Label>
+                    <Input
+                      id={`alt-${image.id}`}
                       defaultValue={image.alt}
-                      onChange={(e) => debouncedUpdateAltText(image.id, e.target.value)}
-                      className="border-0 focus-visible:ring-1" 
+                      onChange={(e) => {
+                        updateImage(image.id, { alt: e.target.value });
+                        debouncedUpdateGalleryItem(image.id, { alt: e.target.value });
+                      }}
+                      className="border-input focus-visible:ring-1" 
                       placeholder="Image alt text" 
                     />
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(image.id)}>
+                  <div className="space-y-2">
+                    <Label>Column Span</Label>
+                    <Select
+                      value={String(image.colSpan || 1)}
+                      onValueChange={(value) => {
+                        const colSpan = parseInt(value);
+                        updateImage(image.id, { colSpan });
+                        debouncedUpdateGalleryItem(image.id, { colSpan });
+                      }}
+                    >
+                      <SelectTrigger className="w-[80px]">
+                        <SelectValue placeholder="Cols" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                        <SelectItem value="4">4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Row Span</Label>
+                     <Select
+                       value={String(image.rowSpan || 1)}
+                       onValueChange={(value) => {
+                         const rowSpan = parseInt(value);
+                         updateImage(image.id, { rowSpan });
+                         debouncedUpdateGalleryItem(image.id, { rowSpan });
+                       }}
+                    >
+                      <SelectTrigger className="w-[80px]">
+                        <SelectValue placeholder="Rows" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(image.id)} className="self-center">
                     <Trash2 className="h-5 w-5 text-destructive" />
                   </Button>
                 </div>
