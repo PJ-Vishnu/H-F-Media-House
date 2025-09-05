@@ -23,7 +23,7 @@ const aboutSchema = z.object({
   imageUrl: z.string().min(1, "Image is required"),
   features: z.array(z.object({
     title: z.string().min(1, "Feature title is required").max(50, "Title cannot exceed 50 characters."),
-    description: z.string().min(1, "Feature description is required").max(150, "Description cannot exceed 150 characters."),
+    description: z.string().min(1, "Feature description is required").max(250, "Description cannot exceed 250 characters."),
   })).max(3, "You can have a maximum of 3 features."),
 });
 
