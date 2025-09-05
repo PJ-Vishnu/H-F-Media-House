@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-
+    //test
     // Create JWT
     const token = await createToken({ email: admin.email, role: 'admin' });
 
