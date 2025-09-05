@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { AboutData } from "@/modules/about/about.schema";
 import { Loader2 } from "lucide-react";
+import axios from 'axios';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 const aboutSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
-  imageUrl: z.string().url("Must be a valid image URL"),
+  imageUrl: z.string().min(1, "Image is required"),
   'data-ai-hint': z.string().optional(),
   features: z.array(z.object({
     title: z.string().min(1, "Feature title is required"),
@@ -30,6 +31,7 @@ export default function AboutAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<AboutData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof aboutSchema>>({
     resolver: zodResolver(aboutSchema),
@@ -46,7 +48,6 @@ export default function AboutAdminPage() {
         const res = await fetch("/api/about");
         const fetchedData: AboutData = await res.json();
         setData(fetchedData);
-        // Ensure features is always an array of 3 for the form
         const features = fetchedData.features || [];
         while (features.length < 3) {
           features.push({ title: "", description: "" });
@@ -58,6 +59,30 @@ export default function AboutAdminPage() {
     }
     fetchData();
   }, [form, toast]);
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post('/api/upload?section=about', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      form.setValue('imageUrl', res.data.filePath);
+      toast({ title: 'Upload successful' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
 
   async function onSubmit(values: z.infer<typeof aboutSchema>) {
     setIsLoading(true);
@@ -88,8 +113,8 @@ export default function AboutAdminPage() {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Manage About Section</h1>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isLoading || isUploading}>
+              {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>
           </div>
@@ -127,8 +152,15 @@ export default function AboutAdminPage() {
                 name="imageUrl"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormLabel>Image</FormLabel>
+                    <FormControl>
+                        <div>
+                            <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
+                            {isUploading && <p>Uploading...</p>}
+                            {field.value && <img src={field.value} alt="Preview" className="w-48 h-auto mt-2 rounded-md" />}
+                            <Input type="hidden" {...field} />
+                        </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { Testimonial } from "@/modules/testimonials/testimonials.schema";
 import { PlusCircle, Trash2, Loader2 } from "lucide-react";
 import Image from "next/image";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,7 @@ const testimonialsSchema = z.object({
 export default function TestimonialsAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
 
@@ -60,6 +62,28 @@ export default function TestimonialsAdminPage() {
     setItemToDelete({ id, index });
     setDialogOpen(true);
   };
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(index);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post('/api/upload?section=testimonials', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      form.setValue(`testimonials.${index}.avatar`, res.data.filePath, { shouldDirty: true });
+      toast({ title: 'Avatar upload successful' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
@@ -78,13 +102,15 @@ export default function TestimonialsAdminPage() {
     setIsSubmitting(true);
     try {
       for (const testimonial of data.testimonials) {
-        await fetch(`/api/testimonials?id=${testimonial.id}`, {
+        const { id, ...testimonialData } = testimonial;
+        await fetch(`/api/testimonials?id=${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(testimonial),
+          body: JSON.stringify(testimonialData),
         });
       }
       toast({ title: "Success!", description: "Testimonials updated successfully." });
+      form.reset(data);
     } catch (error) {
       toast({ variant: 'destructive', title: "Failed to save testimonials." });
     } finally {
@@ -97,6 +123,7 @@ export default function TestimonialsAdminPage() {
       quote: "A new fantastic testimonial about our services.",
       author: "New Client",
       company: "Client's Company",
+      avatar: '/uploads/testimonials/placeholder.png'
     };
     try {
       const res = await fetch('/api/testimonials', {
@@ -123,7 +150,7 @@ export default function TestimonialsAdminPage() {
               <Button type="button" onClick={handleAddItem} variant="outline" className="mr-2">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Testimonial
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save All Changes
               </Button>
@@ -141,9 +168,6 @@ export default function TestimonialsAdminPage() {
                 ) : (
                   fields.map((field, index) => (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
-                      {field.avatar && 
-                        <Image src={field.avatar} alt={field.author} width={40} height={40} className="rounded-full mt-2"/>
-                      }
                       <div className="flex-grow space-y-3">
                          <FormField
                           control={form.control}
@@ -152,7 +176,7 @@ export default function TestimonialsAdminPage() {
                             <FormItem><FormLabel>Quote</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
                           )}
                         />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <FormField
                                 control={form.control}
                                 name={`testimonials.${index}.author`}
@@ -167,6 +191,23 @@ export default function TestimonialsAdminPage() {
                                     <FormItem><FormLabel>Company</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                 )}
                             />
+                             <FormField
+                                control={form.control}
+                                name={`testimonials.${index}.avatar`}
+                                render={({ field: avatarField }) => (
+                                    <FormItem className="md:col-span-2">
+                                        <FormLabel>Avatar</FormLabel>
+                                        <div className="flex items-center gap-4">
+                                            <Image src={avatarField.value || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted"/>
+                                            <div className="flex-grow">
+                                                <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
+                                                {isUploading === index && <p className="text-sm mt-1">Uploading...</p>}
+                                            </div>
+                                        </div>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                             />
                         </div>
                       </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">

@@ -6,6 +6,8 @@ import { useToast } from "@/hooks/use-toast";
 import type { GalleryImage } from "@/modules/gallery/gallery.schema";
 import { GripVertical, PlusCircle, Trash2, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
 import { useDebouncedCallback } from "use-debounce";
+import axios from 'axios';
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,21 +19,23 @@ export default function GalleryAdminPage() {
   const { toast } = useToast();
   const [images, setImages] = useState<GalleryImage[] | null>(null);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/gallery");
-        const fetchedData: GalleryImage[] = await res.json();
-        setImages(fetchedData);
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch gallery" });
-      }
+  const fetchGallery = useCallback(async () => {
+    try {
+      const res = await fetch("/api/gallery");
+      const fetchedData: GalleryImage[] = await res.json();
+      setImages(fetchedData);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch gallery" });
     }
-    fetchData();
   }, [toast]);
+
+  useEffect(() => {
+    fetchGallery();
+  }, [fetchGallery]);
 
   const handleDeleteClick = (id: string) => {
     setImageToDelete(id);
@@ -81,26 +85,37 @@ export default function GalleryAdminPage() {
     }
   };
 
-  const handleAddImage = async () => {
-    const newImage = {
-        src: `https://picsum.photos/800/600?random=${Math.floor(Math.random() * 100)}`,
-        alt: "New placeholder image",
-        'data-ai-hint': 'placeholder image',
-    };
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
     try {
-        const res = await fetch('/api/gallery', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newImage),
-        });
-        if(!res.ok) throw new Error('Failed to add image');
-        const addedImage = await res.json();
-        setImages(prev => [...(prev || []), addedImage]);
-        toast({ title: "Image added", description: "A new placeholder image has been added."});
+      const res = await axios.post('/api/upload?section=gallery', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      const newImage = {
+        src: res.data.filePath,
+        alt: "New uploaded image",
+        'data-ai-hint': 'uploaded image',
+      };
+      const addRes = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newImage),
+      });
+      if(!addRes.ok) throw new Error('Failed to save image reference');
+      fetchGallery();
+      toast({ title: "Image uploaded and added" });
     } catch (error) {
-        toast({ variant: 'destructive', title: 'Failed to add image.' });
+        toast({ variant: 'destructive', title: 'Upload failed' });
+    } finally {
+        setIsUploading(false);
     }
-  }
+  };
 
   const debouncedUpdateAltText = useDebouncedCallback(async (id: string, alt: string) => {
     try {
@@ -121,15 +136,27 @@ export default function GalleryAdminPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage Gallery</h1>
         <div>
-            <Button onClick={handleAddImage} variant="outline" className="mr-2">
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Image
-            </Button>
             <Button onClick={handleSaveOrder} disabled={isSavingOrder}>
                 {isSavingOrder && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Order
             </Button>
         </div>
       </div>
+      <Card className="mb-6">
+        <CardHeader>
+            <CardTitle>Upload New Image</CardTitle>
+            <CardDescription>Upload a new image to add to the gallery.</CardDescription>
+        </CardHeader>
+        <CardContent>
+            <Input type="file" onChange={handleFileChange} disabled={isUploading} />
+            {isUploading && (
+                <div className="flex items-center mt-2">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <span>Uploading...</span>
+                </div>
+            )}
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Gallery Images</CardTitle>

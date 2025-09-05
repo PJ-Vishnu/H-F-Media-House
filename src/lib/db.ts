@@ -65,12 +65,12 @@ export const db = {
       ctaText: 'Explore Now',
       ctaLink: '#portfolio',
       images: [
-        { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
-        { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
-        { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
-        { src: 'https://picsum.photos/600/800?random=4', alt: 'Drone flying over a landscape', 'data-ai-hint': 'drone videography' },
-        { src: 'https://picsum.photos/600/800?random=5', alt: 'Podcast recording microphone', 'data-ai-hint': 'podcast setup' },
-        { src: 'https://picsum.photos/600/800?random=6', alt: 'Photographer in action', 'data-ai-hint': 'photographer action' },
+        { src: '/uploads/hero/placeholder-1.jpg', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
+        { src: '/uploads/hero/placeholder-2.jpg', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
+        { src: '/uploads/hero/placeholder-3.jpg', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
+        { src: '/uploads/hero/placeholder-4.jpg', alt: 'Drone flying over a landscape', 'data-ai-hint': 'drone videography' },
+        { src: '/uploads/hero/placeholder-5.jpg', alt: 'Podcast recording microphone', 'data-ai-hint': 'podcast setup' },
+        { src: '/uploads/hero/placeholder-6.jpg', alt: 'Photographer in action', 'data-ai-hint': 'photographer action' },
       ],
     };
     const data = await db.collection<HeroData>('hero').findOne({});
@@ -87,10 +87,10 @@ export const db = {
   getGallery: async (): Promise<GalleryImage[]> => {
     const db = await connectToDb();
     if (!db) return [
-        { id: '1', src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
-        { id: '2', src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
-        { id: '3', src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
-        { id: '4', src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
+        { id: '1', src: '/uploads/gallery/placeholder-1.jpg', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
+        { id: '2', src: '/uploads/gallery/placeholder-2.jpg', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
+        { id: '3', src: '/uploads/gallery/placeholder-3.jpg', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
+        { id: '4', src: '/uploads/gallery/placeholder-4.jpg', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
     ];
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
     return images.map(mapDoc);
@@ -141,7 +141,7 @@ export const db = {
     if (!db) return { 
         title: 'Our Story Behind the Lens', 
         content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
-        imageUrl: 'https://picsum.photos/1200/800?random=20', 
+        imageUrl: '/uploads/about/placeholder.jpg', 
         'data-ai-hint': 'camera lens',
         features: [
           { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
@@ -163,9 +163,9 @@ export const db = {
   getServices: async (): Promise<Service[]> => {
     const db = await connectToDb();
     if (!db) return [
-        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: 'https://picsum.photos/600/800?random=41', 'data-ai-hint': 'photography service' },
-        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: 'https://picsum.photos/600/800?random=42', 'data-ai-hint': 'videography service' },
-        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: 'https://picsum.photos/600/800?random=43', 'data-ai-hint': 'content creation' },
+        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: '/uploads/services/placeholder-1.jpg', 'data-ai-hint': 'photography service' },
+        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: '/uploads/services/placeholder-2.jpg', 'data-ai-hint': 'videography service' },
+        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: '/uploads/services/placeholder-3.jpg', 'data-ai-hint': 'content creation' },
     ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
   },
@@ -196,10 +196,10 @@ export const db = {
   getPortfolio: async (): Promise<PortfolioItem[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
-      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
-      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: 'https://picsum.photos/600/400?random=33', 'data-ai-hint': 'animated explainer', category: 'Animation', order: 3 },
-      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: 'https://picsum.photos/600/400?random=34', 'data-ai-hint': 'music festival', category: 'Video', order: 4 },
+      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: '/uploads/portfolio/placeholder-1.jpg', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
+      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: '/uploads/portfolio/placeholder-2.jpg', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
+      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: '/uploads/portfolio/placeholder-3.jpg', 'data-ai-hint': 'animated explainer', category: 'Animation', order: 3 },
+      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: '/uploads/portfolio/placeholder-4.jpg', 'data-ai-hint': 'music festival', category: 'Video', order: 4 },
     ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
     return items.map(mapDoc);
@@ -248,27 +248,23 @@ export const db = {
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
-      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
-      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: 'https://i.pravatar.cc/150?u=John' },
+      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: '/uploads/testimonials/avatar-1.png' },
+      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: '/uploads/testimonials/avatar-2.png' },
+      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/avatar-3.png' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
   },
   addTestimonial: async (item: Omit<Testimonial, 'id'>): Promise<Testimonial> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    const newItem = { ...item, avatar: `https://i.pravatar.cc/150?u=${item.author}` };
-    const result = await db.collection('testimonials').insertOne(newItem);
-    return mapDoc({ ...newItem, _id: result.insertedId });
+    const result = await db.collection('testimonials').insertOne(item);
+    return mapDoc({ ...item, _id: result.insertedId });
   },
   updateTestimonial: async (id: string, data: Partial<Testimonial>): Promise<Testimonial | undefined> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const { _id, ...updateData } = data as any;
-    if (updateData.author) {
-        updateData.avatar = `https://i.pravatar.cc/150?u=${updateData.author}`
-    }
     await db.collection('testimonials').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     const updatedDoc = await db.collection('testimonials').findOne({ _id: new ObjectId(id) });
     return updatedDoc ? mapDoc(updatedDoc) : undefined;
@@ -330,7 +326,7 @@ export const db = {
         description: 'This is fallback description for when the database is not connected.',
         keywords: 'media, photography, video',
         url: 'https://example.com',
-        ogImage: 'https://picsum.photos/1200/630'
+        ogImage: '/uploads/seo/og-image.jpg'
     };
     const data = await db.collection<SEOData>('seo').findOne({});
     return data ?? { title: '', description: '', keywords: '', url: '', ogImage: '' };

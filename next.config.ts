@@ -1,4 +1,5 @@
 import type {NextConfig} from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -29,6 +30,18 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+  },
+   webpack: (config, { isServer }) => {
+    // This is to allow Next.js to handle file uploads with Multer correctly.
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+      };
+    }
+     config.externals = [...config.externals, 'mock-aws-s3', 'aws-sdk', 'nock'];
+    return config;
   },
 };
 

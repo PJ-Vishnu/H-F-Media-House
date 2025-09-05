@@ -19,6 +19,7 @@ export async function POST(req: Request) {
         const newItem = await db.addTestimonial(body);
         return NextResponse.json(newItem, { status: 201 });
     } catch (error) {
+        console.error("Failed to add testimonial:", error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -35,6 +36,7 @@ export async function PUT(req: NextRequest) {
         const updatedItem = await db.updateTestimonial(id, body);
         return NextResponse.json(updatedItem, { status: 200 });
     } catch (error) {
+        console.error("Failed to update testimonial:", error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -50,6 +52,7 @@ export async function DELETE(req: NextRequest) {
         await db.deleteTestimonial(id);
         return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
     } catch (error) {
+        console.error("Failed to delete testimonial:", error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }

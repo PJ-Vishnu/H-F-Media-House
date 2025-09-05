@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { Service } from "@/modules/services/services.schema";
-import { PlusCircle, Trash2, Loader2, GripVertical } from "lucide-react";
+import { PlusCircle, Trash2, Loader2 } from "lucide-react";
+import axios from 'axios';
+import Image from 'next/image';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +24,7 @@ const servicesSchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().min(1, "Description is required"),
     icon: z.string().min(1, "Icon name is required"),
-    image: z.string().url("Must be a valid URL"),
+    image: z.string().min(1, "Image is required"),
     'data-ai-hint': z.string().optional(),
   }))
 });
@@ -30,6 +32,7 @@ const servicesSchema = z.object({
 export default function ServicesAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
 
@@ -73,6 +76,28 @@ export default function ServicesAdminPage() {
       setItemToDelete(null);
     }
   };
+  
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(index);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post('/api/upload?section=services', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      form.setValue(`services.${index}.image`, res.data.filePath, { shouldDirty: true });
+      toast({ title: 'Upload successful' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+    } finally {
+      setIsUploading(null);
+    }
+  };
+
 
   const handleSaveAll = async (data: z.infer<typeof servicesSchema>) => {
     setIsSubmitting(true);
@@ -85,6 +110,7 @@ export default function ServicesAdminPage() {
         });
       }
       toast({ title: "Success!", description: "Services updated successfully." });
+      form.reset(data);
     } catch (error) {
       toast({ variant: 'destructive', title: "Failed to save services." });
     } finally {
@@ -97,7 +123,7 @@ export default function ServicesAdminPage() {
       title: "New Service",
       description: "A brief description of the new service.",
       icon: "Wand",
-      image: `https://picsum.photos/600/800?random=${Math.floor(Math.random() * 100)}`,
+      image: `/uploads/services/placeholder.jpg`,
       'data-ai-hint': 'service placeholder',
     };
     try {
@@ -125,7 +151,7 @@ export default function ServicesAdminPage() {
               <Button type="button" onClick={handleAddItem} variant="outline" className="mr-2">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Service
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save All Changes
               </Button>
@@ -143,34 +169,46 @@ export default function ServicesAdminPage() {
                 ) : (
                   fields.map((field, index) => (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
-                      <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name={`services.${index}.title`}
-                          render={({ field }) => (
-                            <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                          )}
-                        />
-                         <FormField
-                          control={form.control}
-                          name={`services.${index}.icon`}
-                          render={({ field }) => (
-                            <FormItem><FormLabel>Icon Name</FormLabel><FormControl><Input {...field} placeholder="e.g. Camera" /></FormControl><FormMessage /></FormItem>
-                          )}
-                        />
+                      <div className="flex-grow space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                            control={form.control}
+                            name={`services.${index}.title`}
+                            render={({ field }) => (
+                                <FormItem><FormLabel>Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name={`services.${index}.icon`}
+                            render={({ field }) => (
+                                <FormItem><FormLabel>Icon Name</FormLabel><FormControl><Input {...field} placeholder="e.g. Camera" /></FormControl><FormMessage /></FormItem>
+                            )}
+                            />
+                          </div>
                         <FormField
                           control={form.control}
                           name={`services.${index}.description`}
                           render={({ field }) => (
-                            <FormItem className="md:col-span-2"><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                           )}
                         />
                         <FormField
-                          control={form.control}
-                          name={`services.${index}.image`}
-                          render={({ field }) => (
-                            <FormItem className="md:col-span-2"><FormLabel>Image URL</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                          )}
+                            control={form.control}
+                            name={`services.${index}.image`}
+                            render={({ field: imageField }) => (
+                                <FormItem>
+                                    <FormLabel>Image</FormLabel>
+                                    <div className="flex items-center gap-4">
+                                        <Image src={imageField.value} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square"/>
+                                        <div className="flex-grow">
+                                            <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index} />
+                                            {isUploading === index && <p className="text-sm mt-1">Uploading...</p>}
+                                        </div>
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
                       </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">

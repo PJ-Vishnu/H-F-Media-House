@@ -7,6 +7,7 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { SEOData } from "@/modules/seo/seo.schema";
 import { Loader2 } from "lucide-react";
+import axios from "axios";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,13 +21,14 @@ const seoSchema = z.object({
   description: z.string().min(1, "Description is required"),
   keywords: z.string().optional(),
   url: z.string().url("Must be a valid URL"),
-  ogImage: z.string().url("Must be a valid image URL"),
+  ogImage: z.string().min(1, "Open Graph Image is required"),
 });
 
 export default function SEOAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<SEOData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<z.infer<typeof seoSchema>>({
     resolver: zodResolver(seoSchema),
@@ -46,6 +48,30 @@ export default function SEOAdminPage() {
     fetchData();
   }, [form, toast]);
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post('/api/upload?section=seo', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      form.setValue('ogImage', res.data.filePath, { shouldDirty: true });
+      toast({ title: 'OG Image upload successful' });
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+
   async function onSubmit(values: z.infer<typeof seoSchema>) {
     setIsLoading(true);
     try {
@@ -58,6 +84,7 @@ export default function SEOAdminPage() {
       if (!res.ok) throw new Error("Failed to save data");
       
       toast({ title: "Success!", description: "SEO settings updated." });
+      form.reset(values);
     } catch (error) {
       toast({ variant: "destructive", title: "Save Failed" });
     } finally {
@@ -92,8 +119,8 @@ export default function SEOAdminPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage SEO</h1>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={isLoading || isUploading || !form.formState.isDirty}>
+          {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Changes
         </Button>
       </div>
@@ -155,8 +182,15 @@ export default function SEOAdminPage() {
                 name="ogImage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Open Graph Image URL</FormLabel>
-                    <FormControl><Input placeholder="A 1200x630px image URL for social sharing" {...field} /></FormControl>
+                    <FormLabel>Open Graph Image (1200x630px)</FormLabel>
+                     <FormControl>
+                        <div>
+                            <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
+                            {isUploading && <p>Uploading...</p>}
+                            {field.value && <img src={field.value} alt="OG Preview" className="w-48 h-auto mt-2 rounded-md" />}
+                            <Input type="hidden" {...field} />
+                        </div>
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
