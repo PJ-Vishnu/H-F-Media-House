@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from 'react';
 import type { VideoData } from '@/modules/video/video.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Button } from '@/components/ui/button';
@@ -7,7 +10,32 @@ type VideoSectionProps = {
   data: VideoData;
 };
 
+const getYouTubeEmbedUrl = (url: string): string | null => {
+  if (!url) return null;
+  let videoId = null;
+  // Standard watch URL
+  const urlParams = new URLSearchParams(new URL(url).search);
+  if (urlParams.has('v')) {
+    videoId = urlParams.get('v');
+  } else {
+    // Shortened youtu.be URL or embed URL
+    const match = url.match(/(?:youtu\.be\/|embed\/)([\w-]{11})/);
+    if (match) {
+      videoId = match[1];
+    }
+  }
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+};
+
 const VideoPlayer = ({ data }: VideoSectionProps) => {
+  const [baseUrl, setBaseUrl] = useState('');
+
+  useEffect(() => {
+    // This ensures window is defined, runs only on client
+    setBaseUrl(window.location.origin);
+  }, []);
+
   if (!data.videoUrl) {
     return (
       <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
@@ -17,10 +45,18 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
   }
 
   if (data.videoType === 'youtube') {
+    const embedUrl = getYouTubeEmbedUrl(data.videoUrl);
+    if (!embedUrl) {
+      return (
+        <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+          <p className="text-destructive">Invalid YouTube URL provided.</p>
+        </div>
+      );
+    }
     return (
       <div className="aspect-video relative rounded-xl overflow-hidden shadow-2xl">
         <iframe
-          src={data.videoUrl}
+          src={embedUrl}
           title="YouTube video player"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -32,11 +68,12 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
   }
 
   if (data.videoType === 'upload') {
+    const videoSrc = data.videoUrl.startsWith('http') ? data.videoUrl : `${baseUrl}${data.videoUrl}`;
     return (
       <div className="aspect-video relative rounded-xl overflow-hidden shadow-2xl">
         <video
           controls
-          src={data.videoUrl}
+          src={videoSrc}
           poster={data.videoThumbnail}
           className="w-full h-full object-cover"
         >
