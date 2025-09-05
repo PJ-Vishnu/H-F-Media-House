@@ -28,10 +28,16 @@ const testimonialsSchema = z.object({
   }))
 });
 
+type StagedFile = {
+  index: number;
+  file: File;
+  preview: string;
+};
+
 export default function TestimonialsAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState<number | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
 
@@ -63,29 +69,34 @@ export default function TestimonialsAdminPage() {
     setDialogOpen(true);
   };
   
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(index);
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await axios.post('/api/upload?section=testimonials', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setStagedFiles(prev => {
+        const others = prev.filter(f => f.index !== index);
+        return [...others, { index, file, preview: e.target?.result as string }];
       });
-      form.setValue(`testimonials.${index}.avatar`, res.data.filePath, { shouldDirty: true });
-      toast({ title: 'Avatar upload successful' });
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(null);
-    }
+      form.markAsDirty();
+    };
+    reader.readAsDataURL(file);
   };
 
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await axios.post('/api/upload?section=testimonials', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      return res.data.filePath;
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+      return null;
+    }
+  };
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
@@ -102,8 +113,24 @@ export default function TestimonialsAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof testimonialsSchema>) => {
     setIsSubmitting(true);
+    let updatedTestimonials = [...data.testimonials];
+
     try {
-      for (const testimonial of data.testimonials) {
+      if (stagedFiles.length > 0) {
+        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
+        const uploadedPaths = await Promise.all(uploadPromises);
+
+        stagedFiles.forEach((sf, i) => {
+          const newPath = uploadedPaths[i];
+          if (newPath) {
+            updatedTestimonials[sf.index].avatar = newPath;
+          } else {
+            throw new Error(`Upload failed for testimonial: ${updatedTestimonials[sf.index].author}`);
+          }
+        });
+      }
+      
+      for (const testimonial of updatedTestimonials) {
         const { id, ...testimonialData } = testimonial;
         await fetch(`/api/testimonials?id=${id}`, {
           method: 'PUT',
@@ -112,9 +139,11 @@ export default function TestimonialsAdminPage() {
         });
       }
       toast({ title: "Success!", description: "Testimonials updated successfully." });
-      form.reset(data);
+      form.reset({ testimonials: updatedTestimonials });
+      setStagedFiles([]);
+
     } catch (error) {
-      toast({ variant: 'destructive', title: "Failed to save testimonials." });
+      toast({ variant: 'destructive', title: "Failed to save testimonials.", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +154,7 @@ export default function TestimonialsAdminPage() {
       quote: "A new fantastic testimonial about our services.",
       author: "New Client",
       company: "Client's Company",
-      avatar: '/uploads/testimonials/placeholder.png'
+      avatar: 'https://placehold.co/150x150'
     };
     try {
       const res = await fetch('/api/testimonials', {
@@ -168,7 +197,11 @@ export default function TestimonialsAdminPage() {
                 {fields.length === 0 && !form.formState.isValidating ? (
                   Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)
                 ) : (
-                  fields.map((field, index) => (
+                  fields.map((field, index) => {
+                    const stagedFile = stagedFiles.find(f => f.index === index);
+                    const previewSrc = stagedFile ? stagedFile.preview : (form.watch(`testimonials.${index}.avatar`) || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`);
+                    
+                    return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
                       <div className="flex-grow space-y-3">
                          <FormField
@@ -193,30 +226,23 @@ export default function TestimonialsAdminPage() {
                                     <FormItem><FormLabel>Company</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                 )}
                             />
-                             <FormField
-                                control={form.control}
-                                name={`testimonials.${index}.avatar`}
-                                render={({ field: avatarField }) => (
-                                    <FormItem className="md:col-span-2">
-                                        <FormLabel>Avatar</FormLabel>
-                                        <div className="flex items-center gap-4">
-                                            <Image src={avatarField.value || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
-                                            <div className="flex-grow">
-                                                <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
-                                                {isUploading === index && <div className="flex items-center text-sm text-muted-foreground mt-1"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
-                                            </div>
-                                        </div>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}
-                             />
+                             <FormItem className="md:col-span-2">
+                                <FormLabel>Avatar</FormLabel>
+                                <div className="flex items-center gap-4">
+                                    <Image src={previewSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
+                                    <div className="flex-grow">
+                                        <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting}/>
+                                    </div>
+                                </div>
+                                <FormMessage/>
+                            </FormItem>
                         </div>
                       </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
                         <Trash2 className="h-5 w-5 text-destructive" />
                       </Button>
                     </div>
-                  ))
+                  )})
                 )}
               </div>
             </CardContent>

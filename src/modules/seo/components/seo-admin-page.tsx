@@ -22,14 +22,15 @@ const seoSchema = z.object({
   description: z.string().min(1, "Description is required"),
   keywords: z.string().optional(),
   url: z.string().url("Must be a valid URL"),
-  ogImage: z.string().min(1, "Open Graph Image is required"),
+  ogImage: z.string().optional(),
 });
 
 export default function SEOAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<SEOData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [stagedFile, setStagedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof seoSchema>>({
     resolver: zodResolver(seoSchema),
@@ -42,6 +43,9 @@ export default function SEOAdminPage() {
         const fetchedData: SEOData = await res.json();
         setData(fetchedData);
         form.reset(fetchedData);
+        if(fetchedData.ogImage) {
+          setPreviewUrl(fetchedData.ogImage);
+        }
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch SEO data" });
       }
@@ -49,45 +53,64 @@ export default function SEOAdminPage() {
     fetchData();
   }, [form, toast]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
+    setStagedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    form.markAsDirty();
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await axios.post('/api/upload?section=seo', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      form.setValue('ogImage', res.data.filePath, { shouldDirty: true });
-      toast({ title: 'OG Image upload successful' });
+      return res.data.filePath;
     } catch (error) {
       toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(false);
+      return null;
     }
-  };
+  }
 
 
   async function onSubmit(values: z.infer<typeof seoSchema>) {
     setIsLoading(true);
+    let updatedValues = { ...values };
+
     try {
+      if (stagedFile) {
+        const newImageUrl = await uploadFile(stagedFile);
+        if (newImageUrl) {
+          updatedValues.ogImage = newImageUrl;
+        } else {
+          throw new Error("Upload failed, aborting save.");
+        }
+      }
+
       const res = await fetch("/api/seo", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(updatedValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
       
+      const savedData = await res.json();
       toast({ title: "Success!", description: "SEO settings updated." });
-      form.reset(values);
+      form.reset(savedData);
+      setStagedFile(null);
+      if(savedData.ogImage) setPreviewUrl(savedData.ogImage);
+
     } catch (error) {
-      toast({ variant: "destructive", title: "Save Failed" });
+      toast({ variant: "destructive", title: "Save Failed", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsLoading(false);
     }
@@ -120,8 +143,8 @@ export default function SEOAdminPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Manage SEO</h1>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={isLoading || isUploading || !form.formState.isDirty}>
-          {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        <Button onClick={form.handleSubmit(onSubmit)} disabled={isLoading || !form.formState.isDirty}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Save Changes
         </Button>
       </div>
@@ -162,7 +185,7 @@ export default function SEOAdminPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Keywords</FormLabel>
-                    <FormControl><Input placeholder="e.g. photography, video, media production" {...field} /></FormControl>
+                    <FormControl><Input placeholder="e.g. photography, video, media production" {...field} value={field.value || ''}/></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -173,29 +196,21 @@ export default function SEOAdminPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Canonical URL</FormLabel>
-                    <FormControl><Input placeholder="https://www.your-domain.com" {...field} /></FormControl>
+                    <FormControl><Input placeholder="https://www.your-domain.com" {...field} value={field.value || ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="ogImage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Open Graph Image (1200x630px)</FormLabel>
-                     <FormControl>
-                        <div>
-                            <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
-                            {isUploading && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
-                            {field.value && <Image src={field.value} alt="OG Preview" width={240} height={126} className="w-48 h-auto mt-2 rounded-md object-cover" />}
-                            <Input type="hidden" {...field} />
-                        </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormItem>
+                <FormLabel>Open Graph Image (1200x630px)</FormLabel>
+                  <FormControl>
+                    <div>
+                        <Input type="file" accept="image/*" onChange={handleFileChange} className="mb-2" disabled={isLoading}/>
+                        {previewUrl && <Image src={previewUrl} alt="OG Preview" width={240} height={126} className="w-48 h-auto mt-2 rounded-md object-cover bg-muted" />}
+                    </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             </form>
           </Form>
         </CardContent>

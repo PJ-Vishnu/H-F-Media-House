@@ -21,18 +21,24 @@ const heroSchema = z.object({
   headline: z.string().min(1, "Headline is required"),
   subheadline: z.string().min(1, "Subheadline is required"),
   ctaText: z.string().min(1, "CTA text is required"),
-  ctaLink: z.string().url("Must be a valid URL"),
+  ctaLink: z.string().min(1, "CTA link is required"), // Changed to min(1) as URL is not always required
   images: z.array(z.object({
     src: z.string().min(1, "Image URL is required"),
     alt: z.string().min(1, "Alt text is required"),
   })),
 });
 
+type StagedFile = {
+  index: number;
+  file: File;
+  preview: string;
+};
+
 export default function HeroAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<HeroData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState<number | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
 
   const form = useForm<z.infer<typeof heroSchema>>({
     resolver: zodResolver(heroSchema),
@@ -68,35 +74,64 @@ export default function HeroAdminPage() {
     fetchData();
   }, [form, toast]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(index);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setStagedFiles(prev => {
+        const others = prev.filter(f => f.index !== index);
+        return [...others, { index, file, preview: e.target?.result as string }];
+      });
+      form.markAsDirty();
+    };
+    reader.readAsDataURL(file);
+  };
+  
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await axios.post('/api/upload?section=hero', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      form.setValue(`images.${index}.src`, res.data.filePath, { shouldDirty: true });
-      toast({ title: 'Upload successful' });
+      return res.data.filePath;
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(null);
+      console.error("Upload failed", error);
+      toast({ variant: 'destructive', title: 'Upload failed for one or more images.' });
+      return null;
     }
   };
 
-
   async function onSubmit(values: z.infer<typeof heroSchema>) {
     setIsLoading(true);
+    let updatedImages = [...values.images];
+
     try {
+      if (stagedFiles.length > 0) {
+        // Upload all staged files
+        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
+        const uploadedPaths = await Promise.all(uploadPromises);
+
+        // Update image sources with new paths
+        stagedFiles.forEach((sf, i) => {
+          const newPath = uploadedPaths[i];
+          if (newPath) {
+            updatedImages[sf.index] = { ...updatedImages[sf.index], src: newPath };
+          } else {
+            // Handle potential upload failure for a specific file
+            throw new Error(`Failed to upload image for item ${sf.index + 1}.`);
+          }
+        });
+      }
+
+      const finalValues = { ...values, images: updatedImages };
+
       const res = await fetch("/api/hero", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(finalValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
@@ -104,6 +139,7 @@ export default function HeroAdminPage() {
       const savedData = await res.json();
       setData(savedData);
       form.reset(savedData);
+      setStagedFiles([]); // Clear staged files after successful save
       toast({
         title: "Success!",
         description: "Hero section has been updated.",
@@ -112,7 +148,7 @@ export default function HeroAdminPage() {
       toast({
         variant: "destructive",
         title: "Save Failed",
-        description: "Could not save changes to the hero section.",
+        description: error instanceof Error ? error.message : "Could not save changes.",
       });
     } finally {
         setIsLoading(false);
@@ -146,7 +182,7 @@ export default function HeroAdminPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold">Manage Hero Section</h1>
-                <Button type="submit" disabled={isLoading || isUploading !== null}>
+                <Button type="submit" disabled={isLoading || !form.formState.isDirty}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                     Save Changes
                 </Button>
@@ -219,11 +255,15 @@ export default function HeroAdminPage() {
                     <CardDescription>Manage the images in the hero carousel.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    {fields.map((field, index) => (
+                    {fields.map((field, index) => {
+                      const stagedFile = stagedFiles.find(f => f.index === index);
+                      const previewSrc = stagedFile ? stagedFile.preview : form.watch(`images.${index}.src`);
+
+                      return (
                         <div key={field.id} className="flex flex-col md:flex-row items-start gap-4 p-4 border rounded-lg">
                            <div className="w-full md:w-32 flex-shrink-0">
                              <Image 
-                                src={form.watch(`images.${index}.src`)} 
+                                src={previewSrc} 
                                 alt={form.watch(`images.${index}.alt`) || 'Hero image preview'} 
                                 width={128} 
                                 height={128} 
@@ -231,21 +271,13 @@ export default function HeroAdminPage() {
                             />
                            </div>
                            <div className="flex-grow space-y-4 w-full">
-                             <FormField
-                                control={form.control}
-                                name={`images.${index}.src`}
-                                render={({ field: imageField }) => (
-                                    <FormItem>
-                                        <FormLabel>Image {index + 1}</FormLabel>
-                                        <FormControl>
-                                             <Input type="file" onChange={(e) => handleFileChange(e, index)} className="mb-2" disabled={isUploading === index}/>
-                                        </FormControl>
-                                        {isUploading === index && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
-                                        <Input type="hidden" {...imageField} />
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                             />
+                             <FormItem>
+                                <FormLabel>Image {index + 1}</FormLabel>
+                                <FormControl>
+                                  <Input type="file" onChange={(e) => handleFileChange(e, index)} className="mb-2"/>
+                                </FormControl>
+                                <FormMessage />
+                             </FormItem>
                               <FormField
                                 control={form.control}
                                 name={`images.${index}.alt`}
@@ -262,8 +294,9 @@ export default function HeroAdminPage() {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
-                    ))}
-                    <Button type="button" variant="outline" onClick={() => append({ src: '/uploads/hero/placeholder-1.jpg', alt: 'New Image' })}>
+                      )
+                    })}
+                    <Button type="button" variant="outline" onClick={() => append({ src: 'https://placehold.co/600x800', alt: 'New Image' })}>
                         <PlusCircle className="h-4 w-4 mr-2" /> Add Image
                     </Button>
                 </CardContent>

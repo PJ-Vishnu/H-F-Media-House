@@ -26,19 +26,24 @@ const videoSchema = z.object({
   videoThumbnail: z.string().optional(),
 });
 
+type StagedFiles = {
+  video?: { file: File, preview?: string };
+  thumbnail?: { file: File, preview: string };
+}
+
 export default function VideoAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<VideoData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [stagedFiles, setStagedFiles] = useState<StagedFiles>({});
   const [uploadProgress, setUploadProgress] = useState<number>(0);
-
 
   const form = useForm<z.infer<typeof videoSchema>>({
     resolver: zodResolver(videoSchema),
   });
 
   const videoType = form.watch("videoType");
+  const thumbnailPreview = stagedFiles.thumbnail?.preview || form.watch('videoThumbnail');
 
   useEffect(() => {
     async function fetchData() {
@@ -54,51 +59,74 @@ export default function VideoAdminPage() {
     fetchData();
   }, [form, toast]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, isVideo: boolean) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, fileType: 'video' | 'thumbnail') => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
-    setUploadProgress(0);
+    if (fileType === 'thumbnail') {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            setStagedFiles(prev => ({ ...prev, thumbnail: { file, preview: e.target?.result as string }}));
+        };
+        reader.readAsDataURL(file);
+    } else {
+        setStagedFiles(prev => ({ ...prev, video: { file }}));
+    }
+    form.markAsDirty();
+  };
+
+  const uploadFile = async (file: File, section: string, onProgress?: (percent: number) => void): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-
-    const fieldToUpdate = isVideo ? 'videoUrl' : 'videoThumbnail';
-    const section = isVideo ? 'video-files' : 'video-thumbnails';
-
     try {
       const res = await axios.post(`/api/upload?section=${section}`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / (progressEvent.total || 1));
-          setUploadProgress(percentCompleted);
+            if (progressEvent.total) {
+                const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                if (onProgress) onProgress(percentCompleted);
+            }
         }
       });
-      form.setValue(fieldToUpdate, res.data.filePath, { shouldDirty: true });
-      toast({ title: `${isVideo ? 'Video' : 'Thumbnail'} upload successful` });
+      return res.data.filePath;
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(false);
+      toast({ variant: 'destructive', title: `Upload failed for ${section}` });
+      return null;
     }
   };
 
   async function onSubmit(values: z.infer<typeof videoSchema>) {
     setIsLoading(true);
+    let updatedValues = { ...values };
+
     try {
+      if (stagedFiles.thumbnail) {
+        const newThumbnailUrl = await uploadFile(stagedFiles.thumbnail.file, 'video-thumbnails');
+        if (newThumbnailUrl) updatedValues.videoThumbnail = newThumbnailUrl;
+        else throw new Error("Thumbnail upload failed.");
+      }
+      if (stagedFiles.video) {
+        const newVideoUrl = await uploadFile(stagedFiles.video.file, 'video-files', setUploadProgress);
+        if (newVideoUrl) updatedValues.videoUrl = newVideoUrl;
+        else throw new Error("Video upload failed.");
+      }
+
       const res = await fetch("/api/video", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(updatedValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
       
+      const savedData = await res.json();
       toast({ title: "Success!", description: "Video section updated." });
+      form.reset(savedData);
+      setStagedFiles({});
+      setUploadProgress(0);
+
     } catch (error) {
-      toast({ variant: "destructive", title: "Save Failed" });
+      toast({ variant: "destructive", title: "Save Failed", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsLoading(false);
     }
@@ -114,8 +142,8 @@ export default function VideoAdminPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Manage Video Section</h1>
-            <Button type="submit" disabled={isLoading || isUploading}>
-              {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isLoading || !form.formState.isDirty}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>
           </div>
@@ -150,7 +178,7 @@ export default function VideoAdminPage() {
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                         className="flex flex-col space-y-1"
                       >
                         <FormItem className="flex items-center space-x-3 space-y-0">
@@ -183,7 +211,7 @@ export default function VideoAdminPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>YouTube Embed URL</FormLabel>
-                        <FormControl><Input placeholder="https://www.youtube.com/embed/..." {...field} /></FormControl>
+                        <FormControl><Input placeholder="https://www.youtube.com/embed/..." {...field} value={field.value || ''} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -192,53 +220,37 @@ export default function VideoAdminPage() {
 
               {videoType === 'upload' && (
                  <>
-                    <FormField
-                        control={form.control}
-                        name="videoUrl"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Upload Video File</FormLabel>
+                    <FormItem>
+                        <FormLabel>Upload Video File</FormLabel>
+                        <FormControl>
+                        <Input 
+                            type="file" 
+                            accept="video/*" 
+                            onChange={(e) => handleFileChange(e, 'video')}
+                            disabled={isLoading}
+                        />
+                        </FormControl>
+                        {isLoading && stagedFiles.video && (
+                          <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            <span>Uploading Video... ({uploadProgress}%)</span>
+                          </div>
+                        )}
+                        {form.getValues('videoUrl') && !stagedFiles.video && <p className="text-sm text-muted-foreground mt-2">Current file: {form.getValues('videoUrl')}</p>}
+                        {stagedFiles.video && <p className="text-sm text-muted-foreground mt-2">New file staged: {stagedFiles.video.file.name}</p>}
+                        <FormMessage />
+                    </FormItem>
+
+                    <FormItem>
+                        <FormLabel>Video Thumbnail</FormLabel>
                             <FormControl>
-                            <Input 
-                                type="file" 
-                                accept="video/*" 
-                                onChange={(e) => handleFileChange(e, true)}
-                                disabled={isUploading}
-                            />
-                            </FormControl>
-                            {isUploading && (
-                              <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                <span>Uploading... ({uploadProgress}%)</span>
-                              </div>
-                            )}
-                            {field.value && !isUploading && <p className="text-sm text-muted-foreground mt-2">Current file: {field.value}</p>}
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                     <FormField
-                        control={form.control}
-                        name="videoThumbnail"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Video Thumbnail</FormLabel>
-                             <FormControl>
-                                <div>
-                                    <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, false)} className="mb-2" disabled={isUploading}/>
-                                    {isUploading && field.name === 'videoThumbnail' && (
-                                      <div className="flex items-center text-sm text-muted-foreground">
-                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        <span>Uploading...</span>
-                                      </div>
-                                    )}
-                                    {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
-                                </div>
-                            </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
+                            <div>
+                                <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'thumbnail')} className="mb-2" disabled={isLoading}/>
+                                {thumbnailPreview && <Image src={thumbnailPreview} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover bg-muted" />}
+                            </div>
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
                  </>
               )}
             </CardContent>

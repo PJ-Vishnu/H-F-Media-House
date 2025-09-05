@@ -31,7 +31,8 @@ export default function AboutAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<AboutData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [stagedFile, setStagedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof aboutSchema>>({
     resolver: zodResolver(aboutSchema),
@@ -48,6 +49,7 @@ export default function AboutAdminPage() {
         const res = await fetch("/api/about");
         const fetchedData: AboutData = await res.json();
         setData(fetchedData);
+        setPreviewUrl(fetchedData.imageUrl);
         const features = fetchedData.features || [];
         while (features.length < 3) {
           features.push({ title: "", description: "" });
@@ -60,11 +62,20 @@ export default function AboutAdminPage() {
     fetchData();
   }, [form, toast]);
   
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(true);
+    setStagedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    form.markAsDirty();
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
 
@@ -74,30 +85,44 @@ export default function AboutAdminPage() {
           'Content-Type': 'multipart/form-data',
         },
       });
-      form.setValue('imageUrl', res.data.filePath);
-      toast({ title: 'Upload successful' });
+      return res.data.filePath;
     } catch (error) {
       toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(false);
+      return null;
     }
   };
 
-
   async function onSubmit(values: z.infer<typeof aboutSchema>) {
     setIsLoading(true);
+    let updatedValues = { ...values };
+
     try {
+      if (stagedFile) {
+        const newImageUrl = await uploadFile(stagedFile);
+        if (newImageUrl) {
+          updatedValues.imageUrl = newImageUrl;
+        } else {
+          // Don't proceed if upload fails
+          throw new Error("Upload failed, aborting save.");
+        }
+      }
+
       const res = await fetch("/api/about", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(updatedValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
       
+      const savedData = await res.json();
       toast({ title: "Success!", description: "About section updated." });
+      form.reset(savedData);
+      setStagedFile(null);
+      setPreviewUrl(savedData.imageUrl);
+
     } catch (error) {
-      toast({ variant: "destructive", title: "Save Failed" });
+      toast({ variant: "destructive", title: "Save Failed", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsLoading(false);
     }
@@ -113,8 +138,8 @@ export default function AboutAdminPage() {
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Manage About Section</h1>
-            <Button type="submit" disabled={isLoading || isUploading}>
-              {(isLoading || isUploading) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <Button type="submit" disabled={isLoading || !form.formState.isDirty}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>
           </div>
@@ -147,24 +172,24 @@ export default function AboutAdminPage() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image</FormLabel>
-                    <FormControl>
-                        <div>
-                            <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
-                            {isUploading && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
-                            {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
-                            <Input type="hidden" {...field} />
-                        </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <FormItem>
+                <FormLabel>Image</FormLabel>
+                <FormControl>
+                    <div>
+                        <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isLoading}/>
+                        {previewUrl && (
+                          <Image 
+                            src={previewUrl} 
+                            alt="Preview" 
+                            width={192} 
+                            height={108} 
+                            className="w-48 h-auto mt-2 rounded-md object-cover bg-muted" 
+                          />
+                        )}
+                    </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             </CardContent>
           </Card>
           

@@ -28,10 +28,16 @@ const servicesSchema = z.object({
   }))
 });
 
+type StagedFile = {
+  index: number;
+  file: File;
+  preview: string;
+};
+
 export default function ServicesAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState<number | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
 
@@ -40,7 +46,7 @@ export default function ServicesAdminPage() {
     defaultValues: { services: [] },
   });
 
-  const { fields, append, remove, move } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "services",
   });
@@ -76,34 +82,55 @@ export default function ServicesAdminPage() {
     }
   };
   
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(index);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setStagedFiles(prev => {
+        const others = prev.filter(f => f.index !== index);
+        return [...others, { index, file, preview: e.target?.result as string }];
+      });
+      form.markAsDirty();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await axios.post('/api/upload?section=services', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      form.setValue(`services.${index}.image`, res.data.filePath, { shouldDirty: true });
-      toast({ title: 'Upload successful' });
+      return res.data.filePath;
     } catch (error) {
       toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(null);
+      return null;
     }
   };
 
-
   const handleSaveAll = async (data: z.infer<typeof servicesSchema>) => {
     setIsSubmitting(true);
+    let updatedServices = [...data.services];
+
     try {
-      for (const service of data.services) {
+      if (stagedFiles.length > 0) {
+        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
+        const uploadedPaths = await Promise.all(uploadPromises);
+
+        stagedFiles.forEach((sf, i) => {
+          const newPath = uploadedPaths[i];
+          if (newPath) {
+            updatedServices[sf.index].image = newPath;
+          } else {
+            throw new Error(`Upload failed for service: ${updatedServices[sf.index].title}`);
+          }
+        });
+      }
+
+      for (const service of updatedServices) {
         await fetch(`/api/services?id=${service.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -111,9 +138,11 @@ export default function ServicesAdminPage() {
         });
       }
       toast({ title: "Success!", description: "Services updated successfully." });
-      form.reset(data);
+      form.reset({ services: updatedServices });
+      setStagedFiles([]);
+
     } catch (error) {
-      toast({ variant: 'destructive', title: "Failed to save services." });
+      toast({ variant: 'destructive', title: "Failed to save services.", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsSubmitting(false);
     }
@@ -124,7 +153,7 @@ export default function ServicesAdminPage() {
       title: "New Service",
       description: "A brief description of the new service.",
       icon: "Wand",
-      image: `/uploads/services/placeholder.jpg`,
+      image: "https://placehold.co/600x800",
     };
     try {
       const res = await fetch('/api/services', {
@@ -167,7 +196,11 @@ export default function ServicesAdminPage() {
                 {fields.length === 0 && !form.formState.isValidating ? (
                   Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)
                 ) : (
-                  fields.map((field, index) => (
+                  fields.map((field, index) => {
+                    const stagedFile = stagedFiles.find(f => f.index === index);
+                    const previewSrc = stagedFile ? stagedFile.preview : form.watch(`services.${index}.image`);
+
+                    return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
                       <div className="flex-grow space-y-4">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -193,29 +226,22 @@ export default function ServicesAdminPage() {
                             <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                           )}
                         />
-                        <FormField
-                            control={form.control}
-                            name={`services.${index}.image`}
-                            render={({ field: imageField }) => (
-                                <FormItem>
-                                    <FormLabel>Image</FormLabel>
-                                    <div className="flex items-center gap-4">
-                                        <Image src={imageField.value} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square"/>
-                                        <div className="flex-grow">
-                                            <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index} />
-                                            {isUploading === index && <div className="flex items-center text-sm text-muted-foreground mt-1"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
-                                        </div>
-                                    </div>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                        <FormItem>
+                            <FormLabel>Image</FormLabel>
+                            <div className="flex items-center gap-4">
+                                <Image src={previewSrc} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>
+                                <div className="flex-grow">
+                                    <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
+                                </div>
+                            </div>
+                            <FormMessage />
+                        </FormItem>
                       </div>
                       <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
                         <Trash2 className="h-5 w-5 text-destructive" />
                       </Button>
                     </div>
-                  ))
+                  )})
                 )}
               </div>
             </CardContent>

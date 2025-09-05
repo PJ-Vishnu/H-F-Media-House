@@ -28,10 +28,16 @@ const portfolioSchema = z.object({
   }))
 });
 
+type StagedFile = {
+  index: number;
+  file: File;
+  preview: string;
+};
+
 export default function PortfolioAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isUploading, setIsUploading] = useState<number | null>(null);
+  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   
@@ -58,7 +64,7 @@ export default function PortfolioAdminPage() {
     fetchData();
   }, [form, toast]);
 
-  const handleDeleteClick = (id: string, index: number) => {
+  const handleDeleteClick = (id: string) => {
     setItemToDelete(id);
     setDialogOpen(true);
   };
@@ -68,7 +74,10 @@ export default function PortfolioAdminPage() {
     try {
       await fetch(`/api/portfolio?id=${itemToDelete}`, { method: 'DELETE' });
       const currentItems = form.getValues('items');
-      form.setValue('items', currentItems.filter(item => item.id !== itemToDelete));
+      const itemIndex = currentItems.findIndex(item => item.id === itemToDelete);
+      if (itemIndex > -1) {
+          remove(itemIndex);
+      }
       toast({ title: "Item deleted" });
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete item" });
@@ -77,41 +86,67 @@ export default function PortfolioAdminPage() {
     }
   };
   
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setIsUploading(index);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setStagedFiles(prev => {
+        const others = prev.filter(f => f.index !== index);
+        return [...others, { index, file, preview: e.target?.result as string }];
+      });
+      form.markAsDirty();
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const res = await axios.post('/api/upload?section=portfolio', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      form.setValue(`items.${index}.imageUrl`, res.data.filePath, { shouldDirty: true });
-      toast({ title: 'Upload successful' });
+      return res.data.filePath;
     } catch (error) {
       toast({ variant: 'destructive', title: 'Upload failed' });
-    } finally {
-      setIsUploading(null);
+      return null;
     }
   };
 
-
   const handleSaveAll = async (data: z.infer<typeof portfolioSchema>) => {
     setIsSubmitting(true);
+    let updatedItems = [...data.items];
+
     try {
-      const orderedIds = data.items.map(item => item.id);
+      // Upload staged files and update their URLs
+      if (stagedFiles.length > 0) {
+        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
+        const uploadedPaths = await Promise.all(uploadPromises);
+
+        stagedFiles.forEach((sf, i) => {
+          const newPath = uploadedPaths[i];
+          if (newPath) {
+            updatedItems[sf.index].imageUrl = newPath;
+          } else {
+            throw new Error(`Upload failed for item: ${updatedItems[sf.index].title}`);
+          }
+        });
+      }
+      
+      const finalItems = updatedItems.map((item, index) => ({ ...item, order: index }));
+
+      // Reorder API call
+      const orderedIds = finalItems.map(item => item.id);
       await fetch('/api/portfolio/reorder', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderedIds })
       });
       
-      for(const item of data.items) {
+      // Update individual items
+      for(const item of finalItems) {
         await fetch(`/api/portfolio?id=${item.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -120,9 +155,11 @@ export default function PortfolioAdminPage() {
       }
 
       toast({ title: "Success!", description: "Portfolio updated successfully." });
-      form.reset(data); // Reset form to clear dirty state
+      form.reset({items: finalItems}); 
+      setStagedFiles([]);
+
     } catch (error) {
-      toast({ variant: 'destructive', title: "Failed to save portfolio." });
+      toast({ variant: 'destructive', title: "Failed to save portfolio.", description: error instanceof Error ? error.message : "An unknown error occurred." });
     } finally {
       setIsSubmitting(false);
     }
@@ -133,7 +170,8 @@ export default function PortfolioAdminPage() {
         title: "New Project",
         description: "A brief description of the new project.",
         category: "Video",
-        imageUrl: "/path/to/placeholder.jpg",
+        imageUrl: "https://placehold.co/600x400",
+        order: fields.length + 1,
     };
     try {
         const res = await fetch('/api/portfolio', {
@@ -160,8 +198,8 @@ export default function PortfolioAdminPage() {
               <Button type="button" onClick={handleAddItem} variant="outline" className="mr-2">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Item
               </Button>
-              <Button type="submit" disabled={isSubmitting || form.formState.isSubmitting || !form.formState.isDirty}>
-                  {(isSubmitting || form.formState.isSubmitting) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
+                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save All Changes
               </Button>
             </div>
@@ -176,7 +214,11 @@ export default function PortfolioAdminPage() {
                 {fields.length === 0 && !form.formState.isValidating ? (
                   Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                 ) : (
-                  fields.map((field, index) => (
+                  fields.map((field, index) => {
+                    const stagedFile = stagedFiles.find(f => f.index === index);
+                    const previewSrc = stagedFile ? stagedFile.preview : form.watch(`items.${index}.imageUrl`);
+
+                    return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
                       <div className="flex flex-col items-center pt-2">
                         <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => move(index, index - 1)} disabled={index === 0}>
@@ -207,16 +249,15 @@ export default function PortfolioAdminPage() {
                       </div>
 
                       <div className="w-48 space-y-2 flex-shrink-0">
-                         <Image src={form.getValues(`items.${index}.imageUrl`)} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
-                         <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
-                         {isUploading === index && <div className="flex items-center text-sm text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" /><span>Uploading...</span></div>}
+                         <Image src={previewSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
+                         <Input type="file" onChange={(e) => handleFileChange(e, index)} />
                       </div>
 
-                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id)} className="mt-2">
                         <Trash2 className="h-5 w-5 text-destructive" />
                       </Button>
                     </div>
-                  ))
+                  )})
                 )}
               </div>
             </CardContent>
