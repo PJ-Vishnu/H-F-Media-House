@@ -119,6 +119,17 @@ export default function AboutAdminPage() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="data-ai-hint"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>AI Hint</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. camera lens" /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </form>
           </Form>
         </CardContent>
