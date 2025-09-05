@@ -10,6 +10,7 @@ import {
   Contact,
   Footprints,
   Search,
+  Video,
 } from "lucide-react";
 
 const sections = [
@@ -19,6 +20,7 @@ const sections = [
   { name: "Services", href: "/admin/services", icon: Briefcase },
   { name: "Portfolio", href: "/admin/portfolio", icon: Users },
   { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
+  { name: "Video", href: "/admin/video", icon: Video },
   { name: "Contact", href: "/admin/contact", icon: Contact },
   { name: "Footer", href: "/admin/footer", icon: Footprints },
   { name: "SEO", href: "/admin/seo", icon: Search },
