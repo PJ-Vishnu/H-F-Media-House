@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import type { ContactData } from '@/modules/contact/contact.schema';
+import { sanitizeObject } from '@/lib/utils';
 
 // GET /api/contact
 export async function GET() {
@@ -16,9 +17,12 @@ export async function GET() {
 export async function PUT(req: Request) {
   try {
     const body: ContactData = await req.json();
-    const updatedData = await db.updateContact(body);
+    const sanitizedData = sanitizeObject(body);
+    const updatedData = await db.updateContact(sanitizedData);
     return NextResponse.json(updatedData);
   } catch (error) {
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
+
+    

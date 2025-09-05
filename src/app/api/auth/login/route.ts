@@ -1,16 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createToken } from '@/lib/auth';
 import { db } from '@/lib/db';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
     const { email, password } = await req.json();
     const admin = await db.getAdmin();
 
-    // NOTE: This is a highly insecure way to check passwords and is for demo purposes only.
-    // In a real app, you would use a library like bcrypt to compare a hashed password.
-    if (email === admin.email && password === admin.password_DO_NOT_STORE_IN_PLAIN_TEXT) {
-      const token = await createToken({ username: email });
+    if (!admin || !admin.email || !admin.passwordHash) {
+        return NextResponse.json({ success: false, message: 'Admin account not configured' }, { status: 500 });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
+
+    if (email === admin.email && isPasswordValid) {
+      const token = await createToken({ email: admin.email, role: 'admin' });
 
       const response = NextResponse.json({ success: true, message: 'Login successful' });
 
@@ -27,6 +32,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, message: 'Invalid email or password' }, { status: 401 });
     }
   } catch (error) {
+    console.error("Login error:", error);
     return NextResponse.json({ success: false, message: 'An error occurred' }, { status: 500 });
   }
 }
+
+    

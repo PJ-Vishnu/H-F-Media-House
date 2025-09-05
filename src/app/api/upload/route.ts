@@ -5,6 +5,7 @@ import fs from 'fs';
 import { promisify } from 'util';
 
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.webm'];
 
 // Ensure base upload directory exists
 if (!fs.existsSync(UPLOADS_DIR)) {  fs.mkdirSync(UPLOADS_DIR, { recursive: true });}
@@ -29,12 +30,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit for videos
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
   fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+    const mimetypeIsValid = file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/');
+    const extensionIsValid = ALLOWED_EXTENSIONS.includes(path.extname(file.originalname).toLowerCase());
+    
+    if (mimetypeIsValid && extensionIsValid) {
       cb(null, true);
     } else {
-      cb(new Error('Only images and videos are allowed.'));
+      cb(new Error('Invalid file type. Only images and videos are allowed.'));
     }
   }
 });
@@ -96,3 +100,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: false, message: `Upload failed: ${error.message}` }, { status: 500 });
   }
 }
+
+    

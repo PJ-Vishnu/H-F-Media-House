@@ -52,9 +52,9 @@ export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser> => {
     const db = await connectToDb();
-    if (!db) return { email: 'admin@example.com', password_DO_NOT_STORE_IN_PLAIN_TEXT: 'password' };
+    if (!db) return { email: 'admin@example.com', passwordHash: 'password' };
     const admin = await db.collection<AdminUser>('admin').findOne({});
-    return admin ?? { email: '', password_DO_NOT_STORE_IN_PLAIN_TEXT: '' };
+    return admin ?? { email: '', passwordHash: '' };
   },
 
   // HERO
@@ -288,6 +288,7 @@ export const db = {
         videoThumbnail: 'https://picsum.photos/1280/720?random=51'
     };
     const data = await db.collection('video').findOne({});
+    // Return a plain object to prevent serialization issues with Next.js
     return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '' };
   },
   updateVideo: async (data: VideoData): Promise<VideoData> => {
@@ -358,3 +359,5 @@ export const db = {
     return data;
   },
 };
+
+    

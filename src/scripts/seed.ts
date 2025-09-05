@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import 'dotenv/config';
+import bcrypt from 'bcryptjs';
 
 const uri = process.env.MONGODB_URI||"mongodb://localhost:27017/CMS2";
 if (!uri) {
@@ -23,9 +24,11 @@ async function seed() {
         }
 
         // Admin User
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash('password', salt);
         await db.collection('admin').insertOne({
             email: 'admin@example.com',
-            password_DO_NOT_STORE_IN_PLAIN_TEXT: 'password',
+            passwordHash: passwordHash,
         });
         console.log('✓ Seeded admin');
         
@@ -142,3 +145,5 @@ async function seed() {
 }
 
 seed();
+
+    
