@@ -1,7 +1,5 @@
 import type { ContactData } from '@/modules/contact/contact.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,13 +37,13 @@ export function ContactSection({ contactData }: ContactSectionProps) {
                 </form>
             </div>
             <div className="relative w-full h-96 lg:h-full rounded-xl overflow-hidden shadow-2xl">
-              <Image src="https://picsum.photos/600/800?random=50" alt="Camera gear" data-ai-hint="camera gear" fill className="object-cover"/>
+              <Image src="https://picsum.photos/600/800?random=50" alt="Camera gear" data-ai-hint="camera gear" fill style={{objectFit: 'cover'}}/>
             </div>
         </div>
         
         <ScrollFadeIn className="mt-24">
             <div className="aspect-video relative rounded-xl overflow-hidden">
-                <Image src="https://picsum.photos/1280/720?random=51" alt="Wedding couple" data-ai-hint="wedding couple" fill className="object-cover"/>
+                <Image src="https://picsum.photos/1280/720?random=51" alt="Wedding couple" data-ai-hint="wedding couple" fill style={{objectFit: 'cover'}}/>
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                     <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white w-8 h-8 ml-1">

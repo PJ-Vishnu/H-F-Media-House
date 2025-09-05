@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { AboutData } from "@/modules/about/about.schema";
 import { Loader2 } from "lucide-react";
 import axios from 'axios';
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -157,7 +158,7 @@ export default function AboutAdminPage() {
                         <div>
                             <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
                             {isUploading && <p>Uploading...</p>}
-                            {field.value && <img src={field.value} alt="Preview" className="w-48 h-auto mt-2 rounded-md" />}
+                            {field.value && <Image src={field.value} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover" />}
                             <Input type="hidden" {...field} />
                         </div>
                     </FormControl>

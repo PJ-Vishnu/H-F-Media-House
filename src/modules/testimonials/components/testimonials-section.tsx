@@ -6,8 +6,7 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi, CarouselNext
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
-import Autoplay from "embla-carousel-autoplay";
+import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -20,10 +19,6 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   const [current, setCurrent] = useState(0)
   const isMobile = useIsMobile();
   
-  const autoplayPlugin = useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
-  );
-
   useEffect(() => {
     if (!api) {
       return
@@ -54,24 +49,22 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
         <Carousel
             setApi={setApi}
             opts={{
-                align: "center",
+                align: "start",
                 loop: true,
-                slidesPerView: isMobile ? 1 : 3,
             }}
-            plugins={[autoplayPlugin.current]}
             className="w-full max-w-6xl mx-auto"
         >
-            <CarouselContent>
+            <CarouselContent className="-ml-4">
                 {data.map((testimonial, index) => (
-                    <CarouselItem key={testimonial.id} className="md:basis-1/2 lg:basis-1/3">
-                        <div className="p-4">
+                    <CarouselItem key={testimonial.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                        <div className="p-1">
                             <Card className={cn(
                                 "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
                                 !isMobile && index === current ? 'bg-primary/10' : 'bg-card',
                             )}>
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
-                                        <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full" />
+                                        <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full object-cover" />
                                         <div className="ml-4">
                                            <div className="font-bold text-lg">{testimonial.author}</div>
                                            <div className="text-sm text-muted-foreground">{testimonial.company}</div>

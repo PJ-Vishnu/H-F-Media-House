@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import type { PortfolioItem } from "@/modules/portfolio/portfolio.schema";
 import { GripVertical, PlusCircle, Trash2, ArrowUp, ArrowDown, Loader2 } from "lucide-react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import axios from 'axios';
@@ -88,7 +88,9 @@ export default function PortfolioAdminPage() {
 
     try {
       const res = await axios.post('/api/upload?section=portfolio', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       form.setValue(`items.${index}.imageUrl`, res.data.filePath, { shouldDirty: true });
       toast({ title: 'Upload successful' });

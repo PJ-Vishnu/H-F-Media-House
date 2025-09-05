@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
@@ -73,7 +73,9 @@ export default function TestimonialsAdminPage() {
 
     try {
       const res = await axios.post('/api/upload?section=testimonials', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       form.setValue(`testimonials.${index}.avatar`, res.data.filePath, { shouldDirty: true });
       toast({ title: 'Avatar upload successful' });
@@ -198,7 +200,7 @@ export default function TestimonialsAdminPage() {
                                     <FormItem className="md:col-span-2">
                                         <FormLabel>Avatar</FormLabel>
                                         <div className="flex items-center gap-4">
-                                            <Image src={avatarField.value || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted"/>
+                                            <Image src={avatarField.value || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
                                             <div className="flex-grow">
                                                 <Input type="file" onChange={(e) => handleFileChange(e, index)} disabled={isUploading === index}/>
                                                 {isUploading === index && <p className="text-sm mt-1">Uploading...</p>}

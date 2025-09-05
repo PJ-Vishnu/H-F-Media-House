@@ -50,8 +50,9 @@ export function PortfolioSection({ data }: PortfolioSectionProps) {
                   src={item.imageUrl}
                   alt={item.title}
                   fill
+                  style={{objectFit: 'cover'}}
                   data-ai-hint={item['data-ai-hint']}
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="transition-transform group-hover:scale-105"
                 />
               </div>
               <CardContent className="p-6">

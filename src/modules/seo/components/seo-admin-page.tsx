@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { SEOData } from "@/modules/seo/seo.schema";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -187,7 +188,7 @@ export default function SEOAdminPage() {
                         <div>
                             <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isUploading}/>
                             {isUploading && <p>Uploading...</p>}
-                            {field.value && <img src={field.value} alt="OG Preview" className="w-48 h-auto mt-2 rounded-md" />}
+                            {field.value && <Image src={field.value} alt="OG Preview" width={240} height={126} className="w-48 h-auto mt-2 rounded-md object-cover" />}
                             <Input type="hidden" {...field} />
                         </div>
                     </FormControl>

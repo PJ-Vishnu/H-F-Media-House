@@ -38,7 +38,7 @@ export function ServicesSection({ data }: ServicesSectionProps) {
                   src={service?.image}
                   alt={service.title}
                   fill
-                  className="object-cover"
+                  style={{objectFit: 'cover'}}
                 />
               )}
 
