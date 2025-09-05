@@ -24,7 +24,6 @@ const portfolioSchema = z.object({
     description: z.string().min(1, "Description is required"),
     category: z.string().min(1, "Category is required"),
     imageUrl: z.string().min(1, "Image is required"),
-    'data-ai-hint': z.string().optional(),
     order: z.number(),
   }))
 });
@@ -135,7 +134,6 @@ export default function PortfolioAdminPage() {
         description: "A brief description of the new project.",
         category: "Video",
         imageUrl: "/path/to/placeholder.jpg",
-        'data-ai-hint': 'project placeholder',
     };
     try {
         const res = await fetch('/api/portfolio', {

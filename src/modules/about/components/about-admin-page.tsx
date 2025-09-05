@@ -21,7 +21,6 @@ const aboutSchema = z.object({
   title: z.string().min(1, "Title is required"),
   content: z.string().min(1, "Content is required"),
   imageUrl: z.string().min(1, "Image is required"),
-  'data-ai-hint': z.string().optional(),
   features: z.array(z.object({
     title: z.string().min(1, "Feature title is required"),
     description: z.string().min(1, "Feature description is required"),
@@ -162,17 +161,6 @@ export default function AboutAdminPage() {
                             <Input type="hidden" {...field} />
                         </div>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="data-ai-hint"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>AI Hint</FormLabel>
-                    <FormControl><Input {...field} placeholder="e.g. camera lens" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

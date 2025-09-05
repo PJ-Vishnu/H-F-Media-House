@@ -4,5 +4,4 @@ export type Service = {
   description: string;
   icon: string;
   image?: string;
-  'data-ai-hint'?: string;
 };

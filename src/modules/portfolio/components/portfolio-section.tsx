@@ -51,7 +51,6 @@ export function PortfolioSection({ data }: PortfolioSectionProps) {
                   alt={item.title}
                   fill
                   style={{objectFit: 'cover'}}
-                  data-ai-hint={item['data-ai-hint']}
                   className="transition-transform group-hover:scale-105"
                 />
               </div>

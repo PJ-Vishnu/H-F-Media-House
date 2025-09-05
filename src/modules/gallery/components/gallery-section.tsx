@@ -29,7 +29,6 @@ export function GallerySection({ data }: GallerySectionProps) {
                 src={image.src}
                 alt={image.alt}
                 fill
-                data-ai-hint={image['data-ai-hint']}
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />

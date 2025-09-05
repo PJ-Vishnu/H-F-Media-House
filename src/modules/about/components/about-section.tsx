@@ -31,7 +31,6 @@ export function AboutSection({ data }: AboutSectionProps) {
               alt="About H&F Media House"
               fill
               priority
-              data-ai-hint={data["data-ai-hint"]}
               className="object-cover"
             />
           )}

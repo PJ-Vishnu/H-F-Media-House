@@ -3,7 +3,6 @@ export type PortfolioItem = {
   title: string;
   description: string;
   imageUrl: string;
-  'data-ai-hint': string;
   category: string;
   order: number;
 };

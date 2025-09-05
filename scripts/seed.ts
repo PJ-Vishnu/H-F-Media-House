@@ -36,22 +36,22 @@ async function seed() {
           ctaText: 'Explore Now',
           ctaLink: '#portfolio',
           images: [
-            { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera', 'data-ai-hint': 'camera gear' },
-            { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting', 'data-ai-hint': 'film set' },
-            { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite', 'data-ai-hint': 'video editing' },
-            { src: 'https://picsum.photos/600/800?random=4', alt: 'Drone flying over a landscape', 'data-ai-hint': 'drone videography' },
-            { src: 'https://picsum.photos/600/800?random=5', alt: 'Podcast recording microphone', 'data-ai-hint': 'podcast setup' },
-            { src: 'https://picsum.photos/600/800?random=6', alt: 'Photographer in action', 'data-ai-hint': 'photographer action' },
+            { src: 'https://picsum.photos/600/800?random=1', alt: 'Man with a camera' },
+            { src: 'https://picsum.photos/600/800?random=2', alt: 'Film set lighting' },
+            { src: 'https://picsum.photos/600/800?random=3', alt: 'Video editing suite' },
+            { src: 'https://picsum.photos/600/800?random=4', alt: 'Drone flying over a landscape' },
+            { src: 'https://picsum.photos/600/800?random=5', alt: 'Podcast recording microphone' },
+            { src: 'https://picsum.photos/600/800?random=6', alt: 'Photographer in action' },
           ],
         });
         console.log('✓ Seeded hero');
 
         // Gallery Images
         await db.collection('gallery').insertMany([
-          { src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', 'data-ai-hint': 'couple landscape', order: 1 },
-          { src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', 'data-ai-hint': 'wedding black-white', order: 2 },
-          { src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', 'data-ai-hint': 'couple reflection', order: 3 },
-          { src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', 'data-ai-hint': 'wedding rings', order: 4 },
+          { src: 'https://picsum.photos/800/600?random=11', alt: 'Couple walking on a hill', order: 1 },
+          { src: 'https://picsum.photos/400/300?random=12', alt: 'Black and white wedding photo', order: 2 },
+          { src: 'https://picsum.photos/400/300?random=13', alt: 'Couple reflected in a window', order: 3 },
+          { src: 'https://picsum.photos/800/300?random=14', alt: 'Wedding rings', order: 4 },
         ]);
         console.log('✓ Seeded gallery');
 
@@ -60,7 +60,6 @@ async function seed() {
           title: 'Our Story Behind the Lens',
           content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using Content here, content here, making it look like readable English.',
           imageUrl: 'https://picsum.photos/1200/800?random=20',
-          'data-ai-hint': 'camera lens',
           features: [
             { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
             { title: 'Modern & Professional', description: 'We use the latest technology and techniques to produce high-quality content that exceeds expectations.' },
@@ -71,18 +70,18 @@ async function seed() {
         
         // Services
         await db.collection('services').insertMany([
-          { title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: 'https://picsum.photos/600/800?random=41', 'data-ai-hint': 'photography service' },
-          { title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: 'https://picsum.photos/600/800?random=42', 'data-ai-hint': 'videography service' },
-          { title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: 'https://picsum.photos/600/800?random=43', 'data-ai-hint': 'content creation service' },
+          { title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: 'https://picsum.photos/600/800?random=41' },
+          { title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: 'https://picsum.photos/600/800?random=42' },
+          { title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: 'https://picsum.photos/600/800?random=43' },
         ]);
         console.log('✓ Seeded services');
 
         // Portfolio Items
         await db.collection('portfolio').insertMany([
-          { title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', 'data-ai-hint': 'urban exploration', category: 'Video', order: 1 },
-          { title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', 'data-ai-hint': 'startup brand', category: 'Photography', order: 2 },
-          { title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: 'https://picsum.photos/600/400?random=33', 'data-ai-hint': 'animated explainer', category: 'Animation', order: 3 },
-          { title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: 'https://picsum.photos/600/400?random=34', 'data-ai-hint': 'music festival', category: 'Video', order: 4 },
+          { title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: 'https://picsum.photos/600/400?random=31', category: 'Video', order: 1 },
+          { title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: 'https://picsum.photos/600/400?random=32', category: 'Photography', order: 2 },
+          { title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: 'https://picsum.photos/600/400?random=33', category: 'Animation', order: 3 },
+          { title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: 'https://picsum.photos/600/400?random=34', category: 'Video', order: 4 },
         ]);
         console.log('✓ Seeded portfolio');
 

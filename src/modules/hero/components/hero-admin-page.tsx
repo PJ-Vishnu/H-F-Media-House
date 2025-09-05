@@ -25,7 +25,6 @@ const heroSchema = z.object({
   images: z.array(z.object({
     src: z.string().min(1, "Image URL is required"),
     alt: z.string().min(1, "Alt text is required"),
-    'data-ai-hint': z.string().optional(),
   })),
 });
 
@@ -258,24 +257,13 @@ export default function HeroAdminPage() {
                                     </FormItem>
                                 )}
                              />
-                             <FormField
-                                control={form.control}
-                                name={`images.${index}.data-ai-hint`}
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>AI Hint</FormLabel>
-                                        <FormControl><Input {...field} /></FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                             />
                            </div>
                            <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
                     ))}
-                    <Button type="button" variant="outline" onClick={() => append({ src: '/uploads/hero/placeholder-1.jpg', alt: 'New Image', 'data-ai-hint': '' })}>
+                    <Button type="button" variant="outline" onClick={() => append({ src: '/uploads/hero/placeholder-1.jpg', alt: 'New Image' })}>
                         <PlusCircle className="h-4 w-4 mr-2" /> Add Image
                     </Button>
                 </CardContent>

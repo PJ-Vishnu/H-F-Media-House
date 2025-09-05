@@ -25,7 +25,6 @@ const servicesSchema = z.object({
     description: z.string().min(1, "Description is required"),
     icon: z.string().min(1, "Icon name is required"),
     image: z.string().min(1, "Image is required"),
-    'data-ai-hint': z.string().optional(),
   }))
 });
 
@@ -87,7 +86,9 @@ export default function ServicesAdminPage() {
 
     try {
       const res = await axios.post('/api/upload?section=services', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       form.setValue(`services.${index}.image`, res.data.filePath, { shouldDirty: true });
       toast({ title: 'Upload successful' });
@@ -124,7 +125,6 @@ export default function ServicesAdminPage() {
       description: "A brief description of the new service.",
       icon: "Wand",
       image: `/uploads/services/placeholder.jpg`,
-      'data-ai-hint': 'service placeholder',
     };
     try {
       const res = await fetch('/api/services', {

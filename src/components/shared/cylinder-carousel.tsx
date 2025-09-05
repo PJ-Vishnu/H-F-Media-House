@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/carousel";
 
 type CarouselProps = {
-  images: { src: string; alt: string; "data-ai-hint": string }[];
+  images: { src: string; alt: string }[];
   className?: string;
 };
 
@@ -109,7 +109,6 @@ export function Carousel({ images, className }: CarouselProps) {
                 alt={image.alt}
                 width={800}
                 height={600}
-                data-ai-hint={image["data-ai-hint"]}
                 className="object-cover w-full h-full rounded-xl shadow-2xl"
               />
             </div>
@@ -130,7 +129,6 @@ export function Carousel({ images, className }: CarouselProps) {
                   alt={image.alt}
                   width={800}
                   height={600}
-                  data-ai-hint={image["data-ai-hint"]}
                   className="object-cover w-full h-full rounded-xl shadow-2xl"
                 />
               </CarouselItem>
