@@ -171,7 +171,7 @@ export default function PortfolioAdminPage() {
         title: "New Project",
         description: "A brief description of the new project.",
         category: "Video",
-        imageUrl: "/placeholder-image.png", // temp placeholder
+        imageUrl: "", 
     };
     try {
         const res = await fetch('/api/portfolio', {
@@ -247,7 +247,7 @@ export default function PortfolioAdminPage() {
                       </div>
 
                       <div className="w-48 space-y-2 flex-shrink-0">
-                         <Image src={currentSrc || '/placeholder-image.png'} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
+                         {currentSrc && <Image src={currentSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />}
                          <Input type="file" onChange={(e) => handleFileChange(e, index)} />
                       </div>
 

@@ -158,7 +158,6 @@ export default function GalleryAdminPage() {
       
       const addedItem = await addRes.json();
       
-      // Use the local preview URL for immediate display
       const reader = new FileReader();
       reader.onloadend = () => {
           const previewUrl = reader.result as string;

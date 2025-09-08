@@ -112,7 +112,6 @@ export default function HeroAdminPage() {
 
   async function onSubmit(values: z.infer<typeof heroSchema>) {
     setIsLoading(true);
-    // Use the values from the form, which might contain preview data URLs
     let submissionValues = { ...values }; 
 
     try {
@@ -123,7 +122,6 @@ export default function HeroAdminPage() {
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            // Replace the potentially preview-URL `src` with the final path
             submissionValues.images[sf.index].src = newPath;
           } else {
             throw new Error(`Failed to upload image for item ${sf.index + 1}.`);
@@ -158,8 +156,7 @@ export default function HeroAdminPage() {
   }
 
   const handleAddImage = () => {
-    // Add a temporary placeholder. The user will be prompted to upload a real file.
-    append({ src: '/placeholder-image.png', alt: 'New Image' });
+    append({ src: '', alt: 'New Image' });
   };
 
 
@@ -268,13 +265,14 @@ export default function HeroAdminPage() {
                       return (
                         <div key={field.id} className="flex flex-col md:flex-row items-start gap-4 p-4 border rounded-lg">
                            <div className="w-full md:w-32 flex-shrink-0">
+                             {currentSrc && (
                              <Image 
-                                src={currentSrc || '/placeholder-image.png'} 
+                                src={currentSrc} 
                                 alt={form.watch(`images.${index}.alt`) || 'Hero image preview'} 
                                 width={128} 
                                 height={128} 
                                 className="object-cover rounded-md aspect-square bg-muted"
-                            />
+                            />)}
                            </div>
                            <div className="flex-grow space-y-4 w-full">
                              <FormItem>

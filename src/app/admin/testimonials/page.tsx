@@ -158,7 +158,7 @@ export default function TestimonialsAdminPage() {
       quote: "A new fantastic testimonial about our services.",
       author: "New Client",
       company: "Client's Company",
-      avatar: '/placeholder-image.png'
+      avatar: ''
     };
     try {
       const res = await fetch('/api/testimonials', {
@@ -232,7 +232,7 @@ export default function TestimonialsAdminPage() {
                              <FormItem className="md:col-span-2">
                                 <FormLabel>Avatar</FormLabel>
                                 <div className="flex items-center gap-4">
-                                    <Image src={currentSrc || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
+                                    {currentSrc && <Image src={currentSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>}
                                     <div className="flex-grow">
                                         <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting}/>
                                     </div>

@@ -157,7 +157,7 @@ export default function ServicesAdminPage() {
       title: "New Service",
       description: "A brief description of the new service.",
       icon: "Wand",
-      image: "/placeholder-image.png",
+      image: "",
     };
     try {
       const res = await fetch('/api/services', {
@@ -231,7 +231,7 @@ export default function ServicesAdminPage() {
                         <FormItem>
                             <FormLabel>Image</FormLabel>
                             <div className="flex items-center gap-4">
-                                <Image src={currentSrc || '/placeholder-image.png'} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>
+                                {currentSrc && <Image src={currentSrc} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>}
                                 <div className="flex-grow">
                                     <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
                                 </div>
