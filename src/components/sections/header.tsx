@@ -18,7 +18,7 @@ const navLinks = [
     { href: "#portfolio", label: "Portfolio" },
     { href: "#testimonials", label: "Testimonials" },
 ];
-
+//t
 export function Header() {
     const pathname = usePathname();
     const [scrolled, setScrolled] = React.useState(false);
