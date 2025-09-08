@@ -60,22 +60,31 @@ export const db = {
   // HERO
   getHero: async (): Promise<HeroData> => {
     const db = await connectToDb();
-    if (!db) return {
-      headline: 'Creating Stories',
-      subheadline: 'We are a creative film and photo production house. Please connect to a database to see full content.',
-      ctaText: 'Explore Now',
-      ctaLink: '#portfolio',
-      images: [
-        { src: '/uploads/hero/placeholder-1.jpg', alt: 'Man with a camera' },
-        { src: '/uploads/hero/placeholder-2.jpg', alt: 'Film set lighting' },
-        { src: '/uploads/hero/placeholder-3.jpg', alt: 'Video editing suite' },
-        { src: '/uploads/hero/placeholder-4.jpg', alt: 'Drone flying over a landscape' },
-        { src: '/uploads/hero/placeholder-5.jpg', alt: 'Podcast recording microphone' },
-        { src: '/uploads/hero/placeholder-6.jpg', alt: 'Photographer in action' },
-      ],
+    const fallbackData: HeroData = {
+        headline: 'Creating Stories',
+        subheadline: 'We are a creative film and photo production house. Please connect to a database to see full content.',
+        ctaText: 'Explore Now',
+        ctaLink: '#portfolio',
+        images: [
+            { src: '/uploads/hero/placeholder-1.jpg', alt: 'Man with a camera' },
+            { src: '/uploads/hero/placeholder-2.jpg', alt: 'Film set lighting' },
+            { src: '/uploads/hero/placeholder-3.jpg', alt: 'Video editing suite' },
+            { src: '/uploads/hero/placeholder-4.jpg', alt: 'Drone flying over a landscape' },
+            { src: '/uploads/hero/placeholder-5.jpg', alt: 'Podcast recording microphone' },
+            { src: '/uploads/hero/placeholder-6.jpg', alt: 'Photographer in action' },
+        ],
     };
+
+    if (!db) return fallbackData;
+    
     const data = await db.collection<HeroData>('hero').findOne({});
-    return data ? JSON.parse(JSON.stringify(data)) : { headline: '', subheadline: '', ctaText: '', ctaLink: '#', images: [] };
+    
+    if (!data) return fallbackData;
+
+    // Ensure images is always an array
+    const images = Array.isArray(data.images) ? data.images : [];
+
+    return JSON.parse(JSON.stringify({ ...data, images }));
   },
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
