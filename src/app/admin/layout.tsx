@@ -31,6 +31,7 @@ import {
   Settings,
   Search,
   Video,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { Logo } from "@/components/shared/logo";
@@ -57,6 +58,7 @@ const menuItems = [
     {
         label: "Site",
         items: [
+            { href: "/admin/inquiries", label: "Inquiries", icon: Mail },
             { href: "/admin/contact", label: "Contact", icon: Contact },
             { href: "/admin/footer", label: "Footer", icon: Footprints },
             { href: "/admin/seo", label: "SEO", icon: Search },

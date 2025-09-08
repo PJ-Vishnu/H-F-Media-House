@@ -1,3 +1,4 @@
+
 import { MongoClient, Db, WithId } from 'mongodb';
 import type { HeroData } from '@/modules/hero/hero.schema';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
@@ -10,6 +11,7 @@ import type { FooterData } from '@/modules/footer/footer.schema';
 import type { AdminUser } from '@/modules/admin/admin.schema';
 import type { SEOData } from '@/modules/seo/seo.schema';
 import type { VideoData } from '@/modules/video/video.schema';
+import type { Inquiry } from '@/modules/inquiries/inquiries.schema';
 
 
 // Ensure the MONGODB_URI is set in your environment variables
@@ -367,6 +369,26 @@ export const db = {
     await db.collection('seo').updateOne({}, { $set: data }, { upsert: true });
     return data;
   },
-};
 
-    
+  // INQUIRIES
+  getInquiries: async (): Promise<Inquiry[]> => {
+    const db = await connectToDb();
+    if (!db) return [];
+    const inquiries = await db.collection<Inquiry>('inquiries').find().sort({ createdAt: -1 }).toArray();
+    return inquiries.map(mapDoc);
+  },
+  addInquiry: async (item: Omit<Inquiry, 'id' | 'createdAt'>): Promise<Inquiry> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const newItem = { ...item, createdAt: new Date() };
+    const result = await db.collection('inquiries').insertOne(newItem);
+    return mapDoc({ ...newItem, _id: result.insertedId });
+  },
+  deleteInquiry: async (id: string): Promise<{ success: boolean }> => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    const { ObjectId } = await import('mongodb');
+    await db.collection('inquiries').deleteOne({ _id: new ObjectId(id) });
+    return { success: true };
+  },
+};

@@ -1,3 +1,4 @@
+
 import { MongoClient } from 'mongodb';
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
@@ -122,6 +123,28 @@ async function seed() {
           },
         });
         console.log('✓ Seeded contact');
+
+        // Inquiries
+        await db.collection('inquiries').insertMany([
+            { 
+                firstName: 'John', 
+                lastName: 'Doe', 
+                email: 'john.doe@example.com', 
+                phone: '123-456-7890', 
+                message: 'Hello, I would like to inquire about your wedding photography packages. We are getting married in October. Please let me know your availability and pricing. Thanks!',
+                createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000) // 2 days ago
+            },
+            { 
+                firstName: 'Jane', 
+                lastName: 'Smith', 
+                email: 'jane.smith@example.com', 
+                phone: '', 
+                message: 'I am interested in a branding video for my new startup. Can we schedule a call to discuss the details?',
+                createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000) // 1 day ago
+            },
+        ]);
+        console.log('✓ Seeded inquiries');
+
 
         // Footer Data
         await db.collection('footer').insertOne({
