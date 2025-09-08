@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createToken } from '@/lib/auth';
 import { db } from '@/lib/db';
-import bcrypt from 'bcryptjs'; // use the same lib as in seed
+import bcryptjs from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     // Compare password securely
-    const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
+    const isPasswordValid = await bcryptjs.compare(password, admin.passwordHash);
 
     // Always use a generic message for failures to prevent email enumeration
     if (!isPasswordValid || email !== admin.email) {

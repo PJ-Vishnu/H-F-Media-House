@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
-import fs from 'fs';
-import { pipeline } from 'stream/promises';
+import fs from 'fs/promises';
+import { stat } from 'fs/promises';
 
 export const config = {
   api: {
@@ -13,23 +13,32 @@ const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.webm'];
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
-// Ensure base upload directory exists
-fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+async function fileExists(filePath: string): Promise<boolean> {
+  try {
+    await stat(filePath);
+    return true;
+  } catch (error: any) {
+    if (error.code === 'ENOENT') {
+      return false;
+    }
+    throw error;
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const section = formData.get('section') as string | null;
-    
+
     if (!file) {
       return NextResponse.json({ success: false, message: 'File not found in form data.' }, { status: 400 });
     }
-    
+
     if (!section || !section.match(/^[a-zA-Z0-9_-]+$/)) {
       return NextResponse.json({ success: false, message: 'Invalid or missing section name.' }, { status: 400 });
     }
-    
+
     const extension = path.extname(file.name).toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(extension)) {
       return NextResponse.json({ success: false, message: `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, { status: 400 });
@@ -40,7 +49,14 @@ export async function POST(req: NextRequest) {
     }
 
     const sectionDir = path.join(UPLOADS_DIR, section);
-    fs.mkdirSync(sectionDir, { recursive: true });
+    
+    // Ensure the section directory exists.
+    if (!(await fileExists(sectionDir))) {
+      await fs.mkdir(sectionDir, { recursive: true });
+    }
+    
+    // Create a buffer from the file
+    const buffer = Buffer.from(await file.arrayBuffer());
 
     const timestamp = Date.now();
     const originalName = path.basename(file.name, extension);
@@ -48,18 +64,12 @@ export async function POST(req: NextRequest) {
     const filename = `${timestamp}-${sanitizedName}${extension}`;
     const filePath = path.join(sectionDir, filename);
 
-    if (!file.stream) {
-         return NextResponse.json({ success: false, message: 'ReadableStream not supported or file is empty.' }, { status: 400 });
-    }
-    const fileStream = file.stream();
-    const writeStream = fs.createWriteStream(filePath);
+    // Save the file to the specified path
+    await fs.writeFile(filePath, buffer);
 
-    // This is the correct way to pipe a web stream to a node stream
-    // @ts-ignore - NodeJS.ReadableStream is compatible with ReadableStream for pipeline
-    await pipeline(fileStream, writeStream);
-
+    // The public path must use forward slashes for URLs
     const publicPath = `/uploads/${section}/${filename}`;
-    
+
     return NextResponse.json({ success: true, filePath: publicPath }, { status: 200 });
 
   } catch (error: any) {

@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb';
-import bcrypt from 'bcrypt';
+import bcryptjs from 'bcryptjs';
 import 'dotenv/config';
 
 const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/CMS2";
@@ -26,7 +26,7 @@ async function seed() {
     // Hash the password before inserting
     const plainPassword = 'password';
     const saltRounds = 10;
-    const passwordHash = await bcrypt.hash(plainPassword, saltRounds);
+    const passwordHash = await bcryptjs.hash(plainPassword, saltRounds);
 
     // Admin User
     await db.collection('admin').insertOne({
