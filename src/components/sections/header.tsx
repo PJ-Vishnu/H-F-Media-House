@@ -12,9 +12,11 @@ import React from "react";
 
 const navLinks = [
     { href: "#hero", label: "Home" },
-    { href: "#gallery", label: "Gallery" },
     { href: "#about", label: "About" },
     { href: "#services", label: "Services" },
+    { href: "#gallery", label: "Gallery" },
+    { href: "#portfolio", label: "Portfolio" },
+    { href: "#testimonials", label: "Testimonials" },
 ];
 
 export function Header() {
