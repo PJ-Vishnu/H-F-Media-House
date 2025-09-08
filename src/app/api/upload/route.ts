@@ -16,17 +16,6 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 // Ensure base upload directory exists
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 
-async function streamToBuffer(stream: ReadableStream<Uint8Array>): Promise<Buffer> {
-  const reader = stream.getReader();
-  const chunks: Uint8Array[] = [];
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-  }
-  return Buffer.concat(chunks);
-}
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -60,6 +49,9 @@ export async function POST(req: NextRequest) {
     const filePath = path.join(sectionDir, filename);
 
     // Stream the file to the destination
+    if (!file.stream) {
+         return NextResponse.json({ success: false, message: 'ReadableStream not supported or file is empty.' }, { status: 400 });
+    }
     const fileStream = file.stream();
     const writeStream = fs.createWriteStream(filePath);
     const writableNodeStream = Writable.fromWeb(writeStream as any);
