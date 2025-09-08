@@ -105,7 +105,7 @@ export default function PortfolioAdminPage() {
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('section', 'portfolio'); // Add section to form data
+    formData.append('section', 'portfolio');
     try {
       const res = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

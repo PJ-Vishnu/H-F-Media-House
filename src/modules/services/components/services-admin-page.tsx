@@ -101,7 +101,7 @@ export default function ServicesAdminPage() {
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('section', 'services'); // Add section to form data
+    formData.append('section', 'services');
     try {
       const res = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -219,7 +219,6 @@ export default function ServicesAdminPage() {
                             render={({ field }) => (
                                 <FormItem><FormLabel>Icon Name</FormLabel><FormControl><Input {...field} placeholder="e.g. Camera" /></FormControl><FormMessage /></FormItem>
                             )}
-                            />
                           </div>
                         <FormField
                           control={form.control}

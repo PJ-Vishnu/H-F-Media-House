@@ -79,7 +79,7 @@ export default function AboutAdminPage() {
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('section', 'about'); // Add section to form data
+    formData.append('section', 'about');
     try {
       const res = await axios.post('/api/upload', formData, {
         headers: {

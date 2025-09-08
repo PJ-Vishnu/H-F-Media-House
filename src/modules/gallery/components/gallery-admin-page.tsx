@@ -119,7 +119,7 @@ export default function GalleryAdminPage() {
     setIsUploading(true);
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('section', 'gallery'); // Add section to form data
+    formData.append('section', 'gallery');
 
     try {
       const res = await axios.post('/api/upload', formData, {

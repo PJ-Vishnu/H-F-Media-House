@@ -81,7 +81,7 @@ export default function VideoAdminPage() {
     formData.append('file', file);
     formData.append('section', section);
     try {
-      const res = await axios.post(`/api/upload`, formData, {
+      const res = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
