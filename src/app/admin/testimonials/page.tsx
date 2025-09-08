@@ -32,7 +32,6 @@ const testimonialsSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
-  preview: string;
 };
 
 export default function TestimonialsAdminPage() {
@@ -47,7 +46,7 @@ export default function TestimonialsAdminPage() {
     defaultValues: { testimonials: [] },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: "testimonials",
   });
@@ -77,11 +76,13 @@ export default function TestimonialsAdminPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const previewUrl = e.target?.result as string;
+      const currentTestimonials = form.getValues('testimonials');
+      update(index, { ...currentTestimonials[index], avatar: previewUrl });
+      
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: previewUrl }];
+        return [...others, { index, file }];
       });
-      form.setValue(`testimonials.${index}.avatar`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -116,7 +117,7 @@ export default function TestimonialsAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof testimonialsSchema>) => {
     setIsSubmitting(true);
-    let updatedTestimonials = [...data.testimonials];
+    let submissionValues = { ...data };
 
     try {
       if (stagedFiles.length > 0) {
@@ -126,14 +127,14 @@ export default function TestimonialsAdminPage() {
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            updatedTestimonials[sf.index].avatar = newPath;
+            submissionValues.testimonials[sf.index].avatar = newPath;
           } else {
-            throw new Error(`Upload failed for testimonial: ${updatedTestimonials[sf.index].author}`);
+            throw new Error(`Upload failed for testimonial: ${submissionValues.testimonials[sf.index].author}`);
           }
         });
       }
       
-      for (const testimonial of updatedTestimonials) {
+      for (const testimonial of submissionValues.testimonials) {
         const { id, ...testimonialData } = testimonial;
         await fetch(`/api/testimonials?id=${id}`, {
           method: 'PUT',
@@ -142,7 +143,7 @@ export default function TestimonialsAdminPage() {
         });
       }
       toast({ title: "Success!", description: "Testimonials updated successfully." });
-      form.reset({ testimonials: updatedTestimonials });
+      form.reset({ testimonials: submissionValues.testimonials });
       setStagedFiles([]);
 
     } catch (error) {
@@ -157,7 +158,7 @@ export default function TestimonialsAdminPage() {
       quote: "A new fantastic testimonial about our services.",
       author: "New Client",
       company: "Client's Company",
-      avatar: 'https://placehold.co/150x150'
+      avatar: '/placeholder-image.png'
     };
     try {
       const res = await fetch('/api/testimonials', {
@@ -201,8 +202,7 @@ export default function TestimonialsAdminPage() {
                   Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)
                 ) : (
                   fields.map((field, index) => {
-                    const stagedFile = stagedFiles.find(f => f.index === index);
-                    const previewSrc = stagedFile ? stagedFile.preview : (form.watch(`testimonials.${index}.avatar`) || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`);
+                    const currentSrc = form.watch(`testimonials.${index}.avatar`);
                     
                     return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
@@ -232,7 +232,7 @@ export default function TestimonialsAdminPage() {
                              <FormItem className="md:col-span-2">
                                 <FormLabel>Avatar</FormLabel>
                                 <div className="flex items-center gap-4">
-                                    <Image src={previewSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
+                                    <Image src={currentSrc || `https://i.pravatar.cc/150?u=${form.getValues(`testimonials.${index}.author`)}`} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>
                                     <div className="flex-grow">
                                         <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting}/>
                                     </div>

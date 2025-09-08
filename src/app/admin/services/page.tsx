@@ -32,7 +32,6 @@ const servicesSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
-  preview: string;
 };
 
 export default function ServicesAdminPage() {
@@ -47,7 +46,7 @@ export default function ServicesAdminPage() {
     defaultValues: { services: [] },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: "services",
   });
@@ -90,11 +89,13 @@ export default function ServicesAdminPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const previewUrl = e.target?.result as string;
+      const currentServices = form.getValues('services');
+      update(index, { ...currentServices[index], image: previewUrl });
+      
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: previewUrl }];
+        return [...others, { index, file }];
       });
-      form.setValue(`services.${index}.image`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -116,7 +117,7 @@ export default function ServicesAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof servicesSchema>) => {
     setIsSubmitting(true);
-    let updatedServices = [...data.services];
+    let submissionValues = { ...data };
 
     try {
       if (stagedFiles.length > 0) {
@@ -126,14 +127,14 @@ export default function ServicesAdminPage() {
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            updatedServices[sf.index].image = newPath;
+            submissionValues.services[sf.index].image = newPath;
           } else {
-            throw new Error(`Upload failed for service: ${updatedServices[sf.index].title}`);
+            throw new Error(`Upload failed for service: ${submissionValues.services[sf.index].title}`);
           }
         });
       }
 
-      for (const service of updatedServices) {
+      for (const service of submissionValues.services) {
         await fetch(`/api/services?id=${service.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -141,7 +142,7 @@ export default function ServicesAdminPage() {
         });
       }
       toast({ title: "Success!", description: "Services updated successfully." });
-      form.reset({ services: updatedServices });
+      form.reset({ services: submissionValues.services });
       setStagedFiles([]);
 
     } catch (error) {
@@ -156,7 +157,7 @@ export default function ServicesAdminPage() {
       title: "New Service",
       description: "A brief description of the new service.",
       icon: "Wand",
-      image: "https://placehold.co/600x800",
+      image: "/placeholder-image.png",
     };
     try {
       const res = await fetch('/api/services', {
@@ -200,8 +201,7 @@ export default function ServicesAdminPage() {
                   Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)
                 ) : (
                   fields.map((field, index) => {
-                    const stagedFile = stagedFiles.find(f => f.index === index);
-                    const previewSrc = stagedFile ? stagedFile.preview : form.watch(`services.${index}.image`);
+                    const currentSrc = form.watch(`services.${index}.image`);
 
                     return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
@@ -231,7 +231,7 @@ export default function ServicesAdminPage() {
                         <FormItem>
                             <FormLabel>Image</FormLabel>
                             <div className="flex items-center gap-4">
-                                <Image src={previewSrc} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>
+                                <Image src={currentSrc || '/placeholder-image.png'} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>
                                 <div className="flex-grow">
                                     <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
                                 </div>

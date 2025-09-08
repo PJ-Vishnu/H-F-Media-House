@@ -32,7 +32,6 @@ const heroSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
-  preview: string;
 };
 
 export default function HeroAdminPage() {
@@ -52,7 +51,7 @@ export default function HeroAdminPage() {
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control: form.control,
     name: "images",
   });
@@ -82,11 +81,15 @@ export default function HeroAdminPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const previewUrl = e.target?.result as string;
+      // Update the form state to show the preview immediately
+      const currentImages = form.getValues('images');
+      update(index, { ...currentImages[index], src: previewUrl });
+      
+      // Stage the actual file for upload
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: previewUrl }];
+        return [...others, { index, file }];
       });
-      form.setValue(`images.${index}.src`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -109,38 +112,34 @@ export default function HeroAdminPage() {
 
   async function onSubmit(values: z.infer<typeof heroSchema>) {
     setIsLoading(true);
-    let updatedImages = [...values.images];
+    // Use the values from the form, which might contain preview data URLs
+    let submissionValues = { ...values }; 
 
     try {
       if (stagedFiles.length > 0) {
-        // Upload all staged files
         const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
         const uploadedPaths = await Promise.all(uploadPromises);
 
-        // Update image sources with new paths
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            updatedImages[sf.index] = { ...updatedImages[sf.index], src: newPath };
+            // Replace the potentially preview-URL `src` with the final path
+            submissionValues.images[sf.index].src = newPath;
           } else {
-            // Handle potential upload failure for a specific file
             throw new Error(`Failed to upload image for item ${sf.index + 1}.`);
           }
         });
       }
 
-      const finalValues = { ...values, images: updatedImages };
-
       const res = await fetch("/api/hero", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(finalValues),
+        body: JSON.stringify(submissionValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
 
       const savedData = await res.json();
-      setData(savedData);
       form.reset(savedData);
       setStagedFiles([]); // Clear staged files after successful save
       toast({
@@ -157,6 +156,12 @@ export default function HeroAdminPage() {
         setIsLoading(false);
     }
   }
+
+  const handleAddImage = () => {
+    // Add a temporary placeholder. The user will be prompted to upload a real file.
+    append({ src: '/placeholder-image.png', alt: 'New Image' });
+  };
+
 
   if (!data) {
     return (
@@ -259,14 +264,12 @@ export default function HeroAdminPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {fields.map((field, index) => {
-                      const stagedFile = stagedFiles.find(f => f.index === index);
-                      const previewSrc = stagedFile ? stagedFile.preview : form.watch(`images.${index}.src`);
-
+                      const currentSrc = form.watch(`images.${index}.src`);
                       return (
                         <div key={field.id} className="flex flex-col md:flex-row items-start gap-4 p-4 border rounded-lg">
                            <div className="w-full md:w-32 flex-shrink-0">
                              <Image 
-                                src={previewSrc} 
+                                src={currentSrc || '/placeholder-image.png'} 
                                 alt={form.watch(`images.${index}.alt`) || 'Hero image preview'} 
                                 width={128} 
                                 height={128} 
@@ -299,7 +302,7 @@ export default function HeroAdminPage() {
                         </div>
                       )
                     })}
-                    <Button type="button" variant="outline" onClick={() => append({ src: 'https://placehold.co/600x800', alt: 'New Image' })}>
+                    <Button type="button" variant="outline" onClick={handleAddImage}>
                         <PlusCircle className="h-4 w-4 mr-2" /> Add Image
                     </Button>
                 </CardContent>

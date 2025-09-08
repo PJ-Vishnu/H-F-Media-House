@@ -38,13 +38,13 @@ export default function VideoAdminPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [stagedFiles, setStagedFiles] = useState<StagedFiles>({});
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof videoSchema>>({
     resolver: zodResolver(videoSchema),
   });
 
   const videoType = form.watch("videoType");
-  const thumbnailPreview = stagedFiles.thumbnail?.preview || form.watch('videoThumbnail');
 
   useEffect(() => {
     async function fetchData() {
@@ -53,6 +53,9 @@ export default function VideoAdminPage() {
         const fetchedData: VideoData = await res.json();
         setData(fetchedData);
         form.reset(fetchedData);
+        if (fetchedData.videoThumbnail) {
+            setThumbnailPreview(fetchedData.videoThumbnail)
+        }
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch data" });
       }
@@ -67,8 +70,9 @@ export default function VideoAdminPage() {
     if (fileType === 'thumbnail') {
         const reader = new FileReader();
         reader.onload = (e) => {
-            setStagedFiles(prev => ({ ...prev, thumbnail: { file, preview: e.target?.result as string }}));
-            form.setValue('videoThumbnail', e.target?.result as string, { shouldDirty: true });
+            const result = e.target?.result as string;
+            setStagedFiles(prev => ({ ...prev, thumbnail: { file, preview: result }}));
+            setThumbnailPreview(result);
         };
         reader.readAsDataURL(file);
     } else {
@@ -127,6 +131,7 @@ export default function VideoAdminPage() {
       form.reset(savedData);
       setStagedFiles({});
       setUploadProgress(0);
+      if (savedData.videoThumbnail) setThumbnailPreview(savedData.videoThumbnail)
 
     } catch (error) {
       toast({ variant: "destructive", title: "Save Failed", description: error instanceof Error ? error.message : "Unknown error" });

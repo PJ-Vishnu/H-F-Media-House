@@ -38,17 +38,9 @@ const gallerySchema = z.object({
   }))
 });
 
-type StagedFile = {
-  index: number;
-  file: File;
-  preview: string;
-};
-
-
 export default function GalleryAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
@@ -112,24 +104,9 @@ export default function GalleryAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof gallerySchema>) => {
     setIsSubmitting(true);
-    let updatedItems = [...data.images];
-
+    
     try {
-      if (stagedFiles.length > 0) {
-        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
-        const uploadedPaths = await Promise.all(uploadPromises);
-
-        stagedFiles.forEach((sf, i) => {
-          const newPath = uploadedPaths[i];
-          if (newPath) {
-            updatedItems[sf.index].src = newPath;
-          } else {
-            throw new Error(`Upload failed for an image.`);
-          }
-        });
-      }
-
-      const finalItems = updatedItems.map((item, index) => ({...item, order: index + 1 }));
+      const finalItems = data.images.map((item, index) => ({...item, order: index + 1 }));
 
       await fetch('/api/gallery/reorder', {
         method: 'POST',
@@ -147,7 +124,6 @@ export default function GalleryAdminPage() {
 
       toast({ title: "Success!", description: "Gallery updated successfully." });
       form.reset({ images: finalItems });
-      setStagedFiles([]);
 
     } catch (error) {
       toast({ variant: 'destructive', title: "Failed to save gallery.", description: error instanceof Error ? error.message : "Unknown error" });
@@ -167,7 +143,7 @@ export default function GalleryAdminPage() {
 
       const newImage = {
         src: newImageUrl,
-        alt: "New uploaded image",
+        alt: file.name || "New uploaded image",
         colSpan: 1,
         rowSpan: 1,
       };
@@ -181,8 +157,16 @@ export default function GalleryAdminPage() {
       if(!addRes.ok) throw new Error('Failed to save image reference');
       
       const addedItem = await addRes.json();
-      append(addedItem);
-      toast({ title: "Image uploaded and added" });
+      
+      // Use the local preview URL for immediate display
+      const reader = new FileReader();
+      reader.onloadend = () => {
+          const previewUrl = reader.result as string;
+          append({ ...addedItem, src: previewUrl });
+          toast({ title: "Image uploaded and added" });
+      };
+      reader.readAsDataURL(file);
+
     } catch (error) {
         toast({ variant: 'destructive', title: 'Upload failed' });
     } finally {
@@ -200,14 +184,14 @@ export default function GalleryAdminPage() {
             <div>
                 <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
                     {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Save Changes
+                    Save All Changes
                 </Button>
             </div>
           </div>
           <Card className="mb-6">
             <CardHeader>
                 <CardTitle>Upload New Image</CardTitle>
-                <CardDescription>Upload a new image to add to the gallery. It will be added to the end of the list. Remember to save changes after uploading.</CardDescription>
+                <CardDescription>Upload a new image to add to the gallery. It will be added to the end of the list. Remember to save changes after modifying the order or details.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Input type="file" onChange={handleFileChange} disabled={isUploading} />
@@ -222,7 +206,7 @@ export default function GalleryAdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>Gallery Images</CardTitle>
-              <CardDescription>Drag to reorder images. Changes to alt text and layout are saved automatically.</CardDescription>
+              <CardDescription>Drag to reorder images. Changes to alt text and layout are saved when you hit the "Save All Changes" button.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">

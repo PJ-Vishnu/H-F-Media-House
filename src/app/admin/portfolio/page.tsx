@@ -32,7 +32,6 @@ const portfolioSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
-  preview: string;
 };
 
 export default function PortfolioAdminPage() {
@@ -47,7 +46,7 @@ export default function PortfolioAdminPage() {
     defaultValues: { items: [] },
   });
   
-  const { fields, append, remove, move } = useFieldArray({
+  const { fields, append, remove, move, update } = useFieldArray({
     control: form.control,
     name: "items",
   });
@@ -94,11 +93,13 @@ export default function PortfolioAdminPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const previewUrl = e.target?.result as string;
+      const currentItems = form.getValues('items');
+      update(index, { ...currentItems[index], imageUrl: previewUrl });
+      
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, preview: previewUrl }];
+        return [...others, { index, file }];
       });
-      form.setValue(`items.${index}.imageUrl`, previewUrl, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
@@ -120,10 +121,9 @@ export default function PortfolioAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof portfolioSchema>) => {
     setIsSubmitting(true);
-    let updatedItems = [...data.items];
+    let submissionValues = { ...data };
 
     try {
-      // Upload staged files and update their URLs
       if (stagedFiles.length > 0) {
         const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
         const uploadedPaths = await Promise.all(uploadPromises);
@@ -131,16 +131,15 @@ export default function PortfolioAdminPage() {
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            updatedItems[sf.index].imageUrl = newPath;
+            submissionValues.items[sf.index].imageUrl = newPath;
           } else {
-            throw new Error(`Upload failed for item: ${updatedItems[sf.index].title}`);
+            throw new Error(`Upload failed for item: ${submissionValues.items[sf.index].title}`);
           }
         });
       }
       
-      const finalItems = updatedItems.map((item, index) => ({ ...item, order: index + 1 }));
+      const finalItems = submissionValues.items.map((item, index) => ({ ...item, order: index + 1 }));
 
-      // Reorder API call
       const orderedIds = finalItems.map(item => item.id);
       await fetch('/api/portfolio/reorder', {
         method: 'POST',
@@ -148,7 +147,6 @@ export default function PortfolioAdminPage() {
         body: JSON.stringify({ orderedIds })
       });
       
-      // Update individual items
       for(const item of finalItems) {
         await fetch(`/api/portfolio?id=${item.id}`, {
           method: 'PUT',
@@ -173,7 +171,7 @@ export default function PortfolioAdminPage() {
         title: "New Project",
         description: "A brief description of the new project.",
         category: "Video",
-        imageUrl: "https://placehold.co/600x400",
+        imageUrl: "/placeholder-image.png", // temp placeholder
     };
     try {
         const res = await fetch('/api/portfolio', {
@@ -217,9 +215,7 @@ export default function PortfolioAdminPage() {
                   Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                 ) : (
                   fields.map((field, index) => {
-                    const stagedFile = stagedFiles.find(f => f.index === index);
-                    const previewSrc = stagedFile ? stagedFile.preview : form.watch(`items.${index}.imageUrl`);
-
+                    const currentSrc = form.watch(`items.${index}.imageUrl`);
                     return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
                       <div className="flex flex-col items-center pt-2">
@@ -251,7 +247,7 @@ export default function PortfolioAdminPage() {
                       </div>
 
                       <div className="w-48 space-y-2 flex-shrink-0">
-                         <Image src={previewSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
+                         <Image src={currentSrc || '/placeholder-image.png'} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />
                          <Input type="file" onChange={(e) => handleFileChange(e, index)} />
                       </div>
 

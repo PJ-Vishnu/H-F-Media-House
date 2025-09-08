@@ -63,7 +63,6 @@ export default function SEOAdminPage() {
     reader.onloadend = () => {
       const result = reader.result as string;
       setPreviewUrl(result);
-      form.setValue('ogImage', result, { shouldDirty: true });
     };
     reader.readAsDataURL(file);
   };
