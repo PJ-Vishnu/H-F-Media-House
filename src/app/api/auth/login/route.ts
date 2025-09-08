@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createToken } from '@/lib/auth';
 import { db } from '@/lib/db';
-import bcrypt from 'bcrypt'; // use the same lib as in seed
+import bcrypt from 'bcryptjs'; // use the same lib as in seed
 
 export async function POST(req: Request) {
   try {
