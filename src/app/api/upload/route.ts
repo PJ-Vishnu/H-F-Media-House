@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import fs from 'fs';
-import { Writable } from 'stream';
+import { pipeline } from 'stream/promises';
 
 export const config = {
   api: {
@@ -53,8 +53,10 @@ export async function POST(req: NextRequest) {
     }
     const fileStream = file.stream();
     const writeStream = fs.createWriteStream(filePath);
-    const writableNodeStream = Writable.fromWeb(writeStream as any);
-    await fileStream.pipeTo(writableNodeStream);
+
+    // This is the correct way to pipe a web stream to a node stream
+    // @ts-ignore - NodeJS.ReadableStream is compatible with ReadableStream for pipeline
+    await pipeline(fileStream, writeStream);
 
     const publicPath = `/uploads/${section}/${filename}`;
     
