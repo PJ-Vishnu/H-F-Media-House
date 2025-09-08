@@ -32,6 +32,7 @@ const servicesSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
+  previewUrl: string;
 };
 
 export default function ServicesAdminPage() {
@@ -96,7 +97,7 @@ export default function ServicesAdminPage() {
       
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file }];
+        return [...others, { index, file, previewUrl }];
       });
     };
     reader.readAsDataURL(file);
@@ -155,7 +156,7 @@ export default function ServicesAdminPage() {
   };
 
   const handleAddItem = async () => {
-    const newService = {
+    const newServiceData = {
       title: "New Service",
       description: "A brief description of the new service.",
       icon: "Wand",
@@ -165,7 +166,7 @@ export default function ServicesAdminPage() {
       const res = await fetch('/api/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newService),
+        body: JSON.stringify(newServiceData),
       });
       if (!res.ok) throw new Error('Failed to add service');
       const addedService = await res.json();
@@ -204,7 +205,6 @@ export default function ServicesAdminPage() {
                 ) : (
                   fields.map((field, index) => {
                     const currentSrc = form.watch(`services.${index}.image`);
-
                     return (
                     <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
                       <div className="flex-grow space-y-4">
