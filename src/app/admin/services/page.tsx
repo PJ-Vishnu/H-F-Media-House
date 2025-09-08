@@ -55,6 +55,7 @@ export default function ServicesAdminPage() {
     async function fetchData() {
       try {
         const res = await fetch("/api/services");
+        if (!res.ok) throw new Error("Failed to fetch");
         const fetchedData: Service[] = await res.json();
         form.reset({ services: fetchedData });
       } catch (error) {
@@ -79,6 +80,7 @@ export default function ServicesAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete service" });
     } finally {
       setItemToDelete(null);
+      setDialogOpen(false);
     }
   };
   
