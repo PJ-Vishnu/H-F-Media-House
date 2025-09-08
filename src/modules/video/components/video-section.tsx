@@ -24,12 +24,21 @@ const getYouTubeEmbedUrl = (url: string): string | null => {
 
 
 const VideoPlayer = ({ data }: VideoSectionProps) => {
-  const [baseUrl, setBaseUrl] = useState('');
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     // This ensures window is defined, runs only on client
-    setBaseUrl(window.location.origin);
+    setIsClient(true);
   }, []);
+  
+  if (!isClient) {
+     return (
+      <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+        <p className="text-muted-foreground">Loading video...</p>
+      </div>
+    );
+  }
+
 
   if (!data.videoUrl) {
     return (
@@ -63,13 +72,12 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
   }
 
   if (data.videoType === 'upload') {
-    const videoSrc = data.videoUrl.startsWith('http') ? data.videoUrl : `${baseUrl}${data.videoUrl}`;
     return (
       <div className="aspect-video relative rounded-xl overflow-hidden shadow-2xl">
         <video
           controls
-          src={videoSrc}
-          poster={data.videoThumbnail ? (data.videoThumbnail.startsWith('http') ? data.videoThumbnail : `${baseUrl}${data.videoThumbnail}`) : ''}
+          src={data.videoUrl}
+          poster={data.videoThumbnail || ''}
           className="w-full h-full object-cover bg-black"
         >
           Your browser does not support the video tag.
