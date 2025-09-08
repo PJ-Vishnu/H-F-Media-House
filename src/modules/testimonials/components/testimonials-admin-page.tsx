@@ -88,8 +88,9 @@ export default function TestimonialsAdminPage() {
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('section', 'testimonials'); // Add section to form data
     try {
-      const res = await axios.post('/api/upload?section=testimonials', formData, {
+      const res = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data.filePath;
@@ -261,5 +262,3 @@ export default function TestimonialsAdminPage() {
     </div>
   );
 }
-
-    

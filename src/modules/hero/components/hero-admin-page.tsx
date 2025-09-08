@@ -93,8 +93,9 @@ export default function HeroAdminPage() {
   const uploadFile = async (file: File): Promise<string | null> => {
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('section', 'hero'); // Add section to form data
     try {
-      const res = await axios.post('/api/upload?section=hero', formData, {
+      const res = await axios.post('/api/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       return res.data.filePath;
@@ -307,5 +308,3 @@ export default function HeroAdminPage() {
     </div>
   );
 }
-
-    

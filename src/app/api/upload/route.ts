@@ -20,23 +20,23 @@ export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
-    const section = req.nextUrl.searchParams.get('section') || 'general';
+    const section = formData.get('section') as string | null;
     
     if (!file) {
       return NextResponse.json({ success: false, message: 'File not found in form data.' }, { status: 400 });
     }
-
-    if (!section.match(/^[a-zA-Z0-9_-]+$/)) {
-      return NextResponse.json({ success: false, message: 'Invalid section name.' }, { status: 400 });
+    
+    if (!section || !section.match(/^[a-zA-Z0-9_-]+$/)) {
+      return NextResponse.json({ success: false, message: 'Invalid or missing section name.' }, { status: 400 });
     }
     
     const extension = path.extname(file.name).toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(extension)) {
-      return NextResponse.json({ success: false, message: 'Invalid file type.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: `Invalid file type. Allowed: ${ALLOWED_EXTENSIONS.join(', ')}` }, { status: 400 });
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ success: false, message: 'File size exceeds the limit of 100MB.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: `File size exceeds the limit of ${MAX_FILE_SIZE / 1024 / 1024}MB.` }, { status: 400 });
     }
 
     const sectionDir = path.join(UPLOADS_DIR, section);
@@ -44,11 +44,10 @@ export async function POST(req: NextRequest) {
 
     const timestamp = Date.now();
     const originalName = path.basename(file.name, extension);
-    const sanitizedName = originalName.replace(/[^a-zA-Z0-9]/g, '_');
+    const sanitizedName = originalName.replace(/[^a-zA-Z0-9_.-]/g, '_');
     const filename = `${timestamp}-${sanitizedName}${extension}`;
     const filePath = path.join(sectionDir, filename);
 
-    // Stream the file to the destination
     if (!file.stream) {
          return NextResponse.json({ success: false, message: 'ReadableStream not supported or file is empty.' }, { status: 400 });
     }
