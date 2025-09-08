@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -25,7 +24,7 @@ const servicesSchema = z.object({
     title: z.string().min(1, "Title is required"),
     description: z.string().min(1, "Description is required"),
     icon: z.string().min(1, "Icon name is required"),
-    image: z.string().min(1, "Image is required"),
+    image: z.string().optional(),
   }))
 });
 
@@ -231,7 +230,10 @@ export default function ServicesAdminPage() {
                         <FormItem>
                             <FormLabel>Image</FormLabel>
                             <div className="flex items-center gap-4">
-                                {currentSrc && <Image src={currentSrc} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>}
+                                {currentSrc ? 
+                                <Image src={currentSrc} alt={form.getValues(`services.${index}.title`)} width={100} height={100} className="rounded-md object-cover aspect-square bg-muted"/>
+                                : <div className="w-[100px] h-[100px] bg-muted rounded-md flex items-center justify-center text-muted-foreground text-xs">No Image</div>
+                                }
                                 <div className="flex-grow">
                                     <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
                                 </div>
