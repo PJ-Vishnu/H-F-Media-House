@@ -63,6 +63,12 @@ const menuItems = [
             { href: "/admin/footer", label: "Footer", icon: Footprints },
             { href: "/admin/seo", label: "SEO", icon: Search },
         ]
+    },
+    {
+        label: "Account",
+        items: [
+            { href: "/admin/settings", label: "Settings", icon: Settings },
+        ]
     }
 ];
 
@@ -129,7 +135,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             {/* Can add breadcrumbs or title here */}
           </div>
           <div className="flex items-center gap-4">
-            <Settings />
+            <Link href="/admin/settings">
+                <Button variant="ghost" size="icon">
+                    <Settings />
+                </Button>
+            </Link>
           </div>
         </header>
         <main className="flex-1 p-6 bg-secondary/50 min-h-[calc(100vh-4rem)]">

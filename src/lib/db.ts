@@ -52,12 +52,20 @@ function mapDoc<T>(doc: WithId<any>): T {
 // Mock "DB" methods, now interacting with MongoDB
 export const db = {
   // ADMIN
-  getAdmin: async (): Promise<AdminUser> => {
+  getAdmin: async (): Promise<AdminUser | null> => {
     const db = await connectToDb();
     if (!db) return { email: 'admin@example.com', passwordHash: 'password' };
     const admin = await db.collection<AdminUser>('admin').findOne({});
-    return admin ?? { email: '', passwordHash: '' };
+    return admin ? JSON.parse(JSON.stringify(admin)) : null;
   },
+  updateAdminPassword: async (passwordHash: string) => {
+    const db = await connectToDb();
+    if (!db) throw new Error("Database not connected");
+    // Assuming there's only one admin document
+    await db.collection('admin').updateOne({}, { $set: { passwordHash } });
+    return { success: true };
+  },
+
 
   // HERO
   getHero: async (): Promise<HeroData> => {
