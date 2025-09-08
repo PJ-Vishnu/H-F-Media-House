@@ -137,7 +137,7 @@ export default function PortfolioAdminPage() {
         });
       }
       
-      const finalItems = updatedItems.map((item, index) => ({ ...item, order: index }));
+      const finalItems = updatedItems.map((item, index) => ({ ...item, order: index + 1 }));
 
       // Reorder API call
       const orderedIds = finalItems.map(item => item.id);
@@ -173,7 +173,6 @@ export default function PortfolioAdminPage() {
         description: "A brief description of the new project.",
         category: "Video",
         imageUrl: "https://placehold.co/600x400",
-        order: fields.length + 1,
     };
     try {
         const res = await fetch('/api/portfolio', {
