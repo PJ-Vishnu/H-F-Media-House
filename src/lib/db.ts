@@ -54,7 +54,7 @@ export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser | null> => {
     const db = await connectToDb();
-    if (!db) return { email: 'admin@example.com', passwordHash: 'password' };
+    if (!db) return { email: 'admin@example.com', passwordHash: '$2a$10$2.PXkSoB4SyVE2ODs5N54O.VG2CgNq8D1DR8y8bKx2L9jJ9x2P4xO' }; // password is "password"
     const admin = await db.collection<AdminUser>('admin').findOne({});
     return admin ? JSON.parse(JSON.stringify(admin)) : null;
   },

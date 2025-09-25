@@ -105,7 +105,7 @@ export function Carousel({ images, className }: CarouselProps) {
               }}
             >
               <Image
-                src={image.src.replace(/(\d+)\/(\d+)/, "800/600")}
+                src={image.src}
                 alt={image.alt}
                 width={800}
                 height={600}
@@ -125,7 +125,7 @@ export function Carousel({ images, className }: CarouselProps) {
             {images.map((image, i) => (
               <CarouselItem key={i} className="w-full h-[400px]">
                 <Image
-                  src={image.src.replace(/(\d+)\/(\d+)/, "800/600")}
+                  src={image.src}
                   alt={image.alt}
                   width={800}
                   height={600}
