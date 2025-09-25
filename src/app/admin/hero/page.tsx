@@ -39,6 +39,7 @@ export default function HeroAdminPage() {
   const [data, setData] = useState<HeroData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<Record<number, string>>({});
 
   const form = useForm<z.infer<typeof heroSchema>>({
     resolver: zodResolver(heroSchema),
@@ -63,6 +64,14 @@ export default function HeroAdminPage() {
         const fetchedData: HeroData = await res.json();
         setData(fetchedData);
         form.reset(fetchedData);
+        // Initialize previews from fetched data
+        const initialPreviews: Record<number, string> = {};
+        (fetchedData.images || []).forEach((image, index) => {
+            if (image.src) {
+                initialPreviews[index] = image.src;
+            }
+        });
+        setPreviewUrls(initialPreviews);
       } catch (error) {
         toast({
           variant: "destructive",
@@ -73,7 +82,7 @@ export default function HeroAdminPage() {
     }
     fetchData();
   }, [form, toast]);
-
+  
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -81,9 +90,12 @@ export default function HeroAdminPage() {
     const reader = new FileReader();
     reader.onload = (e) => {
       const previewUrl = e.target?.result as string;
-      // Update the form state to show the preview immediately
+      
+      setPreviewUrls(prev => ({...prev, [index]: previewUrl}));
+      
+      // We still need to update the form value, but we won't rely on it for previews
       const currentImages = form.getValues('images');
-      update(index, { ...currentImages[index], src: previewUrl });
+      update(index, { ...currentImages[index], src: 'file-staged' }); // Use a placeholder
       
       // Stage the actual file for upload
       setStagedFiles(prev => {
@@ -112,7 +124,9 @@ export default function HeroAdminPage() {
 
   async function onSubmit(values: z.infer<typeof heroSchema>) {
     setIsLoading(true);
-    let submissionValues = { ...values }; 
+    // Use the original data and apply updates
+    let submissionValues = JSON.parse(JSON.stringify(data));
+    submissionValues = { ...submissionValues, ...values };
 
     try {
       if (stagedFiles.length > 0) {
@@ -139,6 +153,12 @@ export default function HeroAdminPage() {
 
       const savedData = await res.json();
       form.reset(savedData);
+      setData(savedData);
+      const newPreviews: Record<number, string> = {};
+      (savedData.images || []).forEach((image: { src: string }, index: number) => {
+        if(image.src) newPreviews[index] = image.src;
+      });
+      setPreviewUrls(newPreviews);
       setStagedFiles([]); // Clear staged files after successful save
       toast({
         title: "Success!",
@@ -158,6 +178,14 @@ export default function HeroAdminPage() {
   const handleAddImage = () => {
     append({ src: '', alt: 'New Image' });
   };
+  
+  const handleRemoveImage = (index: number) => {
+      remove(index);
+      const newPreviews = {...previewUrls};
+      delete newPreviews[index];
+      // Re-index previews if necessary, though it might be better to just leave gaps
+      setPreviewUrls(newPreviews);
+  }
 
 
   if (!data) {
@@ -261,7 +289,7 @@ export default function HeroAdminPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     {fields.map((field, index) => {
-                      const currentSrc = form.watch(`images.${index}.src`);
+                      const currentSrc = previewUrls[index];
                       return (
                         <div key={field.id} className="flex flex-col md:flex-row items-start gap-4 p-4 border rounded-lg">
                            <div className="w-full md:w-32 flex-shrink-0">
@@ -294,7 +322,7 @@ export default function HeroAdminPage() {
                                 )}
                              />
                            </div>
-                           <Button type="button" variant="destructive" size="icon" onClick={() => remove(index)}>
+                           <Button type="button" variant="destructive" size="icon" onClick={() => handleRemoveImage(index)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
@@ -310,3 +338,5 @@ export default function HeroAdminPage() {
     </div>
   );
 }
+
+    
