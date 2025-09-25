@@ -23,10 +23,10 @@ const contactSchema = z.object({
   address: z.string().min(1, "Address is required"),
   imageUrl: z.string().optional(),
   socials: z.object({
-    facebook: z.string().url().or(z.literal("")).optional(),
-    twitter: z.string().url().or(z.literal("")).optional(),
-    instagram: z.string().url().or(z.literal("")).optional(),
-    linkedin: z.string().url().or(z.literal("")).optional(),
+    facebook: z.string().optional(),
+    twitter: z.string().optional(),
+    instagram: z.string().optional(),
+    linkedin: z.string().optional(),
   }),
 });
 
@@ -182,16 +182,16 @@ export default function ContactAdminPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={form.control} name="socials.facebook" render={({ field }) => (
-                  <FormItem><FormLabel>Facebook</FormLabel><FormControl><Input placeholder="https://facebook.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Facebook</FormLabel><FormControl><Input placeholder="https://facebook.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="socials.twitter" render={({ field }) => (
-                  <FormItem><FormLabel>Twitter</FormLabel><FormControl><Input placeholder="https://twitter.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Twitter</FormLabel><FormControl><Input placeholder="https://twitter.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="socials.instagram" render={({ field }) => (
-                  <FormItem><FormLabel>Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Instagram</FormLabel><FormControl><Input placeholder="https://instagram.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="socials.linkedin" render={({ field }) => (
-                  <FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/..." {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
             </CardContent>
           </Card>
