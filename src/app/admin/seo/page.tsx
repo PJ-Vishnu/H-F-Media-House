@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -36,23 +36,24 @@ export default function SEOAdminPage() {
   const form = useForm<z.infer<typeof seoSchema>>({
     resolver: zodResolver(seoSchema),
   });
+  
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/seo");
+      const fetchedData: SEOData = await res.json();
+      setData(fetchedData);
+      form.reset(fetchedData);
+      if(fetchedData.ogImage) {
+        setPreviewUrl(fetchedData.ogImage);
+      }
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch SEO data" });
+    }
+  }, [form, toast]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/seo");
-        const fetchedData: SEOData = await res.json();
-        setData(fetchedData);
-        form.reset(fetchedData);
-        if(fetchedData.ogImage) {
-          setPreviewUrl(fetchedData.ogImage);
-        }
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch SEO data" });
-      }
-    }
     fetchData();
-  }, [form, toast]);
+  }, [fetchData]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];

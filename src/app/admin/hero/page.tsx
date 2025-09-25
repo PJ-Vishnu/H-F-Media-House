@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -56,34 +56,35 @@ export default function HeroAdminPage() {
     control: form.control,
     name: "images",
   });
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/hero");
-        const fetchedData: HeroData = await res.json();
-        setData(fetchedData);
-        form.reset(fetchedData);
-        // Initialize previews from fetched data
-        const initialPreviews: Record<number, string> = {};
-        if (Array.isArray(fetchedData.images)) {
-          fetchedData.images.forEach((image, index) => {
-              if (image.src) {
-                  initialPreviews[index] = image.src;
-              }
-          });
-        }
-        setPreviewUrls(initialPreviews);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Failed to fetch data",
-          description: "Could not load hero section data.",
+  
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/hero");
+      const fetchedData: HeroData = await res.json();
+      setData(fetchedData);
+      form.reset(fetchedData);
+      // Initialize previews from fetched data
+      const initialPreviews: Record<number, string> = {};
+      if (Array.isArray(fetchedData.images)) {
+        fetchedData.images.forEach((image, index) => {
+            if (image.src) {
+                initialPreviews[index] = image.src;
+            }
         });
       }
+      setPreviewUrls(initialPreviews);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Failed to fetch data",
+        description: "Could not load hero section data.",
+      });
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
   
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];

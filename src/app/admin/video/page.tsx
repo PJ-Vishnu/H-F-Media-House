@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -46,22 +46,23 @@ export default function VideoAdminPage() {
 
   const videoType = form.watch("videoType");
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/video");
-        const fetchedData: VideoData = await res.json();
-        setData(fetchedData);
-        form.reset(fetchedData);
-        if (fetchedData.videoThumbnail) {
-            setThumbnailPreview(fetchedData.videoThumbnail)
-        }
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch data" });
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/video");
+      const fetchedData: VideoData = await res.json();
+      setData(fetchedData);
+      form.reset(fetchedData);
+      if (fetchedData.videoThumbnail) {
+          setThumbnailPreview(fetchedData.videoThumbnail)
       }
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch data" });
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, fileType: 'video' | 'thumbnail') => {
     const file = event.target.files?.[0];

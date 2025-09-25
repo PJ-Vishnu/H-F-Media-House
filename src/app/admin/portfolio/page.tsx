@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
 import type { PortfolioItem } from "@/modules/portfolio/portfolio.schema";
@@ -51,18 +51,19 @@ export default function PortfolioAdminPage() {
     name: "items",
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/portfolio");
-        const fetchedData: PortfolioItem[] = await res.json();
-        form.reset({ items: fetchedData });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch portfolio" });
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/portfolio");
+      const fetchedData: PortfolioItem[] = await res.json();
+      form.reset({ items: fetchedData });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch portfolio" });
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteClick = (id: string) => {
     setItemToDelete(id);

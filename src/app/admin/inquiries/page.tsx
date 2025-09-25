@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { Inquiry } from "@/modules/inquiries/inquiries.schema";
 import { Loader2, Trash2 } from "lucide-react";
@@ -33,21 +33,22 @@ export default function InquiriesAdminPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const res = await fetch("/api/inquiries");
-        const data: Inquiry[] = await res.json();
-        setInquiries(data);
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch inquiries" });
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/inquiries");
+      const data: Inquiry[] = await res.json();
+      setInquiries(data);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch inquiries" });
+    } finally {
+      setIsLoading(false);
     }
-    fetchData();
   }, [toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
   
   const handleDeleteClick = (id: string) => {
     setItemToDelete(id);

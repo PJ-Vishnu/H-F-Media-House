@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -42,22 +42,23 @@ export default function ContactAdminPage() {
     resolver: zodResolver(contactSchema),
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/contact");
-        const fetchedData: ContactData = await res.json();
-        setData(fetchedData);
-        form.reset(fetchedData);
-        if (fetchedData.imageUrl) {
-          setPreviewUrl(fetchedData.imageUrl);
-        }
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch data" });
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/contact");
+      const fetchedData: ContactData = await res.json();
+      setData(fetchedData);
+      form.reset(fetchedData);
+      if (fetchedData.imageUrl) {
+        setPreviewUrl(fetchedData.imageUrl);
       }
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch data" });
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
