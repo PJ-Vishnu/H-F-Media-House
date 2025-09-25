@@ -55,7 +55,7 @@ export default function AboutAdminPage() {
         while (features.length < 3) {
           features.push({ title: "", description: "" });
         }
-        form.reset({ ...fetchedData, features: features.slice(0, 3) });
+        form.reset({ ...fetchedData, features });
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch data" });
       }

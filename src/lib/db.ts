@@ -1,4 +1,5 @@
 
+
 import { MongoClient, Db, WithId } from 'mongodb';
 import type { HeroData } from '@/modules/hero/hero.schema';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
@@ -160,7 +161,7 @@ export const db = {
   // ABOUT
   getAbout: async (): Promise<AboutData> => {
     const db = await connectToDb();
-    if (!db) return { 
+    const fallbackData: AboutData = { 
         title: 'Our Story Behind the Lens', 
         content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
         imageUrl: '/uploads/about/1700000000020-placeholder.jpg', 
@@ -170,8 +171,17 @@ export const db = {
           { title: 'Passionate & Dedicated', description: 'Our team is passionate about storytelling and dedicated to delivering exceptional results for every client.' },
         ]
     };
+
+    if (!db) return fallbackData;
+
     const data = await db.collection<AboutData>('about').findOne({});
-    return data ? JSON.parse(JSON.stringify(data)) : { title: '', content: '', imageUrl: '', features: []};
+
+    if (!data) return fallbackData;
+
+    // Ensure features is always an array to prevent .map errors
+    const features = Array.isArray(data.features) ? data.features : [];
+
+    return JSON.parse(JSON.stringify({ ...data, features }));
   },
   updateAbout: async (data: AboutData): Promise<AboutData> => {
     const db = await connectToDb();
@@ -402,3 +412,4 @@ export const db = {
     return { success: true };
   },
 };
+
