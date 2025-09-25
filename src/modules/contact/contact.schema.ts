@@ -9,5 +9,6 @@ export type ContactData = {
     twitter: string;
     instagram: string;
     linkedin: string;
+    youtube: string;
   };
 };

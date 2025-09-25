@@ -1,8 +1,9 @@
+
 import type { FooterData } from '@/modules/footer/footer.schema';
 import type { ContactData } from '@/modules/contact/contact.schema';
 import { Logo } from '@/components/shared/logo';
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { db } from '@/lib/db';
 
 type FooterProps = {
@@ -63,6 +64,7 @@ export async function Footer({ data }: FooterProps) {
                   {socials.twitter && <Link href={socials.twitter}><Twitter className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                   {socials.instagram && <Link href={socials.instagram}><Instagram className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                   {socials.linkedin && <Link href={socials.linkedin}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>}
+                  {socials.youtube && <Link href={socials.youtube}><Youtube className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                 </div>
             </div>
         </div>

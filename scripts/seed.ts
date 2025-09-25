@@ -121,6 +121,7 @@ async function seed() {
             twitter: '#',
             instagram: '#',
             linkedin: '#',
+            youtube: '#',
           },
         });
         console.log('✓ Seeded contact');

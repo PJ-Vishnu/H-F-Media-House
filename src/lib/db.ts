@@ -106,7 +106,7 @@ export const db = {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
-    await db.collection<HeroData>('hero').updateOne({}, { $set: updateData }, { upsert: true });
+    await db.collection('hero').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('hero').findOne({});
     return updatedDoc;
   },
@@ -352,7 +352,7 @@ export const db = {
         phone: '+1 (234) 567-890', 
         address: '123 Media Lane, Creative City, 10001', 
         imageUrl: '/uploads/contact/1700000000070-placeholder.jpg',
-        socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' },
+        socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#', youtube: '#' },
     };
     const data = await db.collection<ContactData>('contact').findOne({});
     return data ? JSON.parse(JSON.stringify(data)) : { email: '', phone: '', address: '', socials: {}};

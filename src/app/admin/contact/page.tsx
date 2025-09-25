@@ -27,6 +27,7 @@ const contactSchema = z.object({
     twitter: z.string().optional(),
     instagram: z.string().optional(),
     linkedin: z.string().optional(),
+    youtube: z.string().optional(),
   }),
 });
 
@@ -192,6 +193,9 @@ export default function ContactAdminPage() {
               )} />
               <FormField control={form.control} name="socials.linkedin" render={({ field }) => (
                   <FormItem><FormLabel>LinkedIn</FormLabel><FormControl><Input placeholder="https://linkedin.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
+              )} />
+              <FormField control={form.control} name="socials.youtube" render={({ field }) => (
+                  <FormItem><FormLabel>YouTube</FormLabel><FormControl><Input placeholder="https://youtube.com/..." {...field} value={field.value || ''} /></FormControl><FormMessage /></FormItem>
               )} />
             </CardContent>
           </Card>
