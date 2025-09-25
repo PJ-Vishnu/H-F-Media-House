@@ -76,12 +76,12 @@ export const db = {
         ctaText: 'Explore Now',
         ctaLink: '#portfolio',
         images: [
-            { src: '/uploads/hero/placeholder-1.jpg', alt: 'Man with a camera' },
-            { src: '/uploads/hero/placeholder-2.jpg', alt: 'Film set lighting' },
-            { src: '/uploads/hero/placeholder-3.jpg', alt: 'Video editing suite' },
-            { src: '/uploads/hero/placeholder-4.jpg', alt: 'Drone flying over a landscape' },
-            { src: '/uploads/hero/placeholder-5.jpg', alt: 'Podcast recording microphone' },
-            { src: '/uploads/hero/placeholder-6.jpg', alt: 'Photographer in action' },
+            { src: '/uploads/hero/1700000000001-placeholder.jpg', alt: 'Man with a camera' },
+            { src: '/uploads/hero/1700000000002-placeholder.jpg', alt: 'Film set lighting' },
+            { src: '/uploads/hero/1700000000003-placeholder.jpg', alt: 'Video editing suite' },
+            { src: '/uploads/hero/1700000000004-placeholder.jpg', alt: 'Drone flying over a landscape' },
+            { src: '/uploads/hero/1700000000005-placeholder.jpg', alt: 'Podcast recording microphone' },
+            { src: '/uploads/hero/1700000000006-placeholder.jpg', alt: 'Photographer in action' },
         ],
     };
 
@@ -107,10 +107,12 @@ export const db = {
   getGallery: async (): Promise<GalleryImage[]> => {
     const db = await connectToDb();
     if (!db) return [
-        { id: '1', src: '/uploads/gallery/placeholder-1.jpg', alt: 'Couple walking on a hill', order: 1 },
-        { id: '2', src: '/uploads/gallery/placeholder-2.jpg', alt: 'Black and white wedding photo', order: 2 },
-        { id: '3', src: '/uploads/gallery/placeholder-3.jpg', alt: 'Couple reflected in a window', order: 3 },
-        { id: '4', src: '/uploads/gallery/placeholder-4.jpg', alt: 'Wedding rings', order: 4 },
+        { id: '1', src: '/uploads/gallery/1700000000011-placeholder.jpg', alt: 'Couple walking on a hill', order: 1, colSpan: 2, rowSpan: 2 },
+        { id: '2', src: '/uploads/gallery/1700000000012-placeholder.jpg', alt: 'Black and white wedding photo', order: 2, colSpan: 1, rowSpan: 1 },
+        { id: '3', src: '/uploads/gallery/1700000000013-placeholder.jpg', alt: 'Couple reflected in a window', order: 3, colSpan: 1, rowSpan: 1 },
+        { id: '4', src: '/uploads/gallery/1700000000014-placeholder.jpg', alt: 'A groom smiling', order: 4, colSpan: 1, rowSpan: 1 },
+        { id: '5', src: '/uploads/gallery/1700000000015-placeholder.jpg', alt: 'A bride smiling', order: 5, colSpan: 1, rowSpan: 1 },
+        { id: '6', src: '/uploads/gallery/1700000000016-placeholder.jpg', alt: 'Wedding rings', order: 6, colSpan: 2, rowSpan: 1 },
     ];
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
     return images.map(mapDoc);
@@ -161,7 +163,7 @@ export const db = {
     if (!db) return { 
         title: 'Our Story Behind the Lens', 
         content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
-        imageUrl: '/uploads/about/placeholder.jpg', 
+        imageUrl: '/uploads/about/1700000000020-placeholder.jpg', 
         features: [
           { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
           { title: 'Modern & Professional', description: 'We use the latest technology and techniques to produce high-quality content that exceeds expectations.' },
@@ -182,9 +184,9 @@ export const db = {
   getServices: async (): Promise<Service[]> => {
     const db = await connectToDb();
     if (!db) return [
-        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: '/uploads/services/placeholder-1.jpg' },
-        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: '/uploads/services/placeholder-2.jpg' },
-        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: '/uploads/services/placeholder-3.jpg' },
+        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: '/uploads/services/1700000000041-placeholder.jpg' },
+        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: '/uploads/services/1700000000042-placeholder.jpg' },
+        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: '/uploads/services/1700000000043-placeholder.jpg' },
     ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
   },
@@ -215,10 +217,10 @@ export const db = {
   getPortfolio: async (): Promise<PortfolioItem[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: '/uploads/portfolio/placeholder-1.jpg', category: 'Video', order: 1 },
-      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: '/uploads/portfolio/placeholder-2.jpg', category: 'Photography', order: 2 },
-      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: '/uploads/portfolio/placeholder-3.jpg', category: 'Animation', order: 3 },
-      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: '/uploads/portfolio/placeholder-4.jpg', category: 'Video', order: 4 },
+      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: '/uploads/portfolio/1700000000031-placeholder.jpg', category: 'Video', order: 1 },
+      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: '/uploads/portfolio/1700000000032-placeholder.jpg', category: 'Photography', order: 2 },
+      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: '/uploads/portfolio/1700000000033-placeholder.jpg', category: 'Animation', order: 3 },
+      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: '/uploads/portfolio/1700000000034-placeholder.jpg', category: 'Video', order: 4 },
     ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
     return items.map(mapDoc);
@@ -304,7 +306,7 @@ export const db = {
         description: 'A showcase of our recent projects, capturing unique stories and breathtaking moments. See our passion in action.',
         videoType: 'youtube',
         videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        videoThumbnail: 'https://picsum.photos/1280/720?random=51'
+        videoThumbnail: '/uploads/video-thumbnails/1700000000051-placeholder.jpg'
     };
     const data = await db.collection('video').findOne({});
     // Return a plain object to prevent serialization issues with Next.js
@@ -366,7 +368,7 @@ export const db = {
         description: 'This is fallback description for when the database is not connected.',
         keywords: 'media, photography, video',
         url: 'https://example.com',
-        ogImage: '/uploads/seo/og-image.jpg'
+        ogImage: '/uploads/seo/1700000000060-og-image.jpg'
     };
     const data = await db.collection<SEOData>('seo').findOne({});
     return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '', keywords: '', url: '', ogImage: '' };
