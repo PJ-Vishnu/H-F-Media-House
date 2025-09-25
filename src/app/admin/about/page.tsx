@@ -37,6 +37,12 @@ export default function AboutAdminPage() {
 
   const form = useForm<z.infer<typeof aboutSchema>>({
     resolver: zodResolver(aboutSchema),
+    defaultValues: {
+      title: "",
+      content: "",
+      imageUrl: "",
+      features: [],
+    },
   });
   
   const { fields, append, remove } = useFieldArray({
