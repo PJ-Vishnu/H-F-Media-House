@@ -100,7 +100,8 @@ export const db = {
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection<HeroData>('hero').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection<HeroData>('hero').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
   
@@ -186,7 +187,8 @@ export const db = {
   updateAbout: async (data: AboutData): Promise<AboutData> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection('about').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection('about').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
 
@@ -325,7 +327,8 @@ export const db = {
   updateVideo: async (data: VideoData): Promise<VideoData> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection('video').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection('video').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
   
@@ -344,7 +347,8 @@ export const db = {
   updateContact: async (data: ContactData): Promise<ContactData> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection('contact').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection('contact').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
 
@@ -366,7 +370,8 @@ export const db = {
   updateFooter: async (data: FooterData): Promise<FooterData> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection('footer').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection('footer').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
 
@@ -386,7 +391,8 @@ export const db = {
   updateSEO: async (data: SEOData): Promise<SEOData> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
-    await db.collection('seo').updateOne({}, { $set: data }, { upsert: true });
+    const { _id, ...updateData } = data as any;
+    await db.collection('seo').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
   },
 
