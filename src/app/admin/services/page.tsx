@@ -32,12 +32,12 @@ const servicesSchema = z.object({
 type StagedFile = {
   index: number;
   file: File;
-  previewUrl: string;
 };
 
 export default function ServicesAdminPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
@@ -54,6 +54,7 @@ export default function ServicesAdminPage() {
 
   useEffect(() => {
     async function fetchData() {
+      setIsLoading(true);
       try {
         const res = await fetch("/api/services");
         if (!res.ok) throw new Error("Failed to fetch");
@@ -61,6 +62,8 @@ export default function ServicesAdminPage() {
         form.reset({ services: fetchedData });
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch services" });
+      } finally {
+        setIsLoading(false);
       }
     }
     fetchData();
@@ -97,7 +100,7 @@ export default function ServicesAdminPage() {
       
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
-        return [...others, { index, file, previewUrl }];
+        return [...others, { index, file }];
       });
     };
     reader.readAsDataURL(file);
@@ -138,10 +141,11 @@ export default function ServicesAdminPage() {
       }
 
       for (const service of submissionValues.services) {
-        await fetch(`/api/services?id=${service.id}`, {
+        const { id, ...serviceData } = service;
+        await fetch(`/api/services?id=${id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(service),
+          body: JSON.stringify(serviceData),
         });
       }
       toast({ title: "Success!", description: "Services updated successfully." });
@@ -177,6 +181,29 @@ export default function ServicesAdminPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-6">
+          <Skeleton className="h-9 w-1/3" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-4 w-1/2" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-48 w-full" />)}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Form {...form}>
@@ -200,8 +227,8 @@ export default function ServicesAdminPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {fields.length === 0 && !form.formState.isValidating ? (
-                  Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-40 w-full" />)
+                {fields.length === 0 ? (
+                  <p className="text-muted-foreground itaic p-4 text-center">No services found. Add one to get started.</p>
                 ) : (
                   fields.map((field, index) => {
                     const currentSrc = form.watch(`services.${index}.image`);
