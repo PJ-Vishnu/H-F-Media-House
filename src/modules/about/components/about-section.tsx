@@ -7,6 +7,8 @@ type AboutSectionProps = {
 };
 
 export function AboutSection({ data }: AboutSectionProps) {
+  const hasFeatures = data.features && data.features.length > 0;
+  
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">
       <ScrollFadeIn className="container mx-auto px-4">
@@ -34,23 +36,24 @@ export function AboutSection({ data }: AboutSectionProps) {
               className="object-cover"
             />
           )}
-
-          {/* Overlayed cards */}
-          <div className="absolute inset-0 flex flex-col md:flex-row items-end justify-center gap-6 p-6">
-            {(data.features || []).map((feature, i) => (
-              <div
-                key={i}
-                className="flex flex-col bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 h-1/2 backdrop-blur-sm"
-              >
-                <h3 className="text-lg font-semibold mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-sm leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
+          
+          {hasFeatures && (
+            <div className="absolute inset-0 flex flex-col md:flex-row items-end justify-center p-6 gap-6">
+                {(data.features || []).map((feature, i) => (
+                    <div
+                        key={i}
+                        className="bg-black/60 text-white rounded-xl p-6 w-full md:w-1/3 max-w-sm h-auto md:h-1/2 backdrop-blur-sm flex flex-col"
+                    >
+                        <h3 className="text-lg font-semibold mb-2">
+                        {feature.title}
+                        </h3>
+                        <p className="text-sm leading-relaxed">
+                        {feature.description}
+                        </p>
+                    </div>
+                ))}
+            </div>
+          )}
         </div>
       </ScrollFadeIn>
     </section>
