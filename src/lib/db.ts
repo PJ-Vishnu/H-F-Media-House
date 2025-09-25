@@ -269,9 +269,9 @@ export const db = {
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: '/uploads/testimonials/avatar-1.png' },
-      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: '/uploads/testimonials/avatar-2.png' },
-      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/avatar-3.png' },
+      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
+      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
+      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: 'https://i.pravatar.cc/150?u=John' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
   },

@@ -43,7 +43,11 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
   if (!data.videoUrl) {
     return (
       <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
-        <p className="text-muted-foreground">No video configured.</p>
+        {data.videoThumbnail ? (
+            <Image src={data.videoThumbnail} alt="Video thumbnail" fill style={{objectFit: 'cover'}}/>
+        ) : (
+            <p className="text-muted-foreground">No video configured.</p>
+        )}
       </div>
     );
   }
@@ -88,7 +92,7 @@ const VideoPlayer = ({ data }: VideoSectionProps) => {
   
   return (
      <div className="aspect-video relative rounded-xl overflow-hidden shadow-2xl">
-        <Image src={data.videoThumbnail || "https://picsum.photos/1280/720?random=51"} alt="Video thumbnail" fill style={{objectFit: 'cover'}}/>
+        <Image src={data.videoThumbnail || "/uploads/video-thumbnails/1700000000051-placeholder.jpg"} alt="Video thumbnail" fill style={{objectFit: 'cover'}}/>
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-white w-8 h-8 ml-1">
