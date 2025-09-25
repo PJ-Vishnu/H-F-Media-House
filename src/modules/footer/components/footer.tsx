@@ -59,10 +59,10 @@ export async function Footer({ data }: FooterProps) {
              <div>
                 <h4 className="font-bold text-white mb-4">SOCIAL MEDIA</h4>
                 <div className="flex gap-4">
-                  <Link href={socials.facebook || '#'}><Facebook className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={socials.twitter || '#'}><Twitter className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={socials.instagram || '#'}><Instagram className="h-6 w-6 hover:text-white transition-colors" /></Link>
-                  <Link href={socials.linkedin || '#'}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>
+                  {socials.facebook && <Link href={socials.facebook}><Facebook className="h-6 w-6 hover:text-white transition-colors" /></Link>}
+                  {socials.twitter && <Link href={socials.twitter}><Twitter className="h-6 w-6 hover:text-white transition-colors" /></Link>}
+                  {socials.instagram && <Link href={socials.instagram}><Instagram className="h-6 w-6 hover:text-white transition-colors" /></Link>}
+                  {socials.linkedin && <Link href={socials.linkedin}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                 </div>
             </div>
         </div>
