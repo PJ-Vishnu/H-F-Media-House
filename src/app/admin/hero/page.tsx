@@ -66,11 +66,13 @@ export default function HeroAdminPage() {
         form.reset(fetchedData);
         // Initialize previews from fetched data
         const initialPreviews: Record<number, string> = {};
-        (fetchedData.images || []).forEach((image, index) => {
-            if (image.src) {
-                initialPreviews[index] = image.src;
-            }
-        });
+        if (Array.isArray(fetchedData.images)) {
+          fetchedData.images.forEach((image, index) => {
+              if (image.src) {
+                  initialPreviews[index] = image.src;
+              }
+          });
+        }
         setPreviewUrls(initialPreviews);
       } catch (error) {
         toast({
@@ -125,8 +127,7 @@ export default function HeroAdminPage() {
   async function onSubmit(values: z.infer<typeof heroSchema>) {
     setIsLoading(true);
     // Use the original data and apply updates
-    let submissionValues = JSON.parse(JSON.stringify(data));
-    submissionValues = { ...submissionValues, ...values };
+    let submissionValues = JSON.parse(JSON.stringify(values));
 
     try {
       if (stagedFiles.length > 0) {
@@ -155,9 +156,11 @@ export default function HeroAdminPage() {
       form.reset(savedData);
       setData(savedData);
       const newPreviews: Record<number, string> = {};
-      (savedData.images || []).forEach((image: { src: string }, index: number) => {
-        if(image.src) newPreviews[index] = image.src;
-      });
+       if (Array.isArray(savedData.images)) {
+            savedData.images.forEach((image: { src: string }, index: number) => {
+                if (image.src) newPreviews[index] = image.src;
+            });
+        }
       setPreviewUrls(newPreviews);
       setStagedFiles([]); // Clear staged files after successful save
       toast({

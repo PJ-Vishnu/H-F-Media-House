@@ -55,7 +55,7 @@ export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser | null> => {
     const db = await connectToDb();
-    if (!db) return { email: 'admin@example.com', passwordHash: '$2b$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' }; // password is "password"
+    if (!db) return { email: 'admin@example.com', passwordHash: '$2a$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' }; // password is "password"
     const admin = await db.collection<AdminUser>('admin').findOne({});
     return admin ? JSON.parse(JSON.stringify(admin)) : null;
   },
@@ -102,7 +102,8 @@ export const db = {
     if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection<HeroData>('hero').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('hero').findOne({});
+    return updatedDoc;
   },
   
   // GALLERY
@@ -184,12 +185,13 @@ export const db = {
 
     return JSON.parse(JSON.stringify({ ...data, features }));
   },
-  updateAbout: async (data: AboutData): Promise<AboutData> => {
+  updateAbout: async (data: AboutData): Promise<AboutData | null> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('about').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('about').findOne({});
+    return updatedDoc;
   },
 
   // SERVICES
@@ -418,3 +420,5 @@ export const db = {
     return { success: true };
   },
 };
+
+    
