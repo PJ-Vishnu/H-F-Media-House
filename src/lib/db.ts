@@ -92,10 +92,15 @@ export const db = {
     
     if (!data) return fallbackData;
 
-    // Ensure images is always an array
-    const images = Array.isArray(data.images) ? data.images : [];
-
-    return JSON.parse(JSON.stringify({ ...data, images }));
+    // Ensure images is always an array, converting from object if necessary.
+    let imagesArray: { src: string; alt: string }[] = [];
+    if (Array.isArray(data.images)) {
+        imagesArray = data.images;
+    } else if (typeof data.images === 'object' && data.images !== null) {
+        imagesArray = Object.values(data.images);
+    }
+    
+    return JSON.parse(JSON.stringify({ ...data, images: imagesArray }));
   },
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
@@ -181,9 +186,14 @@ export const db = {
     if (!data) return fallbackData;
 
     // Ensure features is always an array to prevent .map errors
-    const features = Array.isArray(data.features) ? data.features : [];
+    let featuresArray: { title: string; description: string }[] = [];
+    if (Array.isArray(data.features)) {
+        featuresArray = data.features;
+    } else if (typeof data.features === 'object' && data.features !== null) {
+        featuresArray = Object.values(data.features);
+    }
 
-    return JSON.parse(JSON.stringify({ ...data, features }));
+    return JSON.parse(JSON.stringify({ ...data, features: featuresArray }));
   },
   updateAbout: async (data: AboutData): Promise<AboutData | null> => {
     const db = await connectToDb();
@@ -420,5 +430,3 @@ export const db = {
     return { success: true };
   },
 };
-
-    

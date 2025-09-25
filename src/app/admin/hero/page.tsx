@@ -153,14 +153,21 @@ export default function HeroAdminPage() {
       if (!res.ok) throw new Error("Failed to save data");
 
       const savedData = await res.json();
-      form.reset(savedData);
-      setData(savedData);
+      
+      // Ensure the images field from savedData is an array
+      const savedImages = Array.isArray(savedData.images) ? savedData.images : Object.values(savedData.images || {});
+
+      const finalData = { ...savedData, images: savedImages };
+      
+      form.reset(finalData);
+      setData(finalData);
+
       const newPreviews: Record<number, string> = {};
-       if (Array.isArray(savedData.images)) {
-            savedData.images.forEach((image: { src: string }, index: number) => {
-                if (image.src) newPreviews[index] = image.src;
-            });
-        }
+      if (Array.isArray(finalData.images)) {
+          finalData.images.forEach((image: { src: string }, index: number) => {
+              if (image.src) newPreviews[index] = image.src;
+          });
+      }
       setPreviewUrls(newPreviews);
       setStagedFiles([]); // Clear staged files after successful save
       toast({
@@ -341,5 +348,3 @@ export default function HeroAdminPage() {
     </div>
   );
 }
-
-    
