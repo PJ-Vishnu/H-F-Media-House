@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { AboutData } from "@/modules/about/about.schema";
-import { Loader2 } from "lucide-react";
+import { Loader2, PlusCircle, Trash2 } from "lucide-react";
 import axios from 'axios';
 import Image from "next/image";
 
@@ -23,8 +23,8 @@ const aboutSchema = z.object({
   content: z.string().min(1, "Content is required"),
   imageUrl: z.string().min(1, "Image is required"),
   features: z.array(z.object({
-    title: z.string().min(1, "Feature title is required").max(50, "Title cannot exceed 50 characters."),
-    description: z.string().min(1, "Feature description is required").max(250, "Description cannot exceed 250 characters."),
+    title: z.string().max(50, "Title cannot exceed 50 characters."),
+    description: z.string().max(250, "Description cannot exceed 250 characters."),
   })).max(3, "You can have a maximum of 3 features."),
 });
 
@@ -39,7 +39,7 @@ export default function AboutAdminPage() {
     resolver: zodResolver(aboutSchema),
   });
   
-  const { fields } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "features"
   });
@@ -51,11 +51,7 @@ export default function AboutAdminPage() {
         const fetchedData: AboutData = await res.json();
         setData(fetchedData);
         setPreviewUrl(fetchedData.imageUrl);
-        const features = fetchedData.features || [];
-        while (features.length < 3) {
-          features.push({ title: "", description: "" });
-        }
-        form.reset({ ...fetchedData, features });
+        form.reset({ ...fetchedData, features: fetchedData.features || [] });
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch data" });
       }
@@ -97,6 +93,11 @@ export default function AboutAdminPage() {
   async function onSubmit(values: z.infer<typeof aboutSchema>) {
     setIsLoading(true);
     let updatedValues = { ...values };
+    
+    // Filter out any features that are completely empty before saving.
+    updatedValues.features = updatedValues.features.filter(
+        feature => feature.title.trim() !== '' || feature.description.trim() !== ''
+    );
 
     try {
       if (stagedFile) {
@@ -104,7 +105,6 @@ export default function AboutAdminPage() {
         if (newImageUrl) {
           updatedValues.imageUrl = newImageUrl;
         } else {
-          // Don't proceed if upload fails
           throw new Error("Upload failed, aborting save.");
         }
       }
@@ -198,11 +198,11 @@ export default function AboutAdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>Overlay Features</CardTitle>
-              <CardDescription>Update the content for the 3 feature cards that overlay the image.</CardDescription>
+              <CardDescription>Update the content for the feature cards that overlay the image. You can add up to 3.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
               {fields.map((field, index) => (
-                 <div key={field.id} className="p-4 border rounded-lg space-y-4">
+                 <div key={field.id} className="p-4 border rounded-lg space-y-4 relative">
                     <h3 className="font-semibold">Feature Card {index + 1}</h3>
                     <FormField
                       control={form.control}
@@ -226,8 +226,26 @@ export default function AboutAdminPage() {
                         </FormItem>
                       )}
                     />
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 right-2"
+                        onClick={() => remove(index)}
+                    >
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
                  </div>
               ))}
+               {fields.length < 3 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => append({ title: '', description: '' })}
+                >
+                  <PlusCircle className="mr-2 h-4 w-4" /> Add Feature
+                </Button>
+              )}
             </CardContent>
           </Card>
         </form>

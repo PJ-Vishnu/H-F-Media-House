@@ -55,7 +55,7 @@ export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser | null> => {
     const db = await connectToDb();
-    if (!db) return { email: 'admin@example.com', passwordHash: '$2a$10$2.PXkSoB4SyVE2ODs5N54O.VG2CgNq8D1DR8y8bKx2L9jJ9x2P4xO' }; // password is "password"
+    if (!db) return { email: 'admin@example.com', passwordHash: '$2b$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' }; // password is "password"
     const admin = await db.collection<AdminUser>('admin').findOne({});
     return admin ? JSON.parse(JSON.stringify(admin)) : null;
   },
@@ -279,9 +279,9 @@ export const db = {
   getTestimonials: async (): Promise<Testimonial[]> => {
     const db = await connectToDb();
     if (!db) return [
-      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: 'https://i.pravatar.cc/150?u=Leo' },
-      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: 'https://i.pravatar.cc/150?u=Ana' },
-      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: 'https://i.pravatar.cc/150?u=John' },
+      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: '/uploads/testimonials/1700000000051-placeholder.jpg' },
+      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: '/uploads/testimonials/1700000000052-placeholder.jpg' },
+      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/1700000000053-placeholder.jpg' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
   },
@@ -412,4 +412,3 @@ export const db = {
     return { success: true };
   },
 };
-
