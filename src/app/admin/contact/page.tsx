@@ -8,6 +8,8 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import type { ContactData } from "@/modules/contact/contact.schema";
 import { Loader2 } from "lucide-react";
+import axios from 'axios';
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +21,7 @@ const contactSchema = z.object({
   email: z.string().email(),
   phone: z.string().min(1, "Phone number is required"),
   address: z.string().min(1, "Address is required"),
+  imageUrl: z.string().optional(),
   socials: z.object({
     facebook: z.string().url().or(z.literal("")).optional(),
     twitter: z.string().url().or(z.literal("")).optional(),
@@ -31,6 +34,8 @@ export default function ContactAdminPage() {
   const { toast } = useToast();
   const [data, setData] = useState<ContactData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [stagedFile, setStagedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof contactSchema>>({
     resolver: zodResolver(contactSchema),
@@ -43,6 +48,9 @@ export default function ContactAdminPage() {
         const fetchedData: ContactData = await res.json();
         setData(fetchedData);
         form.reset(fetchedData);
+        if (fetchedData.imageUrl) {
+          setPreviewUrl(fetchedData.imageUrl);
+        }
       } catch (error) {
         toast({ variant: "destructive", title: "Failed to fetch data" });
       }
@@ -50,20 +58,67 @@ export default function ContactAdminPage() {
     fetchData();
   }, [form, toast]);
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setStagedFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      setPreviewUrl(result);
+      form.setValue('imageUrl', result, { shouldDirty: true });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('section', 'contact');
+    try {
+      const res = await axios.post('/api/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      return res.data.filePath;
+    } catch (error) {
+      toast({ variant: 'destructive', title: 'Upload failed' });
+      return null;
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof contactSchema>) {
     setIsLoading(true);
+    let updatedValues = { ...values };
+
     try {
+      if (stagedFile) {
+        const newImageUrl = await uploadFile(stagedFile);
+        if (newImageUrl) {
+          updatedValues.imageUrl = newImageUrl;
+        } else {
+          throw new Error("Upload failed, aborting save.");
+        }
+      }
+
       const res = await fetch("/api/contact", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(updatedValues),
       });
 
       if (!res.ok) throw new Error("Failed to save data");
       
+      const savedData = await res.json();
       toast({ title: "Success!", description: "Contact details updated." });
+      form.reset(savedData);
+      setStagedFile(null);
+      if (savedData.imageUrl) setPreviewUrl(savedData.imageUrl);
+
     } catch (error) {
-      toast({ variant: "destructive", title: "Save Failed" });
+      toast({ variant: "destructive", title: "Save Failed", description: error instanceof Error ? error.message : "Unknown error" });
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +134,7 @@ export default function ContactAdminPage() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-3xl font-bold">Manage Contact Page</h1>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || !form.formState.isDirty}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Changes
             </Button>
@@ -87,7 +142,7 @@ export default function ContactAdminPage() {
           <Card>
             <CardHeader>
               <CardTitle>Contact Details</CardTitle>
-              <CardDescription>Update main contact information.</CardDescription>
+              <CardDescription>Update main contact information and the section image.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FormField control={form.control} name="email" render={({ field }) => (
@@ -99,6 +154,24 @@ export default function ContactAdminPage() {
               <FormField control={form.control} name="address" render={({ field }) => (
                   <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
               )} />
+              <FormItem>
+                <FormLabel>Section Image</FormLabel>
+                <FormControl>
+                    <div>
+                        <Input type="file" onChange={handleFileChange} className="mb-2" disabled={isLoading}/>
+                        {previewUrl && (
+                          <Image 
+                            src={previewUrl} 
+                            alt="Preview" 
+                            width={192} 
+                            height={256} 
+                            className="w-48 h-auto mt-2 rounded-md object-cover bg-muted" 
+                          />
+                        )}
+                    </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             </CardContent>
           </Card>
           

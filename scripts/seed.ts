@@ -115,6 +115,7 @@ async function seed() {
           email: 'hello@hfmedia.house',
           phone: '+1 (234) 567-890',
           address: '123 Media Lane, Creative City, 10001',
+          imageUrl: '/uploads/contact/1700000000070-placeholder.jpg',
           socials: {
             facebook: '#',
             twitter: '#',

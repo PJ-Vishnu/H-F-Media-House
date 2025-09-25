@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import type { ContactData } from '@/modules/contact/contact.schema';
@@ -21,8 +22,7 @@ export async function PUT(req: Request) {
     const updatedData = await db.updateContact(sanitizedData);
     return NextResponse.json(updatedData);
   } catch (error) {
+    console.error('Failed to update contact:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
-
-    

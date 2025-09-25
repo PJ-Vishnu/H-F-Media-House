@@ -116,7 +116,13 @@ export function ContactSection({ contactData }: ContactSectionProps) {
                 </Form>
             </div>
             <div className="relative w-full h-96 lg:h-full rounded-xl overflow-hidden shadow-2xl">
-              <Image src="https://picsum.photos/600/800?random=50" alt="Camera gear" fill style={{objectFit: 'cover'}}/>
+              {contactData.imageUrl ? (
+                <Image src={contactData.imageUrl} alt="Camera gear" fill style={{objectFit: 'cover'}}/>
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <p className="text-muted-foreground">Image not available</p>
+                </div>
+              )}
             </div>
         </div>
       </ScrollFadeIn>

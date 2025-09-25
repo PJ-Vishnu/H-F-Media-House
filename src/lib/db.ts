@@ -351,17 +351,19 @@ export const db = {
         email: 'hello@hfmedia.house', 
         phone: '+1 (234) 567-890', 
         address: '123 Media Lane, Creative City, 10001', 
+        imageUrl: '/uploads/contact/1700000000070-placeholder.jpg',
         socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#' },
     };
     const data = await db.collection<ContactData>('contact').findOne({});
     return data ? JSON.parse(JSON.stringify(data)) : { email: '', phone: '', address: '', socials: {}};
   },
-  updateContact: async (data: ContactData): Promise<ContactData> => {
+  updateContact: async (data: ContactData): Promise<ContactData | null> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('contact').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('contact').findOne({});
+    return updatedDoc ? JSON.parse(JSON.stringify(updatedDoc)) : null;
   },
 
   // FOOTER
