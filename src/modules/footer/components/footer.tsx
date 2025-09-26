@@ -5,6 +5,7 @@ import { Logo } from '@/components/shared/logo';
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { db } from '@/lib/db';
+import { FooterLogo } from '@/components/shared/footerLogo';
 
 type FooterProps = {
   data: FooterData;
@@ -34,7 +35,7 @@ export async function Footer({ data }: FooterProps) {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-                <Logo className="text-white text-3xl" />
+                <FooterLogo className="text-white text-3xl" />
                 <p className="mt-4 text-sm">We are a creative agency that specializes in video production, photography, and content strategy.</p>
             </div>
             <div>
@@ -47,7 +48,7 @@ export async function Footer({ data }: FooterProps) {
                     ))}
                 </nav>
             </div>
-             <div>
+             {/* <div>
                 <h4 className="font-bold text-white mb-4">PORTFOLIO</h4>
                 <nav className="flex flex-col gap-2">
                     {portfolioLinks.map(link => (
@@ -56,7 +57,7 @@ export async function Footer({ data }: FooterProps) {
                       </Link>
                     ))}
                 </nav>
-            </div>
+            </div> */}
              <div>
                 <h4 className="font-bold text-white mb-4">SOCIAL MEDIA</h4>
                 <div className="flex gap-4">
