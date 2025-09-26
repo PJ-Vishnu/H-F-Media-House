@@ -55,7 +55,7 @@ export default function GalleryAdminPage() {
     name: "images"
   });
 
-  const fetchGallery = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
       const res = await fetch("/api/gallery");
       const fetchedData: GalleryImage[] = await res.json();
@@ -66,8 +66,8 @@ export default function GalleryAdminPage() {
   }, [form, toast]);
 
   useEffect(() => {
-    fetchGallery();
-  }, [fetchGallery]);
+    fetchData();
+  }, [fetchData]);
   
   const handleDeleteClick = (id: string, index: number) => {
     setItemToDelete({id, index});
@@ -84,6 +84,7 @@ export default function GalleryAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete image" });
     } finally {
       setItemToDelete(null);
+      setDialogOpen(false);
     }
   };
 

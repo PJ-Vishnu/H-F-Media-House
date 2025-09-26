@@ -1,54 +1,17 @@
+
 "use client";
 
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-import { chunk } from 'lodash-es';
 import { cn } from '@/lib/utils';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 type GallerySectionProps = {
   data: GalleryImage[];
 };
 
-const GalleryPage = ({ images }: { images: GalleryImage[] }) => (
-  <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-fr gap-4 h-[600px]">
-    {images.map((image) => (
-      <div
-        key={image.id}
-        className={cn(
-          "relative rounded-lg overflow-hidden shadow-lg group transition-transform hover:scale-105",
-          `col-span-${image.colSpan || 1}`,
-          `row-span-${image.rowSpan || 1}`,
-          `md:col-span-${image.colSpan || 1}`,
-          `md:row-span-${image.rowSpan || 1}`,
-        )}
-        style={{
-            gridColumn: `span ${image.colSpan || 1}`,
-            gridRow: `span ${image.rowSpan || 1}`
-        }}
-      >
-        <Image
-          src={image.src}
-          alt={image.alt}
-          fill
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-      </div>
-    ))}
-  </div>
-);
-
 export function GallerySection({ data }: GallerySectionProps) {
-  const pages = chunk(data, 6);
-
   return (
     <section id="gallery" className="w-full py-24 bg-secondary/50">
       <ScrollFadeIn className="container mx-auto px-4">
@@ -59,17 +22,26 @@ export function GallerySection({ data }: GallerySectionProps) {
             A glimpse into our creative world, showcasing a diverse range of projects from breathtaking landscapes to intimate portraits.
           </p>
         </div>
-        <Carousel className="w-full" opts={{ loop: true }}>
-          <CarouselContent>
-            {pages.map((pageImages, index) => (
-              <CarouselItem key={index}>
-                <GalleryPage images={pageImages} />
-              </CarouselItem>
+
+        <ScrollArea className="w-full whitespace-nowrap rounded-lg">
+          <div className="flex w-max space-x-4 p-4">
+            {data.map((image) => (
+              <div
+                key={image.id}
+                className="relative shrink-0 w-80 h-96 rounded-lg overflow-hidden shadow-lg group transition-transform hover:scale-105"
+              >
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  className="object-cover"
+                />
+                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
+              </div>
             ))}
-          </CarouselContent>
-          <CarouselPrevious className="left-[-50px]" />
-          <CarouselNext className="right-[-50px]" />
-        </Carousel>
+          </div>
+          <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </ScrollFadeIn>
     </section>
   );
