@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -69,22 +69,23 @@ export default function ServicesAdminPage() {
     name: "services",
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      try {
-        const res = await fetch("/api/services");
-        if (!res.ok) throw new Error("Failed to fetch");
-        const fetchedData: Service[] = await res.json();
-        form.reset({ services: fetchedData });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch services" });
-      } finally {
-        setIsLoading(false);
-      }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/services");
+      if (!res.ok) throw new Error("Failed to fetch");
+      const fetchedData: Service[] = await res.json();
+      form.reset({ services: fetchedData });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch services" });
+    } finally {
+      setIsLoading(false);
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteClick = (id: string, index: number) => {
     setItemToDelete({ id, index });

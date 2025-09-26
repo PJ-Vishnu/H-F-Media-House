@@ -169,5 +169,3 @@ export function Carousel({ images, className }: CarouselProps) {
     </div>
   );
 }
-
-    

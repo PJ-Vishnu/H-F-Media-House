@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -51,18 +51,19 @@ export default function TestimonialsAdminPage() {
     name: "testimonials",
   });
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch("/api/testimonials");
-        const fetchedData: Testimonial[] = await res.json();
-        form.reset({ testimonials: fetchedData });
-      } catch (error) {
-        toast({ variant: "destructive", title: "Failed to fetch testimonials" });
-      }
+  const fetchData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/testimonials");
+      const fetchedData: Testimonial[] = await res.json();
+      form.reset({ testimonials: fetchedData });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Failed to fetch testimonials" });
     }
-    fetchData();
   }, [form, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleDeleteClick = (id: string, index: number) => {
     setItemToDelete({ id, index });
@@ -112,6 +113,7 @@ export default function TestimonialsAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete testimonial" });
     } finally {
       setItemToDelete(null);
+      setDialogOpen(false);
     }
   };
 
