@@ -1,6 +1,4 @@
 
-// hello world
-
 import { MongoClient, Db, WithId } from 'mongodb';
 import type { HeroData } from '@/modules/hero/hero.schema';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
