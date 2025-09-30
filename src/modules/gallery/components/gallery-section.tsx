@@ -10,13 +10,12 @@ type GallerySectionProps = {
   data: GalleryImage[];
 };
 
-// Helper function to group images into slides based on their grid area
 function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
-  const slides: GalleryImage[][] = [];
   if (!images || images.length === 0) {
-    return slides;
+    return [];
   }
 
+  const slides: GalleryImage[][] = [];
   let currentSlide: GalleryImage[] = [];
   let currentArea = 0;
   const maxArea = 16; // 4x4 grid
@@ -26,14 +25,25 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
     const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
     const imageArea = colSpan * rowSpan;
 
-    if (currentArea + imageArea > maxArea && currentSlide.length > 0) {
-      slides.push(currentSlide);
+    // If the current image is too large for a slide by itself, it gets its own slide
+    if (imageArea > maxArea) {
+      if (currentSlide.length > 0) {
+        slides.push(currentSlide);
+      }
+      slides.push([image]);
       currentSlide = [];
       currentArea = 0;
+      return;
     }
-    
-    currentSlide.push(image);
-    currentArea += imageArea;
+
+    if (currentArea + imageArea > maxArea && currentSlide.length > 0) {
+      slides.push(currentSlide);
+      currentSlide = [image];
+      currentArea = imageArea;
+    } else {
+      currentSlide.push(image);
+      currentArea += imageArea;
+    }
   });
 
   if (currentSlide.length > 0) {
@@ -42,6 +52,7 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
 
   return slides;
 }
+
 
 export function GallerySection({ data }: GallerySectionProps) {
   if (!data || data.length === 0) {
@@ -96,8 +107,8 @@ export function GallerySection({ data }: GallerySectionProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="ml-12" />
-          <CarouselNext className="mr-12" />
+          <CarouselPrevious className="left-[-50px]" />
+          <CarouselNext className="right-[-50px]" />
         </Carousel>
       </ScrollFadeIn>
     </section>
