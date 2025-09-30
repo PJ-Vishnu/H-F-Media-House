@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
@@ -102,6 +103,7 @@ export default function ServicesAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete service" });
     } finally {
       setDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -389,3 +391,5 @@ export default function ServicesAdminPage() {
     </div>
   );
 }
+
+    

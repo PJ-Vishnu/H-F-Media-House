@@ -84,6 +84,7 @@ export default function PortfolioAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete item" });
     } finally {
       setDialogOpen(false);
+      setItemToDelete(null);
     }
   };
   
@@ -172,7 +173,7 @@ export default function PortfolioAdminPage() {
         title: "New Project",
         description: "A brief description of the new project.",
         category: "Video",
-        imageUrl: "", 
+        imageUrl: "/uploads/portfolio/placeholder.jpg", // Default placeholder
     };
     try {
         const res = await fetch('/api/portfolio', {
@@ -279,3 +280,5 @@ export default function PortfolioAdminPage() {
     </div>
   );
 }
+
+    

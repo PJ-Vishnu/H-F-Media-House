@@ -113,6 +113,7 @@ export default function TestimonialsAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete testimonial" });
     } finally {
       setDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -267,3 +268,5 @@ export default function TestimonialsAdminPage() {
     </div>
   );
 }
+
+    
