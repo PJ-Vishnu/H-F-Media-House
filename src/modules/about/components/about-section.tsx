@@ -2,6 +2,13 @@
 import Image from "next/image";
 import type { AboutData } from "@/modules/about/about.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 type AboutSectionProps = {
   data: AboutData;
@@ -39,21 +46,48 @@ export function AboutSection({ data }: AboutSectionProps) {
           )}
           
           {hasFeatures && (
-            <div className="absolute inset-0 flex flex-col md:flex-row items-center justify-end md:justify-center p-4 md:p-6 gap-4 md:gap-6">
-                {(data.features || []).map((feature, i) => (
-                    <div
-                        key={i}
-                        className="bg-black/60 text-white rounded-xl p-6 w-full max-w-xs md:max-w-sm h-auto md:h-1/2 backdrop-blur-sm flex flex-col"
-                    >
-                        <h3 className="text-lg font-semibold mb-2">
-                        {feature.title}
-                        </h3>
-                        <p className="text-sm leading-relaxed">
-                        {feature.description}
-                        </p>
-                    </div>
-                ))}
-            </div>
+            <>
+              {/* Desktop View: Side-by-side cards */}
+              <div className="absolute inset-0 hidden md:flex flex-row items-center justify-center p-6 gap-6">
+                  {(data.features || []).map((feature, i) => (
+                      <div
+                          key={i}
+                          className="bg-black/60 text-white rounded-xl p-6 w-full max-w-sm h-1/2 backdrop-blur-sm flex flex-col"
+                      >
+                          <h3 className="text-lg font-semibold mb-2">
+                          {feature.title}
+                          </h3>
+                          <p className="text-sm leading-relaxed">
+                          {feature.description}
+                          </p>
+                      </div>
+                  ))}
+              </div>
+
+              {/* Mobile View: Carousel */}
+               <div className="absolute inset-0 flex md:hidden items-center justify-center p-4">
+                 <Carousel className="w-full max-w-xs">
+                    <CarouselContent>
+                      {(data.features || []).map((feature, i) => (
+                          <CarouselItem key={i}>
+                            <div className="p-1">
+                                <div className="bg-black/60 text-white rounded-xl p-6 h-[250px] backdrop-blur-sm flex flex-col justify-center">
+                                  <h3 className="text-lg font-semibold mb-2 text-center">
+                                    {feature.title}
+                                  </h3>
+                                  <p className="text-sm leading-relaxed text-center">
+                                    {feature.description}
+                                  </p>
+                                </div>
+                            </div>
+                          </CarouselItem>
+                      ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="left-[-1rem]" />
+                    <CarouselNext className="right-[-1rem]" />
+                 </Carousel>
+              </div>
+            </>
           )}
         </div>
       </ScrollFadeIn>
