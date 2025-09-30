@@ -1,10 +1,12 @@
 
 "use client";
 
+import React from 'react';
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
 
 type GallerySectionProps = {
   data: GalleryImage[];
@@ -25,7 +27,6 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
     const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
     const imageArea = colSpan * rowSpan;
 
-    // If the current image is too large for a slide by itself, it gets its own slide
     if (imageArea > maxArea) {
       if (currentSlide.length > 0) {
         slides.push(currentSlide);
@@ -53,13 +54,15 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
   return slides;
 }
 
-
 export function GallerySection({ data }: GallerySectionProps) {
   if (!data || data.length === 0) {
     return null;
   }
 
   const slides = groupImagesIntoSlides(data);
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
 
   return (
     <section id="gallery" className="w-full py-24 bg-background">
@@ -72,7 +75,13 @@ export function GallerySection({ data }: GallerySectionProps) {
           </p>
         </div>
 
-        <Carousel opts={{ loop: true }} className="w-full">
+        <Carousel 
+          opts={{ loop: true }}
+          plugins={[plugin.current]}
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+          className="w-full"
+        >
           <CarouselContent>
             {slides.map((slide, slideIndex) => (
               <CarouselItem key={slideIndex}>

@@ -1,4 +1,6 @@
 
+"use client";
+
 import Image from "next/image";
 import type { AboutData } from "@/modules/about/about.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
@@ -9,6 +11,8 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
+import React from "react";
 
 type AboutSectionProps = {
   data: AboutData;
@@ -17,6 +21,10 @@ type AboutSectionProps = {
 export function AboutSection({ data }: AboutSectionProps) {
   const hasFeatures = data.features && data.features.length > 0;
   
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">
       <ScrollFadeIn className="container mx-auto px-4">
@@ -66,7 +74,12 @@ export function AboutSection({ data }: AboutSectionProps) {
 
               {/* Mobile View: Carousel */}
                <div className="absolute inset-0 flex md:hidden items-center justify-center p-4">
-                 <Carousel className="w-full max-w-xs">
+                 <Carousel 
+                    plugins={[plugin.current]}
+                    onMouseEnter={plugin.current.stop}
+                    onMouseLeave={plugin.current.reset}
+                    className="w-full max-w-xs"
+                 >
                     <CarouselContent>
                       {(data.features || []).map((feature, i) => (
                           <CarouselItem key={i}>
