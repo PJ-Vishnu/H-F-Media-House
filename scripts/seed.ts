@@ -1,7 +1,7 @@
 
 import { MongoClient } from 'mongodb';
 import 'dotenv/config';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 
 const uri = process.env.MONGODB_URI||"mongodb://localhost:27017/CMS2";
 if (!uri) {
