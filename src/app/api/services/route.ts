@@ -1,3 +1,4 @@
+
 import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import type { Service } from '@/modules/services/services.schema';
@@ -26,8 +27,7 @@ export async function POST(req: Request) {
 // PUT /api/services?id=...
 export async function PUT(req: NextRequest) {
     try {
-        const { searchParams } = req.nextUrl;
-        const id = searchParams.get('id');
+        const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
         }
@@ -42,8 +42,7 @@ export async function PUT(req: NextRequest) {
 // DELETE /api/services?id=...
 export async function DELETE(req: NextRequest) {
     try {
-        const { searchParams } = req.nextUrl;
-        const id = searchParams.get('id');
+        const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
         }

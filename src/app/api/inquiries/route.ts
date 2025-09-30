@@ -32,8 +32,7 @@ export async function POST(req: Request) {
 // DELETE /api/inquiries?id=...
 export async function DELETE(req: NextRequest) {
     try {
-        const { searchParams } = req.nextUrl;
-        const id = searchParams.get('id');
+        const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Inquiry ID is required' }, { status: 400 });
         }

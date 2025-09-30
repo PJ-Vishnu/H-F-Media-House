@@ -27,8 +27,7 @@ export async function POST(req: Request) {
 // PUT /api/gallery?id=...
 export async function PUT(req: NextRequest) {
     try {
-        const { searchParams } = req.nextUrl;
-        const id = searchParams.get('id');
+        const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Image ID is required' }, { status: 400 });
         }
@@ -44,8 +43,7 @@ export async function PUT(req: NextRequest) {
 // DELETE /api/gallery?id=...
 export async function DELETE(req: NextRequest) {
     try {
-        const { searchParams } = req.nextUrl;
-        const id = searchParams.get('id');
+        const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Image ID is required' }, { status: 400 });
         }
