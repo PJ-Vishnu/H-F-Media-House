@@ -3,46 +3,22 @@
 
 import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, type CarouselApi, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState, useRef } from 'react';
 import Autoplay from "embla-carousel-autoplay";
-import { cn } from '@/lib/utils';
-import { useIsMobile } from '@/hooks/use-mobile';
+import React from 'react';
 
 type TestimonialsSectionProps = {
   data: Testimonial[];
 };
 
 export function TestimonialsSection({ data }: TestimonialsSectionProps) {
-  const [api, setApi] = useState<CarouselApi>()
-  const [current, setCurrent] = useState(0)
-  const isMobile = useIsMobile();
   
-  const plugin = useRef(
+  const plugin = React.useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
-
-  useEffect(() => {
-    if (!api) {
-      return
-    }
-
-    setCurrent(api.selectedScrollSnap())
-
-    const onSelect = () => {
-      setCurrent(api.selectedScrollSnap())
-    }
-
-    api.on("select", onSelect)
-
-    return () => {
-      api.off("select", onSelect)
-    }
-  }, [api])
-
 
   return (
     <section id="testimonials" className="w-full py-24 bg-background">
@@ -53,7 +29,6 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
           <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Real feedback from our valued partners.</p>
         </div>
         <Carousel
-            setApi={setApi}
             plugins={[plugin.current]}
             opts={{
                 align: "start",
@@ -64,13 +39,10 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
             onMouseLeave={plugin.current.reset}
         >
             <CarouselContent className="-ml-4">
-                {data.map((testimonial, index) => (
+                {data.map((testimonial) => (
                     <CarouselItem key={testimonial.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                        <div className="p-1">
-                            <Card className={cn(
-                                "rounded-xl shadow-lg p-8 h-full transition-all duration-500",
-                                !isMobile && index === current ? 'bg-primary/10' : 'bg-card',
-                            )}>
+                        <div className="p-1 h-full">
+                            <Card className="rounded-xl shadow-lg p-8 h-full bg-card hover:bg-primary/10 transition-colors">
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
                                         <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full object-cover" />
