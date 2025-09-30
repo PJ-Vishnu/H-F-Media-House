@@ -84,6 +84,7 @@ export default function GalleryAdminPage() {
       toast({ variant: "destructive", title: "Failed to delete image" });
     } finally {
       setDialogOpen(false);
+      setItemToDelete(null);
     }
   };
 
@@ -289,8 +290,8 @@ export default function GalleryAdminPage() {
       <ConfirmationDialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          setDialogOpen(open);
           if (!open) setItemToDelete(null);
+          setDialogOpen(open);
         }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
@@ -300,3 +301,5 @@ export default function GalleryAdminPage() {
     </div>
   );
 }
+
+    

@@ -257,8 +257,8 @@ export default function TestimonialsAdminPage() {
       <ConfirmationDialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          setDialogOpen(open);
           if (!open) setItemToDelete(null);
+          setDialogOpen(open);
         }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"

@@ -39,7 +39,7 @@ export default function PortfolioAdminPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
   
   const form = useForm<z.infer<typeof portfolioSchema>>({
     resolver: zodResolver(portfolioSchema),
@@ -65,20 +65,16 @@ export default function PortfolioAdminPage() {
     fetchData();
   }, [fetchData]);
 
-  const handleDeleteClick = (id: string) => {
-    setItemToDelete(id);
+  const handleDeleteClick = (id: string, index: number) => {
+    setItemToDelete({ id, index });
     setDialogOpen(true);
   };
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
     try {
-      await fetch(`/api/portfolio?id=${itemToDelete}`, { method: 'DELETE' });
-      const currentItems = form.getValues('items');
-      const itemIndex = currentItems.findIndex(item => item.id === itemToDelete);
-      if (itemIndex > -1) {
-          remove(itemIndex);
-      }
+      await fetch(`/api/portfolio?id=${itemToDelete.id}`, { method: 'DELETE' });
+      remove(itemToDelete.index);
       toast({ title: "Item deleted" });
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete item" });
@@ -253,7 +249,7 @@ export default function PortfolioAdminPage() {
                          <Input type="file" onChange={(e) => handleFileChange(e, index)} />
                       </div>
 
-                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id)} className="mt-2">
+                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
                         <Trash2 className="h-5 w-5 text-destructive" />
                       </Button>
                     </div>
@@ -267,10 +263,10 @@ export default function PortfolioAdminPage() {
       <ConfirmationDialog
         open={dialogOpen}
         onOpenChange={(open) => {
-          setDialogOpen(open);
           if (!open) {
             setItemToDelete(null);
           }
+          setDialogOpen(open);
         }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
