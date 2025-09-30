@@ -69,7 +69,7 @@ export default function TestimonialsAdminPage() {
     setItemToDelete({ id, index });
     setDialogOpen(true);
   };
-  
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -79,7 +79,7 @@ export default function TestimonialsAdminPage() {
       const previewUrl = e.target?.result as string;
       const currentTestimonials = form.getValues('testimonials');
       update(index, { ...currentTestimonials[index], avatar: previewUrl });
-      
+
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
         return [...others, { index, file }];
@@ -135,7 +135,7 @@ export default function TestimonialsAdminPage() {
           }
         });
       }
-      
+
       for (const testimonial of submissionValues.testimonials) {
         const { id, ...testimonialData } = testimonial;
         await fetch(`/api/testimonials?id=${id}`, {
@@ -205,49 +205,50 @@ export default function TestimonialsAdminPage() {
                 ) : (
                   fields.map((field, index) => {
                     const currentSrc = form.watch(`testimonials.${index}.avatar`);
-                    
+
                     return (
-                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
-                      <div className="flex-grow space-y-3">
-                         <FormField
-                          control={form.control}
-                          name={`testimonials.${index}.quote`}
-                          render={({ field }) => (
-                            <FormItem><FormLabel>Quote</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
-                          )}
-                        />
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                      <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
+                        <div className="flex-grow space-y-3">
+                          <FormField
+                            control={form.control}
+                            name={`testimonials.${index}.quote`}
+                            render={({ field }) => (
+                              <FormItem><FormLabel>Quote</FormLabel><FormControl><Textarea rows={4} {...field} /></FormControl><FormMessage /></FormItem>
+                            )}
+                          />
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                             <FormField
-                                control={form.control}
-                                name={`testimonials.${index}.author`}
-                                render={({ field }) => (
-                                    <FormItem><FormLabel>Author</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                )}
+                              control={form.control}
+                              name={`testimonials.${index}.author`}
+                              render={({ field }) => (
+                                <FormItem><FormLabel>Author</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                              )}
                             />
                             <FormField
-                                control={form.control}
-                                name={`testimonials.${index}.company`}
-                                render={({ field }) => (
-                                    <FormItem><FormLabel>Company</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                )}
+                              control={form.control}
+                              name={`testimonials.${index}.company`}
+                              render={({ field }) => (
+                                <FormItem><FormLabel>Company</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                              )}
                             />
-                             <FormItem className="md:col-span-2">
-                                <FormLabel>Avatar</FormLabel>
-                                <div className="flex items-center gap-4">
-                                    {currentSrc && <Image src={currentSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover"/>}
-                                    <div className="flex-grow">
-                                        <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting}/>
-                                    </div>
+                            <FormItem className="md:col-span-2">
+                              <FormLabel>Avatar</FormLabel>
+                              <div className="flex items-center gap-4">
+                                {currentSrc && <Image src={currentSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover" />}
+                                <div className="flex-grow">
+                                  <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
                                 </div>
-                                <FormMessage/>
+                              </div>
+                              <FormMessage />
                             </FormItem>
+                          </div>
                         </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(form.getValues(`testimonials.${index}.id`), index)} className="mt-2">
+                          <Trash2 className="h-5 w-5 text-destructive" />
+                        </Button>
                       </div>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
-                        <Trash2 className="h-5 w-5 text-destructive" />
-                      </Button>
-                    </div>
-                  )})
+                    )
+                  })
                 )}
               </div>
             </CardContent>
@@ -269,4 +270,3 @@ export default function TestimonialsAdminPage() {
   );
 }
 
-    

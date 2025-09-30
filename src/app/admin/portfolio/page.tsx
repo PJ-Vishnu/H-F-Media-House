@@ -40,12 +40,12 @@ export default function PortfolioAdminPage() {
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number } | null>(null);
-  
+
   const form = useForm<z.infer<typeof portfolioSchema>>({
     resolver: zodResolver(portfolioSchema),
     defaultValues: { items: [] },
   });
-  
+
   const { fields, append, remove, move, update } = useFieldArray({
     control: form.control,
     name: "items",
@@ -83,7 +83,7 @@ export default function PortfolioAdminPage() {
       setItemToDelete(null);
     }
   };
-  
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -93,7 +93,7 @@ export default function PortfolioAdminPage() {
       const previewUrl = e.target?.result as string;
       const currentItems = form.getValues('items');
       update(index, { ...currentItems[index], imageUrl: previewUrl });
-      
+
       setStagedFiles(prev => {
         const others = prev.filter(f => f.index !== index);
         return [...others, { index, file }];
@@ -135,7 +135,7 @@ export default function PortfolioAdminPage() {
           }
         });
       }
-      
+
       const finalItems = submissionValues.items.map((item, index) => ({ ...item, order: index + 1 }));
 
       const orderedIds = finalItems.map(item => item.id);
@@ -144,8 +144,8 @@ export default function PortfolioAdminPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ orderedIds })
       });
-      
-      for(const item of finalItems) {
+
+      for (const item of finalItems) {
         await fetch(`/api/portfolio?id=${item.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -154,7 +154,7 @@ export default function PortfolioAdminPage() {
       }
 
       toast({ title: "Success!", description: "Portfolio updated successfully." });
-      form.reset({items: finalItems}); 
+      form.reset({ items: finalItems });
       setStagedFiles([]);
 
     } catch (error) {
@@ -166,23 +166,23 @@ export default function PortfolioAdminPage() {
 
   const handleAddItem = async () => {
     const newItemData = {
-        title: "New Project",
-        description: "A brief description of the new project.",
-        category: "Video",
-        imageUrl: "/uploads/portfolio/placeholder.jpg", // Default placeholder
+      title: "New Project",
+      description: "A brief description of the new project.",
+      category: "Video",
+      imageUrl: "/uploads/portfolio/placeholder.jpg", // Default placeholder
     };
     try {
-        const res = await fetch('/api/portfolio', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(newItemData),
-        });
-        if(!res.ok) throw new Error('Failed to add item');
-        const addedItem = await res.json();
-        append(addedItem);
-        toast({ title: "Item added"});
+      const res = await fetch('/api/portfolio', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newItemData),
+      });
+      if (!res.ok) throw new Error('Failed to add item');
+      const addedItem = await res.json();
+      append(addedItem);
+      toast({ title: "Item added" });
     } catch (error) {
-        toast({ variant: 'destructive', title: 'Failed to add item.' });
+      toast({ variant: 'destructive', title: 'Failed to add item.' });
     }
   }
 
@@ -194,11 +194,11 @@ export default function PortfolioAdminPage() {
             <h1 className="text-3xl font-bold">Manage Portfolio</h1>
             <div>
               <Button type="button" onClick={handleAddItem} variant="outline" className="mr-2">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Item
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Item
               </Button>
               <Button type="submit" disabled={isSubmitting || !form.formState.isDirty}>
-                  {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save All Changes
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save All Changes
               </Button>
             </div>
           </div>
@@ -215,45 +215,55 @@ export default function PortfolioAdminPage() {
                   fields.map((field, index) => {
                     const currentSrc = form.watch(`items.${index}.imageUrl`);
                     return (
-                    <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
-                      <div className="flex flex-col items-center pt-2">
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => move(index, index - 1)} disabled={index === 0}>
+                      <div key={field.id} className="flex items-start gap-4 p-4 border rounded-lg bg-background">
+                        <div className="flex flex-col items-center pt-2">
+                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => move(index, index - 1)} disabled={index === 0}>
                             <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab my-1" />
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => move(index, index + 1)} disabled={index === fields.length - 1}>
+                          </Button>
+                          <GripVertical className="h-5 w-5 text-muted-foreground cursor-grab my-1" />
+                          <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => move(index, index + 1)} disabled={index === fields.length - 1}>
                             <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <div className="flex-grow space-y-2">
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.title`}
+                            render={({ field }) => <FormItem><FormControl><Input {...field} className="font-bold" placeholder="Project Title" /></FormControl></FormItem>}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.description`}
+                            render={({ field }) => <FormItem><FormControl><Input {...field} placeholder="Project Description" /></FormControl></FormItem>}
+                          />
+                          <FormField
+                            control={form.control}
+                            name={`items.${index}.category`}
+                            render={({ field }) => <FormItem><FormControl><Input {...field} placeholder="Category" /></FormControl></FormItem>}
+                          />
+                        </div>
+
+                        <div className="w-48 space-y-2 flex-shrink-0">
+                          {currentSrc && <Image src={currentSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />}
+                          <Input type="file" onChange={(e) => handleFileChange(e, index)} />
+                        </div>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            handleDeleteClick(form.getValues(`items.${index}.id`), index)
+                          }
+                          className="mt-2"
+                        >
+                          <Trash2 className="h-5 w-5 text-destructive" />
                         </Button>
-                      </div>
-                      
-                      <div className="flex-grow space-y-2">
-                        <FormField
-                          control={form.control}
-                          name={`items.${index}.title`}
-                          render={({ field }) => <FormItem><FormControl><Input {...field} className="font-bold" placeholder="Project Title" /></FormControl></FormItem>}
-                        />
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.description`}
-                          render={({ field }) => <FormItem><FormControl><Input {...field} placeholder="Project Description" /></FormControl></FormItem>}
-                        />
-                         <FormField
-                          control={form.control}
-                          name={`items.${index}.category`}
-                          render={({ field }) => <FormItem><FormControl><Input {...field} placeholder="Category" /></FormControl></FormItem>}
-                        />
-                      </div>
 
-                      <div className="w-48 space-y-2 flex-shrink-0">
-                         {currentSrc && <Image src={currentSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />}
-                         <Input type="file" onChange={(e) => handleFileChange(e, index)} />
                       </div>
-
-                      <Button type="button" variant="ghost" size="icon" onClick={() => handleDeleteClick(field.id, index)} className="mt-2">
-                        <Trash2 className="h-5 w-5 text-destructive" />
-                      </Button>
-                    </div>
-                  )})
+                    )
+                  })
                 )}
               </div>
             </CardContent>
@@ -277,4 +287,3 @@ export default function PortfolioAdminPage() {
   );
 }
 
-    
