@@ -27,7 +27,7 @@ export async function POST(req: Request) {
 // PUT /api/testimonials?id=...
 export async function PUT(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = req.nextUrl;
         const id = searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest) {
 // DELETE /api/testimonials?id=...
 export async function DELETE(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
+        const { searchParams } = req.nextUrl;
         const id = searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
