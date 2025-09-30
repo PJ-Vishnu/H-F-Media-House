@@ -83,7 +83,7 @@ export default function PortfolioAdminPage() {
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete item" });
     } finally {
-      setItemToDelete(null);
+      setDialogOpen(false);
     }
   };
   
@@ -265,7 +265,12 @@ export default function PortfolioAdminPage() {
       </Form>
       <ConfirmationDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) {
+            setItemToDelete(null);
+          }
+        }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
         description="This will permanently delete the portfolio item."
