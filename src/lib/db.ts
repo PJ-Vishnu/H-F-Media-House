@@ -122,7 +122,7 @@ export const db = {
         { id: '6', src: '/uploads/gallery/1700000000016-placeholder.jpg', alt: 'Wedding rings', order: 6, colSpan: 2, rowSpan: 1 },
     ];
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
-    return images.map(mapDoc);
+    return images.map(mapDoc) as GalleryImage[];
   },
   addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>): Promise<GalleryImage> => {
     const db = await connectToDb();
@@ -161,7 +161,7 @@ export const db = {
     if(bulkOps.length > 0) {
         await db.collection('gallery').bulkWrite(bulkOps);
     }
-    return db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc));
+    return db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc) as GalleryImage[]);
   },
 
   // ABOUT
@@ -200,7 +200,7 @@ export const db = {
     const { _id, ...updateData } = data as any;
     await db.collection('about').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('about').findOne({});
-    return updatedDoc;
+    return updatedDoc ? mapDoc<AboutData>(updatedDoc) : null;
   },
 
   // SERVICES
@@ -211,7 +211,7 @@ export const db = {
         { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: '/uploads/services/1700000000042-placeholder.jpg' },
         { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: '/uploads/services/1700000000043-placeholder.jpg' },
     ];
-    return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc));
+    return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc) as Service[]);
   },
   addService: async (item: Omit<Service, 'id'>): Promise<Service> => {
     const db = await connectToDb();
@@ -246,7 +246,7 @@ export const db = {
       { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: '/uploads/portfolio/1700000000034-placeholder.jpg', category: 'Video', order: 4 },
     ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
-    return items.map(mapDoc);
+    return items.map(mapDoc) as PortfolioItem[];
   },
   addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>): Promise<PortfolioItem> => {
     const db = await connectToDb();
@@ -276,7 +276,7 @@ export const db = {
     if(bulkOps.length > 0) {
         await db.collection('portfolio').bulkWrite(bulkOps);
     }
-    return db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc));
+    return db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc) as PortfolioItem[]);
   },
   updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>): Promise<PortfolioItem | undefined> => {
     const db = await connectToDb();
@@ -296,7 +296,7 @@ export const db = {
       { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: '/uploads/testimonials/1700000000052-placeholder.jpg' },
       { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/1700000000053-placeholder.jpg' },
     ];
-    return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc));
+    return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc) as Testimonial[]);
   },
   addTestimonial: async (item: Omit<Testimonial, 'id'>): Promise<Testimonial> => {
     const db = await connectToDb();
@@ -414,7 +414,7 @@ export const db = {
     const db = await connectToDb();
     if (!db) return [];
     const inquiries = await db.collection<Inquiry>('inquiries').find().sort({ createdAt: -1 }).toArray();
-    return inquiries.map(mapDoc);
+    return inquiries.map(mapDoc) as Inquiry[];
   },
   addInquiry: async (item: Omit<Inquiry, 'id' | 'createdAt'>): Promise<Inquiry> => {
     const db = await connectToDb();
