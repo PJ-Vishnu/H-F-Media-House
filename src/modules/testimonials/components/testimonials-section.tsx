@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
@@ -6,7 +7,8 @@ import { Carousel, CarouselContent, CarouselItem, type CarouselApi, CarouselNext
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Autoplay from "embla-carousel-autoplay";
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -19,6 +21,10 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
   const [current, setCurrent] = useState(0)
   const isMobile = useIsMobile();
   
+  const plugin = useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
   useEffect(() => {
     if (!api) {
       return
@@ -48,11 +54,14 @@ export function TestimonialsSection({ data }: TestimonialsSectionProps) {
         </div>
         <Carousel
             setApi={setApi}
+            plugins={[plugin.current]}
             opts={{
                 align: "start",
                 loop: true,
             }}
             className="w-full max-w-6xl mx-auto"
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
         >
             <CarouselContent className="-ml-4">
                 {data.map((testimonial, index) => (

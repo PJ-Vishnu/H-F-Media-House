@@ -21,25 +21,9 @@ function GalleryPage({ images }: { images: GalleryImage[] }) {
 
   return (
     <div className="grid grid-cols-3 grid-rows-3 gap-4 w-full h-[600px]">
-      {images.map((image, index) => {
-        const colSpan = image.colSpan || 1;
-        const rowSpan = image.rowSpan || 1;
-        
-        let gridClasses = `col-span-${colSpan} row-span-${rowSpan}`;
-        
-        // Use specific classes for defined spans, fall back for others
-        if (colSpan === 2 && rowSpan === 2) gridClasses = 'col-span-2 row-span-2';
-        else if (colSpan === 2 && rowSpan === 1) gridClasses = 'col-span-2 row-span-1';
-        else if (colSpan === 1 && rowSpan === 2) gridClasses = 'col-span-1 row-span-2';
-        else gridClasses = 'col-span-1 row-span-1';
-
-        // Override classes based on the original intended layout for the first 6 items
-        if(index === 0) gridClasses = 'col-span-2 row-span-2';
-        if(index === 1) gridClasses = 'col-span-1 row-span-1';
-        if(index === 2) gridClasses = 'col-span-1 row-span-1';
-        if(index === 3) gridClasses = 'col-span-1 row-span-1';
-        if(index === 4) gridClasses = 'col-span-1 row-span-1';
-        if(index === 5) gridClasses = 'col-span-2 row-span-1';
+      {images.map((image) => {
+        // Dynamically create grid classes from the database values
+        const gridClasses = `col-span-${image.colSpan || 1} row-span-${image.rowSpan || 1}`;
         
         return (
           <div
