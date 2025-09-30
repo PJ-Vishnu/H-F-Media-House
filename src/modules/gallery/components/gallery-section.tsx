@@ -4,16 +4,31 @@
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import { cn } from '@/lib/utils';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import { Card, CardContent } from "@/components/ui/card";
 
 type GallerySectionProps = {
   data: GalleryImage[];
 };
 
+// Helper function to chunk array into smaller arrays
+const chunk = <T,>(arr: T[], size: number): T[][] =>
+  Array.from({ length: Math.ceil(arr.length / size) }, (v, i) =>
+    arr.slice(i * size, i * size + size)
+  );
+
 export function GallerySection({ data }: GallerySectionProps) {
   if (!data || data.length === 0) {
     return null;
   }
+
+  const imageChunks = chunk(data, 4);
 
   return (
     <section id="gallery" className="w-full py-24 bg-background">
@@ -22,44 +37,49 @@ export function GallerySection({ data }: GallerySectionProps) {
           <p className="text-primary font-semibold tracking-widest uppercase mb-2">Amazing Work We've Done</p>
           <h2 className="text-3xl md:text-4xl font-bold font-headline">Moments We've Captured</h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">
-            A glimpse into our creative world, showcasing a diverse range of projects from breathtaking landscapes to intimate portraits.
+            A glimpse into our creative world, showcasing a diverse range of projects.
           </p>
         </div>
 
-        <div 
-          className="grid grid-cols-2 md:grid-cols-4 auto-rows-[200px] gap-4"
-          style={{ gridAutoFlow: 'dense' }}
+        <Carousel
+          opts={{
+            align: "start",
+            loop: imageChunks.length > 1,
+          }}
+          className="w-full max-w-4xl mx-auto"
         >
-          {data.map((image, index) => {
-            // Default to 1 if not specified
-            const colSpan = image.colSpan || 1;
-            const rowSpan = image.rowSpan || 1;
-
-            // Ensure spans don't exceed max grid columns
-            const finalColSpan = `span ${Math.min(colSpan, 4)}`;
-            const finalRowSpan = `span ${rowSpan}`;
-
-            return (
-              <div
-                key={image.id}
-                className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
-                style={{
-                    gridColumn: finalColSpan,
-                    gridRow: finalRowSpan,
-                }}
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 20vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-              </div>
-            );
-          })}
-        </div>
+          <CarouselContent>
+            {imageChunks.map((chunk, index) => (
+              <CarouselItem key={index}>
+                <div className="p-1">
+                  <div className="grid grid-cols-2 grid-rows-2 gap-4 aspect-square md:aspect-[16/9]">
+                    {chunk.map((image) => (
+                       <div
+                        key={image.id}
+                        className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
+                      >
+                        <Image
+                          src={image.src}
+                          alt={image.alt}
+                          fill
+                          sizes="(max-width: 768px) 50vw, 25vw"
+                          className="object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          {imageChunks.length > 1 && (
+            <>
+                <CarouselPrevious className="hidden sm:flex" />
+                <CarouselNext className="hidden sm:flex" />
+            </>
+          )}
+        </Carousel>
       </ScrollFadeIn>
     </section>
   );
