@@ -101,7 +101,6 @@ export default function ServicesAdminPage() {
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete service" });
     } finally {
-      setItemToDelete(null);
       setDialogOpen(false);
     }
   };
@@ -378,7 +377,10 @@ export default function ServicesAdminPage() {
       </Form>
       <ConfirmationDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setItemToDelete(null);
+        }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
         description="This will permanently delete the service."

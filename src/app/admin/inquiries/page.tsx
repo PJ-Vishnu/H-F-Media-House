@@ -64,7 +64,6 @@ export default function InquiriesAdminPage() {
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete inquiry" });
     } finally {
-      setItemToDelete(null);
       setDialogOpen(false);
     }
   };
@@ -136,7 +135,10 @@ export default function InquiriesAdminPage() {
       </Card>
        <ConfirmationDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setItemToDelete(null);
+        }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
         description="This will permanently delete this inquiry. This action cannot be undone."

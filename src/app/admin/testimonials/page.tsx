@@ -112,7 +112,6 @@ export default function TestimonialsAdminPage() {
     } catch (error) {
       toast({ variant: "destructive", title: "Failed to delete testimonial" });
     } finally {
-      setItemToDelete(null);
       setDialogOpen(false);
     }
   };
@@ -256,7 +255,10 @@ export default function TestimonialsAdminPage() {
       </Form>
       <ConfirmationDialog
         open={dialogOpen}
-        onOpenChange={setDialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setItemToDelete(null);
+        }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
         description="This will permanently delete the testimonial."
