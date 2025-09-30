@@ -4,15 +4,51 @@
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 type GallerySectionProps = {
   data: GalleryImage[];
 };
 
+// Helper function to group images into slides based on their grid area
+function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
+  const slides: GalleryImage[][] = [];
+  if (!images || images.length === 0) {
+    return slides;
+  }
+
+  let currentSlide: GalleryImage[] = [];
+  let currentArea = 0;
+  const maxArea = 16; // 4x4 grid
+
+  images.forEach(image => {
+    const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
+    const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
+    const imageArea = colSpan * rowSpan;
+
+    if (currentArea + imageArea > maxArea && currentSlide.length > 0) {
+      slides.push(currentSlide);
+      currentSlide = [];
+      currentArea = 0;
+    }
+    
+    currentSlide.push(image);
+    currentArea += imageArea;
+  });
+
+  if (currentSlide.length > 0) {
+    slides.push(currentSlide);
+  }
+
+  return slides;
+}
+
 export function GallerySection({ data }: GallerySectionProps) {
   if (!data || data.length === 0) {
     return null;
   }
+
+  const slides = groupImagesIntoSlides(data);
 
   return (
     <section id="gallery" className="w-full py-24 bg-background">
@@ -25,32 +61,44 @@ export function GallerySection({ data }: GallerySectionProps) {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[200px] gap-4 [grid-auto-flow:dense]">
-          {data.map((image) => {
-            const colSpan = Math.min(image.colSpan || 1, 4);
-            const rowSpan = Math.min(image.rowSpan || 1, 4);
+        <Carousel opts={{ loop: true }} className="w-full">
+          <CarouselContent>
+            {slides.map((slide, slideIndex) => (
+              <CarouselItem key={slideIndex}>
+                <div className="p-1">
+                  <div className="grid grid-cols-4 grid-rows-4 gap-4 aspect-video">
+                    {slide.map((image) => {
+                      const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
+                      const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
 
-            return (
-              <div
-                key={image.id}
-                className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl hover:scale-[1.02]"
-                style={{
-                  gridColumn: `span ${colSpan}`,
-                  gridRow: `span ${rowSpan}`
-                }}
-              >
-                <Image
-                  src={image.src}
-                  alt={image.alt}
-                  fill
-                  sizes="(max-width: 768px) 50vw, 25vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-              </div>
-            )
-          })}
-        </div>
+                      return (
+                        <div
+                          key={image.id}
+                          className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl"
+                          style={{
+                            gridColumn: `span ${colSpan}`,
+                            gridRow: `span ${rowSpan}`,
+                          }}
+                        >
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            fill
+                            sizes={`(max-width: 768px) ${100 / colSpan}vw, (max-width: 1200px) ${50 / colSpan}vw, ${33 / colSpan}vw`}
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="ml-12" />
+          <CarouselNext className="mr-12" />
+        </Carousel>
       </ScrollFadeIn>
     </section>
   );
