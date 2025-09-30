@@ -1,3 +1,4 @@
+
 import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
@@ -50,6 +51,7 @@ export async function DELETE(req: NextRequest) {
         await db.deletePortfolioItem(id);
         return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
     } catch (error) {
+        console.error("Failed to delete portfolio item:", error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
