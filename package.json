@@ -46,7 +46,6 @@
     "embla-carousel-autoplay": "^8.1.5",
     "embla-carousel-react": "^8.1.5",
     "firebase": "^11.9.1",
-    "firebase-admin": "^12.2.0",
     "genkit": "^1.14.1",
     "jose": "^5.6.3",
     "lodash-es": "^4.17.21",
