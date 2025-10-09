@@ -2,6 +2,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
+import fs from 'fs';
+import path from 'path';
+
 
 // GET /api/portfolio
 export async function GET() {
@@ -46,10 +49,24 @@ export async function DELETE(req: NextRequest) {
         if (!id) {
             return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
         }
+        
+        const itemToDelete = await db.getPortfolioItemById(id);
+
         await db.deletePortfolioItem(id);
+        
+        if (itemToDelete && itemToDelete.imageUrl) {
+            const filePath = path.join(process.cwd(), 'public', itemToDelete.imageUrl);
+            if (fs.existsSync(filePath)) {
+                try {
+                    fs.unlinkSync(filePath);
+                } catch (fileError) {
+                    console.error(`Failed to delete file: ${filePath}`, fileError);
+                }
+            }
+        }
+
         return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
     } catch (error) {
         console.error("Failed to delete portfolio item:", error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
-    }
-}
+    
