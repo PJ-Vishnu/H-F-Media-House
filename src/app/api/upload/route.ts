@@ -32,10 +32,15 @@ const storageBucket = process.env.FIREBASE_STORAGE_BUCKET;
 
 if (!admin.apps.length) {
   if (serviceAccount.projectId && serviceAccount.privateKey && serviceAccount.clientEmail) {
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-      storageBucket: storageBucket,
-    });
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: storageBucket,
+      });
+      console.log("Firebase Admin SDK initialized successfully.");
+    } catch (error) {
+      console.error("Firebase Admin SDK initialization error:", error);
+    }
   } else {
     console.warn("Firebase Admin credentials not found. Uploads will fail. Please set environment variables.");
   }
@@ -51,8 +56,8 @@ const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov', '.w
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 
 export async function POST(req: NextRequest) {
-  if (!storageBucket || admin.apps.length === 0) {
-    console.error("Firebase Storage is not configured. Check environment variables.");
+  if (!storageBucket || admin.apps.length === 0 || !admin.app().options.credential) {
+    console.error("Firebase Storage is not configured. Check environment variables and service account initialization.");
     return NextResponse.json({ success: false, message: 'Server configuration error: Storage not available.' }, { status: 500 });
   }
 
@@ -95,7 +100,7 @@ export async function POST(req: NextRequest) {
     });
 
     // The public URL of the file.
-    const publicUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
+    const publicUrl = blob.publicUrl();
 
     return NextResponse.json({ success: true, filePath: publicUrl }, { status: 200 });
 
