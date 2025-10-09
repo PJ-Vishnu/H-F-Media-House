@@ -10,6 +10,14 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  async rewrites() {
+    return [
+      {
+        source: '/uploads/:path*',
+        destination: '/:path*',
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {
