@@ -72,4 +72,6 @@ export async function DELETE(req: NextRequest) {
         return NextResponse.json({ message: 'Image deleted successfully' }, { status: 200 });
     } catch (error) {
         console.error('Gallery delete error:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 
+        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    }
+}
