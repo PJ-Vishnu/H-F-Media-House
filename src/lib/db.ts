@@ -23,10 +23,10 @@ let client: MongoClient;
 let dbInstance: Db;
 let isConnected = false;
 
-async function connectToDb(): Promise<Db | null> {
+async function connectToDb(): Promise<Db> {
   if (!uri) {
-    console.warn('MONGODB_URI not found, running in fallback mode.');
-    return null;
+    console.error('FATAL: MONGODB_URI is not defined. Application cannot connect to the database.');
+    throw new Error('Database configuration is missing.');
   }
   if (dbInstance && isConnected) {
     return dbInstance;
@@ -41,7 +41,7 @@ async function connectToDb(): Promise<Db | null> {
   } catch (error) {
     console.error("Failed to connect to MongoDB:", error);
     isConnected = false;
-    return null;
+    throw new Error("Could not connect to the database.");
   }
 }
 
@@ -51,19 +51,39 @@ function mapDoc<T>(doc: WithId<any>): T {
   return { ...rest, id: _id.toHexString() } as T;
 }
 
+
+async function fetchSingle<T>(collectionName: string, fallback: T): Promise<T> {
+  try {
+    const db = await connectToDb();
+    const data = await db.collection<T>(collectionName).findOne({});
+    if (!data) return fallback;
+    return JSON.parse(JSON.stringify(data));
+  } catch (error) {
+    console.warn(`Could not fetch from ${collectionName}, returning fallback data. Error:`, (error as Error).message);
+    return fallback;
+  }
+}
+
+async function fetchMultiple<T>(collectionName: string, fallback: T[], sort: any = {}): Promise<T[]> {
+  try {
+    const db = await connectToDb();
+    const data = await db.collection<any>(collectionName).find().sort(sort).toArray();
+    return data.map(mapDoc);
+  } catch (error) {
+    console.warn(`Could not fetch from ${collectionName}, returning fallback data. Error:`, (error as Error).message);
+    return fallback;
+  }
+}
+
+
 // Mock "DB" methods, now interacting with MongoDB
 export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser | null> => {
-    const db = await connectToDb();
-    if (!db) return { email: 'admin@example.com', passwordHash: '$2a$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' }; // password is "password"
-    const admin = await db.collection<AdminUser>('admin').findOne({});
-    return admin ? JSON.parse(JSON.stringify(admin)) : null;
+    return fetchSingle<AdminUser>('admin', { email: 'admin@example.com', passwordHash: '$2a$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' });
   },
   updateAdminPassword: async (passwordHash: string) => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
-    // Assuming there's only one admin document
     await db.collection('admin').updateOne({}, { $set: { passwordHash } });
     return { success: true };
   },
@@ -71,70 +91,38 @@ export const db = {
 
   // HERO
   getHero: async (): Promise<HeroData> => {
-    const db = await connectToDb();
-    const fallbackData: HeroData = {
+    const data = await fetchSingle<HeroData>('hero', {
         headline: 'Creating Stories',
         subheadline: 'We are a creative film and photo production house. Please connect to a database to see full content.',
         ctaText: 'Explore Now',
         ctaLink: '#portfolio',
-        images: [
-            { src: '/uploads/hero/1700000000001-placeholder.jpg', alt: 'Man with a camera' },
-            { src: '/uploads/hero/1700000000002-placeholder.jpg', alt: 'Film set lighting' },
-            { src: '/uploads/hero/1700000000003-placeholder.jpg', alt: 'Video editing suite' },
-            { src: '/uploads/hero/1700000000004-placeholder.jpg', alt: 'Drone flying over a landscape' },
-            { src: '/uploads/hero/1700000000005-placeholder.jpg', alt: 'Podcast recording microphone' },
-            { src: '/uploads/hero/1700000000006-placeholder.jpg', alt: 'Photographer in action' },
-        ],
-    };
+        images: [],
+    });
 
-    if (!db) return fallbackData;
-    
-    const data = await db.collection<HeroData>('hero').findOne({});
-    
-    if (!data) return fallbackData;
-
-    // Ensure images is always an array, converting from object if necessary.
-    let imagesArray: { src: string; alt: string }[] = [];
-    if (Array.isArray(data.images)) {
-        imagesArray = data.images;
-    } else if (typeof data.images === 'object' && data.images !== null) {
-        imagesArray = Object.values(data.images);
+    if (data && typeof data.images === 'object' && !Array.isArray(data.images)) {
+        data.images = Object.values(data.images);
     }
-    
-    return JSON.parse(JSON.stringify({ ...data, images: imagesArray }));
+    return data;
   },
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
-    await db.collection('hero').updateOne({}, { $set: updateData }, { upsert: true });
+    const result = await db.collection('hero').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('hero').findOne({});
     return updatedDoc;
   },
   
   // GALLERY
   getGallery: async (): Promise<GalleryImage[]> => {
-    const db = await connectToDb();
-    if (!db) return [
-        { id: '1', src: '/uploads/gallery/1700000000011-placeholder.jpg', alt: 'Couple walking on a hill', order: 1, colSpan: 2, rowSpan: 2 },
-        { id: '2', src: '/uploads/gallery/1700000000012-placeholder.jpg', alt: 'Black and white wedding photo', order: 2, colSpan: 1, rowSpan: 1 },
-        { id: '3', src: '/uploads/gallery/1700000000013-placeholder.jpg', alt: 'Couple reflected in a window', order: 3, colSpan: 1, rowSpan: 1 },
-        { id: '4', src: '/uploads/gallery/1700000000014-placeholder.jpg', alt: 'A groom smiling', order: 4, colSpan: 1, rowSpan: 1 },
-        { id: '5', src: '/uploads/gallery/1700000000015-placeholder.jpg', alt: 'A bride smiling', order: 5, colSpan: 1, rowSpan: 1 },
-        { id: '6', src: '/uploads/gallery/1700000000016-placeholder.jpg', alt: 'Wedding rings', order: 6, colSpan: 2, rowSpan: 1 },
-    ];
-    const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
-    return images.map(mapDoc) as GalleryImage[];
+    return fetchMultiple<GalleryImage>('gallery', [], { order: 1 });
   },
   getGalleryImageById: async (id: string): Promise<WithId<GalleryImage> | null> => {
     const db = await connectToDb();
-    if (!db) return null;
     const { ObjectId } = await import('mongodb');
     return db.collection<GalleryImage>('gallery').findOne({ _id: new ObjectId(id) });
   },
   addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>): Promise<GalleryImage> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const count = await db.collection('gallery').countDocuments();
     const newImage = { ...image, order: count + 1 };
     const result = await db.collection('gallery').insertOne(newImage);
@@ -142,7 +130,6 @@ export const db = {
   },
   updateGalleryImage: async (id: string, data: Partial<GalleryImage>): Promise<GalleryImage | undefined> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const { _id, ...updateData } = data as any; // Prevent _id from being in $set
     await db.collection('gallery').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
@@ -151,14 +138,12 @@ export const db = {
   },
   deleteGalleryImage: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     await db.collection('gallery').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
   },
   reorderGallery: async (orderedIds: string[]): Promise<GalleryImage[]> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const bulkOps = orderedIds.map((id, index) => ({
       updateOne: {
@@ -174,37 +159,24 @@ export const db = {
 
   // ABOUT
   getAbout: async (): Promise<AboutData> => {
-    const db = await connectToDb();
-    const fallbackData: AboutData = { 
+    const data = await fetchSingle<AboutData>('about', { 
         title: 'Our Story Behind the Lens', 
         content: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', 
-        imageUrl: '/uploads/about/1700000000020-placeholder.jpg', 
+        imageUrl: '', 
         features: [
           { title: 'Creative & Emotional', description: 'We believe every moment has a story to tell. We turn your special moments into timeless memories.' },
           { title: 'Modern & Professional', description: 'We use the latest technology and techniques to produce high-quality content that exceeds expectations.' },
           { title: 'Passionate & Dedicated', description: 'Our team is passionate about storytelling and dedicated to delivering exceptional results for every client.' },
         ]
-    };
+    });
 
-    if (!db) return fallbackData;
-
-    const data = await db.collection<AboutData>('about').findOne({});
-
-    if (!data) return fallbackData;
-
-    // Ensure features is always an array to prevent .map errors
-    let featuresArray: { title: string; description: string }[] = [];
-    if (Array.isArray(data.features)) {
-        featuresArray = data.features;
-    } else if (typeof data.features === 'object' && data.features !== null) {
-        featuresArray = Object.values(data.features);
+    if (data && typeof data.features === 'object' && !Array.isArray(data.features)) {
+        data.features = Object.values(data.features);
     }
-
-    return JSON.parse(JSON.stringify({ ...data, features: featuresArray }));
+    return data;
   },
   updateAbout: async (data: AboutData): Promise<AboutData | null> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('about').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('about').findOne({});
@@ -213,29 +185,20 @@ export const db = {
 
   // SERVICES
   getServices: async (): Promise<Service[]> => {
-    const db = await connectToDb();
-    if (!db) return [
-        { id: '1', title: 'Photography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Camera', image: '/uploads/services/1700000000041-placeholder.jpg' },
-        { id: '2', title: 'Videography', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Video', image: '/uploads/services/1700000000042-placeholder.jpg' },
-        { id: '3', title: 'Content Creation', description: 'It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.', icon: 'Wand', image: '/uploads/services/1700000000043-placeholder.jpg' },
-    ];
-    return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc) as Service[]);
+    return fetchMultiple<Service>('services', []);
   },
   getServiceById: async (id: string): Promise<WithId<Service> | null> => {
     const db = await connectToDb();
-    if (!db) return null;
     const { ObjectId } = await import('mongodb');
     return db.collection<Service>('services').findOne({ _id: new ObjectId(id) });
   },
   addService: async (item: Omit<Service, 'id'>): Promise<Service> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const result = await db.collection('services').insertOne(item);
     return mapDoc({ ...item, _id: result.insertedId });
   },
   updateService: async (id: string, data: Partial<Service>): Promise<Service | undefined> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const { _id, ...updateData } = data as any;
     await db.collection('services').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
@@ -244,7 +207,6 @@ export const db = {
   },
   deleteService: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     await db.collection('services').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
@@ -252,25 +214,15 @@ export const db = {
   
   // PORTFOLIO
   getPortfolio: async (): Promise<PortfolioItem[]> => {
-    const db = await connectToDb();
-    if (!db) return [
-      { id: '1', title: 'Project Alpha', description: 'A documentary short on urban exploration.', imageUrl: '/uploads/portfolio/1700000000031-placeholder.jpg', category: 'Video', order: 1 },
-      { id: '2', title: 'Project Beta', description: 'Brand photography for a new startup.', imageUrl: '/uploads/portfolio/1700000000032-placeholder.jpg', category: 'Photography', order: 2 },
-      { id: '3', title: 'Project Gamma', description: 'Animated explainer video for a tech company.', imageUrl: '/uploads/portfolio/1700000000033-placeholder.jpg', category: 'Animation', order: 3 },
-      { id: '4', title: 'Project Delta', description: 'Event coverage for a major music festival.', imageUrl: '/uploads/portfolio/1700000000034-placeholder.jpg', category: 'Video', order: 4 },
-    ];
-    const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
-    return items.map(mapDoc) as PortfolioItem[];
+    return fetchMultiple<PortfolioItem>('portfolio', [], { order: 1 });
   },
   getPortfolioItemById: async (id: string): Promise<WithId<PortfolioItem> | null> => {
     const db = await connectToDb();
-    if (!db) return null;
     const { ObjectId } = await import('mongodb');
     return db.collection<PortfolioItem>('portfolio').findOne({ _id: new ObjectId(id) });
   },
   addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>): Promise<PortfolioItem> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const count = await db.collection('portfolio').countDocuments();
     const newItem = { ...item, order: count + 1 };
     const result = await db.collection('portfolio').insertOne(newItem);
@@ -278,14 +230,12 @@ export const db = {
   },
   deletePortfolioItem: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     await db.collection('portfolio').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
   },
   reorderPortfolio: async (orderedIds: string[]): Promise<PortfolioItem[]> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
      const bulkOps = orderedIds.map((id, index) => ({
       updateOne: {
@@ -300,7 +250,6 @@ export const db = {
   },
   updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>): Promise<PortfolioItem | undefined> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const { _id, ...updateData } = data as any; // Prevent _id from being in $set
     await db.collection('portfolio').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
@@ -310,29 +259,20 @@ export const db = {
 
   // TESTIMONIALS
   getTestimonials: async (): Promise<Testimonial[]> => {
-    const db = await connectToDb();
-    if (!db) return [
-      { id: '1', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Leo', company: 'Marketer', avatar: '/uploads/testimonials/1700000000051-placeholder.jpg' },
-      { id: '2', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'Ana', company: 'Photographer', avatar: '/uploads/testimonials/1700000000052-placeholder.jpg' },
-      { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/1700000000053-placeholder.jpg' },
-    ];
-    return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc) as Testimonial[]);
+    return fetchMultiple<Testimonial>('testimonials', []);
   },
   getTestimonialById: async (id: string): Promise<WithId<Testimonial> | null> => {
     const db = await connectToDb();
-    if (!db) return null;
     const { ObjectId } = await import('mongodb');
     return db.collection<Testimonial>('testimonials').findOne({ _id: new ObjectId(id) });
   },
   addTestimonial: async (item: Omit<Testimonial, 'id'>): Promise<Testimonial> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const result = await db.collection('testimonials').insertOne(item);
     return mapDoc({ ...item, _id: result.insertedId });
   },
   updateTestimonial: async (id: string, data: Partial<Testimonial>): Promise<Testimonial | undefined> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     const { _id, ...updateData } = data as any;
     await db.collection('testimonials').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
@@ -341,7 +281,6 @@ export const db = {
   },
   deleteTestimonial: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     await db.collection('testimonials').deleteOne({ _id: new ObjectId(id) });
     return { success: true };
@@ -349,21 +288,16 @@ export const db = {
 
   // VIDEO
   getVideo: async (): Promise<VideoData> => {
-    const db = await connectToDb();
-    if (!db) return { 
+    return fetchSingle<VideoData>('video', { 
         title: 'Check Out Our Latest Work',
         description: 'A showcase of our recent projects, capturing unique stories and breathtaking moments. See our passion in action.',
         videoType: 'youtube',
         videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
-        videoThumbnail: '/uploads/video-thumbnails/1700000000051-placeholder.jpg'
-    };
-    const data = await db.collection('video').findOne({});
-    // Return a plain object to prevent serialization issues with Next.js
-    return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '' };
+        videoThumbnail: ''
+    });
   },
   updateVideo: async (data: VideoData): Promise<VideoData> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('video').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
@@ -371,20 +305,16 @@ export const db = {
   
   // CONTACT
   getContact: async (): Promise<ContactData> => {
-    const db = await connectToDb();
-    if (!db) return { 
+    return fetchSingle<ContactData>('contact', { 
         email: 'hello@hfmedia.house', 
         phone: '+1 (234) 567-890', 
         address: '123 Media Lane, Creative City, 10001', 
-        imageUrl: '/uploads/contact/1700000000070-placeholder.jpg',
+        imageUrl: '',
         socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#', youtube: '#' },
-    };
-    const data = await db.collection<ContactData>('contact').findOne({});
-    return data ? JSON.parse(JSON.stringify(data)) : { email: '', phone: '', address: '', socials: {}};
+    });
   },
   updateContact: async (data: ContactData): Promise<ContactData | null> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('contact').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('contact').findOne({});
@@ -393,8 +323,7 @@ export const db = {
 
   // FOOTER
   getFooter: async (): Promise<FooterData> => {
-    const db = await connectToDb();
-    if (!db) return { 
+    return fetchSingle<FooterData>('footer', { 
         copyright: `Copyright @${new Date().getFullYear()} H&F Media. All rights reserved.`, 
         links: [
             { title: 'Home', url: '/' },
@@ -402,13 +331,10 @@ export const db = {
             { title: 'Services', url: '#services' },
             { title: 'Contact', url: '#contact' },
         ] 
-    };
-    const data = await db.collection<FooterData>('footer').findOne({});
-    return data ? JSON.parse(JSON.stringify(data)) : { copyright: '', links: [] };
+    });
   },
   updateFooter: async (data: FooterData): Promise<FooterData> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('footer').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
@@ -416,20 +342,16 @@ export const db = {
 
   // SEO
   getSEO: async (): Promise<SEOData> => {
-    const db = await connectToDb();
-    if (!db) return { 
+    return fetchSingle<SEOData>('seo', { 
         title: 'H&F Media House | Fallback Title', 
         description: 'This is fallback description for when the database is not connected.',
         keywords: 'media, photography, video',
         url: 'https://example.com',
-        ogImage: '/uploads/seo/1700000000060-og-image.jpg'
-    };
-    const data = await db.collection<SEOData>('seo').findOne({});
-    return data ? JSON.parse(JSON.stringify(data)) : { title: '', description: '', keywords: '', url: '', ogImage: '' };
+        ogImage: ''
+    });
   },
   updateSEO: async (data: SEOData): Promise<SEOData> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { _id, ...updateData } = data as any;
     await db.collection('seo').updateOne({}, { $set: updateData }, { upsert: true });
     return data;
@@ -437,21 +359,16 @@ export const db = {
 
   // INQUIRIES
   getInquiries: async (): Promise<Inquiry[]> => {
-    const db = await connectToDb();
-    if (!db) return [];
-    const inquiries = await db.collection<Inquiry>('inquiries').find().sort({ createdAt: -1 }).toArray();
-    return inquiries.map(mapDoc) as Inquiry[];
+    return fetchMultiple<Inquiry>('inquiries', [], { createdAt: -1 });
   },
   addInquiry: async (item: Omit<Inquiry, 'id' | 'createdAt'>): Promise<Inquiry> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const newItem = { ...item, createdAt: new Date() };
     const result = await db.collection('inquiries').insertOne(newItem);
     return mapDoc({ ...newItem, _id: result.insertedId });
   },
   deleteInquiry: async (id: string): Promise<{ success: boolean }> => {
     const db = await connectToDb();
-    if (!db) throw new Error("Database not connected");
     const { ObjectId } = await import('mongodb');
     await db.collection('inquiries').deleteOne({ _id: new ObjectId(id) });
     return { success: true };

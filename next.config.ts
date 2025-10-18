@@ -10,14 +10,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  async rewrites() {
-    return [
-      {
-        source: '/uploads/:path*',
-        destination: '/uploads/:path*',
-      },
-    ]
-  },
   images: {
     remotePatterns: [
       {
@@ -32,16 +24,10 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: '9002',
-        pathname: '/**',
-      },
     ],
   },
    webpack: (config, { isServer }) => {
-    // This is to allow Next.js to handle file uploads with Multer correctly.
+    // This is to allow Next.js to handle file uploads correctly.
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
