@@ -1,22 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { promisify } from 'util';
-import multer from 'multer';
-import { UPLOADS_DIR, getStorage } from '@/lib/multer';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { UPLOADS_DIR } from '@/lib/db';
 import path from 'path';
 import fs from 'fs';
-
-// Helper to bridge Next.js App Router with Multer
-const runMiddleware = (req: any, res: any, fn: any) => {
-  return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
-};
 
 export const config = {
   api: {

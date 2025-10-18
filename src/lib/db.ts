@@ -12,7 +12,9 @@ import type { AdminUser } from '@/modules/admin/admin.schema';
 import type { SEOData } from '@/modules/seo/seo.schema';
 import type { VideoData } from '@/modules/video/video.schema';
 import type { Inquiry } from '@/modules/inquiries/inquiries.schema';
+import path from 'path';
 
+export const UPLOADS_DIR = path.join(process.cwd(), 'public/uploads');
 
 // Ensure the MONGODB_URI is set in your environment variables
 const uri = process.env.MONGODB_URI;
@@ -124,6 +126,12 @@ export const db = {
     const images = await db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray();
     return images.map(mapDoc) as GalleryImage[];
   },
+  getGalleryImageById: async (id: string): Promise<WithId<GalleryImage> | null> => {
+    const db = await connectToDb();
+    if (!db) return null;
+    const { ObjectId } = await import('mongodb');
+    return db.collection<GalleryImage>('gallery').findOne({ _id: new ObjectId(id) });
+  },
   addGalleryImage: async (image: Omit<GalleryImage, 'id' | 'order'>): Promise<GalleryImage> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
@@ -213,6 +221,12 @@ export const db = {
     ];
     return db.collection<Service>('services').find().toArray().then(docs => docs.map(mapDoc) as Service[]);
   },
+  getServiceById: async (id: string): Promise<WithId<Service> | null> => {
+    const db = await connectToDb();
+    if (!db) return null;
+    const { ObjectId } = await import('mongodb');
+    return db.collection<Service>('services').findOne({ _id: new ObjectId(id) });
+  },
   addService: async (item: Omit<Service, 'id'>): Promise<Service> => {
     const db = await connectToDb();
     if (!db) throw new Error("Database not connected");
@@ -247,6 +261,12 @@ export const db = {
     ];
     const items = await db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray();
     return items.map(mapDoc) as PortfolioItem[];
+  },
+  getPortfolioItemById: async (id: string): Promise<WithId<PortfolioItem> | null> => {
+    const db = await connectToDb();
+    if (!db) return null;
+    const { ObjectId } = await import('mongodb');
+    return db.collection<PortfolioItem>('portfolio').findOne({ _id: new ObjectId(id) });
   },
   addPortfolioItem: async (item: Omit<PortfolioItem, 'id' | 'order'>): Promise<PortfolioItem> => {
     const db = await connectToDb();
@@ -297,6 +317,12 @@ export const db = {
       { id: '3', quote: 'It was a very good experience. Lorem ipsum dolor sit amet, consectetur adipiscing elit.', author: 'John', company: 'Videographer', avatar: '/uploads/testimonials/1700000000053-placeholder.jpg' },
     ];
     return db.collection<Testimonial>('testimonials').find().toArray().then(docs => docs.map(mapDoc) as Testimonial[]);
+  },
+  getTestimonialById: async (id: string): Promise<WithId<Testimonial> | null> => {
+    const db = await connectToDb();
+    if (!db) return null;
+    const { ObjectId } = await import('mongodb');
+    return db.collection<Testimonial>('testimonials').findOne({ _id: new ObjectId(id) });
   },
   addTestimonial: async (item: Omit<Testimonial, 'id'>): Promise<Testimonial> => {
     const db = await connectToDb();
