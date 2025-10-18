@@ -6,6 +6,7 @@ import Image from "next/image";
 import type { Service } from "@/modules/services/services.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
 import { Skeleton } from '@/components/ui/skeleton';
+import { DynamicIcon } from '@/components/shared/dynamic-icon';
 
 export function ServicesSection() {
   const [data, setData] = useState<Service[] | null>(null);
@@ -78,9 +79,12 @@ export function ServicesSection() {
               )}
 
               {/* Overlay Content */}
-              <div className="absolute bottom-0 left-0 w-full bg-black/60 text-white p-6 backdrop-blur-sm">
-                <h3 className="font-semibold text-lg mb-2">{service.title}</h3>
-                <p className="text-sm leading-relaxed">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6 text-white">
+                <div className="mb-2">
+                    <DynamicIcon name={service.icon} className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="font-bold text-xl mb-2">{service.title}</h3>
+                <p className="text-sm leading-relaxed text-white/90">
                   {service.description}
                 </p>
               </div>
