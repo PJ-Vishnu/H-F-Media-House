@@ -1,6 +1,5 @@
 
 import type {NextConfig} from 'next';
-import path from 'path';
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -33,7 +32,7 @@ const nextConfig: NextConfig = {
     ],
   },
    webpack: (config, { isServer }) => {
-    // This is to allow Next.js to handle file uploads with Multer correctly.
+    // This is to allow Next.js to handle file uploads correctly.
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
