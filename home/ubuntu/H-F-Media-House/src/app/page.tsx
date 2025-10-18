@@ -1,3 +1,4 @@
+
 import { HeroSection } from '@/modules/hero/components/hero-section';
 import { AboutSection } from '@/modules/about/components/about-section';
 import { GallerySection } from '@/modules/gallery/components/gallery-section';
