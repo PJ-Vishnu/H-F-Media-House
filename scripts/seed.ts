@@ -26,9 +26,9 @@ async function seed() {
 
         // Admin User
         const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash('password', salt);
+        const passwordHash = await bcrypt.hash('P@3wL#9sV^6dGq8F', salt);
         await db.collection('admin').insertOne({
-            email: 'admin@example.com',
+            email: 'admin@hf-media-house.com',
             passwordHash: passwordHash,
         });
         console.log('✓ Seeded admin');
