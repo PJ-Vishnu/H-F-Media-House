@@ -23,12 +23,6 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
-       {
-        protocol: 'http',
-        hostname: 'localhost',
-        port: process.env.PORT || '3000',
-        pathname: '/**',
-      },
     ],
   },
    webpack: (config, { isServer }) => {
