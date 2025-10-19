@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { UPLOADS_DIR } from '@/lib/db';
 import path from 'path';
@@ -39,13 +40,15 @@ export async function POST(req: NextRequest) {
     const timestamp = Date.now();
     const sanitizedOriginalName = file.name.replace(/[^a-zA-Z0-9_.-]/g, '_');
     const filename = `${timestamp}-${sanitizedOriginalName}`;
-    const filePath = path.join(sectionPath, filename);
-    const fileUrlPath = `/uploads/${section}/${filename}`;
+    const localFilePath = path.join(sectionPath, filename);
+    
+    // The public URL path now points to our new media API
+    const fileUrlPath = `/api/media/${section}/${filename}`;
 
     try {
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        await fs.promises.writeFile(filePath, buffer);
+        await fs.promises.writeFile(localFilePath, buffer);
 
         return NextResponse.json({ success: true, filePath: fileUrlPath });
 
