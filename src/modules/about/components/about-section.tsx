@@ -52,7 +52,7 @@ export function AboutSection() {
     );
   }
 
-  const hasFeatures = data.features && data.features.length > 0;
+  const hasFeatures = data.features && Array.isArray(data.features) && data.features.length > 0;
 
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">

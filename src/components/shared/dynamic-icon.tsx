@@ -15,6 +15,9 @@ interface DynamicIconProps extends LucideProps {
 const FallbackIcon = LucideIcons.HelpCircle;
 
 export function DynamicIcon({ name, ...props }: DynamicIconProps) {
+  if (!name) {
+    return <FallbackIcon {...props} />;
+  }
   // Capitalize the first letter of the name to match lucide-react export convention (e.g., "camera" -> "Camera")
   const iconName = (name.charAt(0).toUpperCase() + name.slice(1)) as IconName;
   

@@ -62,7 +62,7 @@ export function HeroSection() {
                 </Button>
             </ScrollFadeIn>
             <div className="relative w-full h-[500px] mt-4">
-                <Carousel images={data.images || []} />
+                <Carousel images={Array.isArray(data.images) ? data.images : []} />
             </div>
         </div>
       </div>
