@@ -383,9 +383,7 @@ export default function ServicesAdminPage() {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          onClick={() =>
-                            handleDeleteClick(field.id, index)
-                          }
+                          onClick={() => handleDeleteClick(form.getValues(`services.${index}.id`), index)}
                           className="mt-2"
                         >
                           <Trash2 className="h-5 w-5 text-destructive" />
