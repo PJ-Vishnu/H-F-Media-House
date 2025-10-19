@@ -96,7 +96,7 @@ export default function ServicesAdminPage() {
     // If the item has a "temp-" ID, it hasn't been saved yet, so just remove from form state.
     if (itemToDelete.id.startsWith('temp-')) {
         remove(itemToDelete.index);
-        toast({ title: "Service removed" });
+        toast({ title: "Unsaved service removed" });
         setDialogOpen(false);
         setItemToDelete(null);
         return;
@@ -180,26 +180,28 @@ export default function ServicesAdminPage() {
       const servicesToUpdate = finalServices.filter(s => !s.id.startsWith('temp-'));
       
       // Process updates for existing services
-      for (const service of servicesToUpdate) {
-        const { id, ...serviceData } = service;
-        await fetch(`/api/services?id=${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(serviceData),
-        });
+      if (servicesToUpdate.length > 0) {
+        for (const service of servicesToUpdate) {
+          const { id, ...serviceData } = service;
+          await fetch(`/api/services?id=${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(serviceData),
+          });
+        }
       }
 
       // Process creations for new services
-      const createdServices = [];
-      for (const service of servicesToCreate) {
-        const { id, ...serviceData } = service;
-        const res = await fetch('/api/services', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(serviceData),
-        });
-        if (!res.ok) throw new Error('Failed to create a new service.');
-        createdServices.push(await res.json());
+      if (servicesToCreate.length > 0) {
+        for (const service of servicesToCreate) {
+          const { id, ...serviceData } = service;
+          const res = await fetch('/api/services', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(serviceData),
+          });
+          if (!res.ok) throw new Error('Failed to create a new service.');
+        }
       }
       
       toast({ title: "Success!", description: "Services updated successfully." });
@@ -221,7 +223,6 @@ export default function ServicesAdminPage() {
   };
 
   const handleAddItem = () => {
-    // Add a temporary service to the form state without saving to the DB
     const tempId = `temp-${Date.now()}`;
     append({
         id: tempId,
@@ -230,7 +231,7 @@ export default function ServicesAdminPage() {
         icon: 'Wand',
         image: ''
     });
-    toast({ title: "New service added", description: "Click 'Save All Changes' to finalize." });
+    toast({ title: "New service card added", description: "Click 'Save All Changes' to finalize." });
   };
 
   if (isLoading) {
