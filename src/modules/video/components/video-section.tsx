@@ -9,12 +9,11 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { Play } from 'lucide-react';
 
-const getYouTubeEmbedUrl = (url: string): string | null => {
+const getYouTubeVideoId = (url: string): string | null => {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
-    const videoId = (match && match[2].length === 11) ? match[2] : null;
-    return videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+    return (match && match[2].length === 11) ? match[2] : null;
 };
 
 const VideoPlayer = ({ data }: { data: VideoData }) => {
@@ -23,8 +22,17 @@ const VideoPlayer = ({ data }: { data: VideoData }) => {
   const effectiveThumbnail = data.videoThumbnail || '';
   
   if (data.videoType === 'youtube') {
-    const embedUrl = getYouTubeEmbedUrl(data.videoUrl || '');
-    if (!embedUrl) return <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center"><p className="text-destructive">Invalid YouTube URL.</p></div>;
+    const videoId = getYouTubeVideoId(data.videoUrl || '');
+    const thumbnailUrl = effectiveThumbnail || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : '');
+    const embedUrl = videoId ? `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0` : null;
+
+    if (!embedUrl) {
+      return (
+          <div className="aspect-video relative rounded-xl overflow-hidden bg-muted flex items-center justify-center">
+            <p className="text-destructive">Invalid YouTube URL.</p>
+          </div>
+      );
+    }
     
     if (play) {
       return (
@@ -33,9 +41,10 @@ const VideoPlayer = ({ data }: { data: VideoData }) => {
         </div>
       );
     }
+
     return (
       <div onClick={() => setPlay(true)} className="aspect-video relative rounded-xl overflow-hidden shadow-2xl cursor-pointer group">
-        <Image src={effectiveThumbnail} alt="Video thumbnail" fill className="object-cover" />
+        {thumbnailUrl && <Image src={thumbnailUrl} alt="Video thumbnail" fill className="object-cover" />}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
             <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full transition-transform group-hover:scale-110">
                 <Play className="text-white w-10 h-10 ml-1 fill-white" />
