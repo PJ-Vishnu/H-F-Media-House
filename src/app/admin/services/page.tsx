@@ -32,16 +32,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+const serviceSchema = z.object({
+    id: z.string(),
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
+    icon: z.string().min(1, "Icon name is required"),
+    image: z.string().optional(),
+});
+
 const servicesSchema = z.object({
-  services: z.array(
-    z.object({
-      id: z.string(),
-      title: z.string().min(1, "Title is required"),
-      description: z.string().min(1, "Description is required"),
-      icon: z.string().min(1, "Icon name is required"),
-      image: z.string().optional(),
-    })
-  ),
+  services: z.array(serviceSchema),
 });
 
 type StagedFile = {
@@ -55,10 +55,7 @@ export default function ServicesAdminPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [stagedFiles, setStagedFiles] = useState<StagedFile[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<{
-    id: string;
-    index: number;
-  } | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; index: number; } | null>(null);
 
   const form = useForm<z.infer<typeof servicesSchema>>({
     resolver: zodResolver(servicesSchema),
@@ -95,12 +92,26 @@ export default function ServicesAdminPage() {
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
+    
+    // If the item has a "temp-" ID, it hasn't been saved yet, so just remove from form state.
+    if (itemToDelete.id.startsWith('temp-')) {
+        remove(itemToDelete.index);
+        toast({ title: "Service removed" });
+        setDialogOpen(false);
+        setItemToDelete(null);
+        return;
+    }
+    
     try {
-      await fetch(`/api/services?id=${itemToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/services?id=${itemToDelete.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Deletion failed");
+      }
       remove(itemToDelete.index);
       toast({ title: "Service deleted" });
     } catch (error) {
-      toast({ variant: "destructive", title: "Failed to delete service" });
+      toast({ variant: "destructive", title: "Failed to delete service", description: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setDialogOpen(false);
       setItemToDelete(null);
@@ -145,26 +156,31 @@ export default function ServicesAdminPage() {
 
   const handleSaveAll = async (data: z.infer<typeof servicesSchema>) => {
     setIsSubmitting(true);
-    let submissionValues = { ...data };
+    let finalServices = [...data.services];
 
     try {
+      // Handle file uploads for all items, including new ones
       if (stagedFiles.length > 0) {
-        const uploadPromises = stagedFiles.map((sf) => uploadFile(sf.file));
+        const uploadPromises = stagedFiles.map(sf => uploadFile(sf.file));
         const uploadedPaths = await Promise.all(uploadPromises);
 
         stagedFiles.forEach((sf, i) => {
           const newPath = uploadedPaths[i];
           if (newPath) {
-            submissionValues.services[sf.index].image = newPath;
+             if (finalServices[sf.index]) {
+                finalServices[sf.index].image = newPath;
+             }
           } else {
-            throw new Error(
-              `Upload failed for service: ${submissionValues.services[sf.index].title}`
-            );
+            throw new Error(`Upload failed for service: ${finalServices[sf.index]?.title}`);
           }
         });
       }
 
-      for (const service of submissionValues.services) {
+      const servicesToCreate = finalServices.filter(s => s.id.startsWith('temp-'));
+      const servicesToUpdate = finalServices.filter(s => !s.id.startsWith('temp-'));
+      
+      // Process updates for existing services
+      for (const service of servicesToUpdate) {
         const { id, ...serviceData } = service;
         await fetch(`/api/services?id=${id}`, {
           method: 'PUT',
@@ -172,12 +188,26 @@ export default function ServicesAdminPage() {
           body: JSON.stringify(serviceData),
         });
       }
-      toast({
-        title: "Success!",
-        description: "Services updated successfully.",
-      });
-      form.reset({ services: submissionValues.services });
+
+      // Process creations for new services
+      const createdServices = [];
+      for (const service of servicesToCreate) {
+        const { id, ...serviceData } = service;
+        const res = await fetch('/api/services', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(serviceData),
+        });
+        if (!res.ok) throw new Error('Failed to create a new service.');
+        createdServices.push(await res.json());
+      }
+      
+      toast({ title: "Success!", description: "Services updated successfully." });
+      
+      // After saving, fetch all data again to have the correct IDs from the DB
+      await fetchData(); 
       setStagedFiles([]);
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -190,26 +220,17 @@ export default function ServicesAdminPage() {
     }
   };
 
-  const handleAddItem = async () => {
-    const newServiceData = {
-      title: "New Service",
-      description: "A brief description of the new service.",
-      icon: "Wand",
-      image: "",
-    };
-    try {
-      const res = await fetch("/api/services", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newServiceData),
-      });
-      if (!res.ok) throw new Error("Failed to add service");
-      const addedService = await res.json();
-      append(addedService);
-      toast({ title: "Service added" });
-    } catch (error) {
-      toast({ variant: "destructive", title: "Failed to add service." });
-    }
+  const handleAddItem = () => {
+    // Add a temporary service to the form state without saving to the DB
+    const tempId = `temp-${Date.now()}`;
+    append({
+        id: tempId,
+        title: 'New Service',
+        description: 'A brief description.',
+        icon: 'Wand',
+        image: ''
+    });
+    toast({ title: "New service added", description: "Click 'Save All Changes' to finalize." });
   };
 
   if (isLoading) {
@@ -265,7 +286,7 @@ export default function ServicesAdminPage() {
             <CardHeader>
               <CardTitle>Service Items</CardTitle>
               <CardDescription>
-                Manage the services offered. Remember to save all changes.
+                Manage the services offered. Click "Save All Changes" to save any new items, updates, or deletions.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -385,11 +406,9 @@ export default function ServicesAdminPage() {
         }}
         onConfirm={handleConfirmDelete}
         title="Are you sure?"
-        description="This will permanently delete the service."
+        description="This will permanently delete the service. This action cannot be undone."
         confirmText="Delete"
       />
     </div>
   );
 }
-
-    
