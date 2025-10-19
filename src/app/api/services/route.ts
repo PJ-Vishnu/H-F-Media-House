@@ -69,7 +69,7 @@ export async function DELETE(req: NextRequest) {
 
         await db.deleteService(id);
         
-        if (itemToDelete && itemToDelete.image) {
+        if (itemToDelete && itemToDelete.image && !itemToDelete.image.startsWith('/api/media')) {
             const filePath = path.join(process.cwd(), 'public', itemToDelete.image);
             if (fs.existsSync(filePath)) {
                 try {
