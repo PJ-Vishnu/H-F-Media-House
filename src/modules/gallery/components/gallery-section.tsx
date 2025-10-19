@@ -1,16 +1,13 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from "embla-carousel-autoplay";
-
-type GallerySectionProps = {
-  data: GalleryImage[];
-};
 
 function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
   if (!images || images.length === 0) {
@@ -54,15 +51,46 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
   return slides;
 }
 
-export function GallerySection({ data }: GallerySectionProps) {
-  if (!data || data.length === 0) {
+export function GallerySection() {
+  const [data, setData] = useState<GalleryImage[] | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/gallery');
+        const fetchedData: GalleryImage[] = await res.json();
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Failed to fetch gallery data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const plugin = React.useRef(
+    Autoplay({ delay: 5000, stopOnInteraction: true })
+  );
+
+  if (!data) {
+     return (
+      <section id="gallery" className="w-full py-24 bg-background">
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
+              <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
+              <Skeleton className="h-6 w-full max-w-3xl mx-auto" />
+            </div>
+            <Skeleton className="w-full h-[50vh] rounded-lg" />
+        </div>
+      </section>
+    );
+  }
+  
+  if (data.length === 0) {
     return null;
   }
 
   const slides = groupImagesIntoSlides(data);
-  const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
 
   return (
     <section id="gallery" className="w-full py-24 bg-background">
