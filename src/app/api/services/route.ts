@@ -69,12 +69,17 @@ export async function DELETE(req: NextRequest) {
 
         await db.deleteService(id);
         
-        if (itemToDelete && itemToDelete.image && !itemToDelete.image.startsWith('/api/media')) {
-            const filePath = path.join(process.cwd(), 'public', itemToDelete.image);
+        if (itemToDelete && itemToDelete.image) {
+            // Reconstruct the filesystem path from the /api/media URL
+            const urlPath = itemToDelete.image.replace('/api/media/', '');
+            const filePath = path.join(process.cwd(), 'public/uploads', urlPath);
+
             if (fs.existsSync(filePath)) {
                 try {
                     fs.unlinkSync(filePath);
                 } catch (fileError) {
+                    // Log the error but don't cause the request to fail,
+                    // as the database entry is already deleted.
                     console.error(`Failed to delete file: ${filePath}`, fileError);
                 }
             }
