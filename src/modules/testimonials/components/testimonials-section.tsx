@@ -1,24 +1,54 @@
 
 "use client";
 
+import { useState, useEffect, useRef } from 'react';
 import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
 import { Card, CardContent } from '@/components/ui/card';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Star } from 'lucide-react';
 import Image from 'next/image';
 import Autoplay from "embla-carousel-autoplay";
-import React from 'react';
 
-type TestimonialsSectionProps = {
-  data: Testimonial[];
-};
+export function TestimonialsSection() {
+  const [data, setData] = useState<Testimonial[] | null>(null);
 
-export function TestimonialsSection({ data }: TestimonialsSectionProps) {
-  
-  const plugin = React.useRef(
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/testimonials');
+        const fetchedData: Testimonial[] = await res.json();
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Failed to fetch testimonials data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const plugin = useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
+
+  if (!data) {
+    return (
+      <section id="testimonials" className="w-full py-24 bg-background">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
+            <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
+            <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Skeleton className="h-64 w-full rounded-xl" />
+              <Skeleton className="h-64 w-full rounded-xl hidden md:block" />
+              <Skeleton className="h-64 w-full rounded-xl hidden lg:block" />
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section id="testimonials" className="w-full py-24 bg-background">

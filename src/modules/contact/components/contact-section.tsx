@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { ContactData } from '@/modules/contact/contact.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Button } from '@/components/ui/button';
@@ -14,10 +14,7 @@ import * as z from 'zod';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-
-type ContactSectionProps = {
-  contactData: ContactData;
-};
+import { Skeleton } from '@/components/ui/skeleton';
 
 const inquirySchema = z.object({
     firstName: z.string().min(1, "First name is required"),
@@ -28,9 +25,23 @@ const inquirySchema = z.object({
 });
 
 
-export function ContactSection({ contactData }: ContactSectionProps) {
+export function ContactSection() {
+    const [contactData, setContactData] = useState<ContactData | null>(null);
     const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        async function fetchData() {
+          try {
+            const res = await fetch('/api/contact');
+            const fetchedData: ContactData = await res.json();
+            setContactData(fetchedData);
+          } catch (error) {
+            console.error("Failed to fetch contact data:", error);
+          }
+        }
+        fetchData();
+    }, []);
 
     const form = useForm<z.infer<typeof inquirySchema>>({
         resolver: zodResolver(inquirySchema),
@@ -71,6 +82,29 @@ export function ContactSection({ contactData }: ContactSectionProps) {
         } finally {
             setIsLoading(false);
         }
+    }
+    
+    if (!contactData) {
+        return (
+            <section id="contact" className="w-full py-24 bg-background">
+                <div className="container mx-auto px-4">
+                    <div className="text-center mb-12">
+                        <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
+                        <Skeleton className="h-10 w-2/3 mx-auto mb-4" />
+                        <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                        <div className="space-y-4">
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-10 w-full" />
+                            <Skeleton className="h-24 w-full" />
+                            <Skeleton className="h-12 w-40" />
+                        </div>
+                        <Skeleton className="h-96 w-full rounded-xl" />
+                    </div>
+                </div>
+            </section>
+        );
     }
 
 

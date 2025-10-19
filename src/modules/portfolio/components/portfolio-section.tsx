@@ -1,21 +1,57 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 
-type PortfolioSectionProps = {
-  data: PortfolioItem[];
-};
-
-export function PortfolioSection({ data }: PortfolioSectionProps) {
-  const categories = ['All', ...Array.from(new Set(data.map(item => item.category)))];
+export function PortfolioSection() {
+  const [data, setData] = useState<PortfolioItem[] | null>(null);
   const [activeCategory, setActiveCategory] = useState('All');
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/portfolio');
+        const fetchedData: PortfolioItem[] = await res.json();
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Failed to fetch portfolio data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
+  if (!data) {
+     return (
+      <section id="portfolio" className="w-full py-24 bg-secondary/50">
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <Skeleton className="h-10 w-1/3 mx-auto" />
+              <Skeleton className="h-6 w-1/2 mx-auto mt-2" />
+            </div>
+             <div className="flex justify-center flex-wrap gap-2 mb-8">
+                <Skeleton className="h-10 w-20 rounded-full" />
+                <Skeleton className="h-10 w-24 rounded-full" />
+                <Skeleton className="h-10 w-20 rounded-full" />
+             </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Skeleton className="h-80 w-full" />
+              <Skeleton className="h-80 w-full" />
+              <Skeleton className="h-80 w-full" />
+            </div>
+        </div>
+      </section>
+    );
+  }
+
+  const categories = ['All', ...Array.from(new Set(data.map(item => item.category)))];
+  
   const filteredItems = activeCategory === 'All'
     ? data
     : data.filter(item => item.category === activeCategory);

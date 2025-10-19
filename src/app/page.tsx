@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+
 import { HeroSection } from '@/modules/hero/components/hero-section';
 import { AboutSection } from '@/modules/about/components/about-section';
 import { GallerySection } from '@/modules/gallery/components/gallery-section';
@@ -10,42 +10,20 @@ import { ContactSection } from '@/modules/contact/components/contact-section';
 import { Footer } from '@/modules/footer/components/footer';
 import { Header } from '@/components/sections/header';
 
-export default async function Home() {
-  // In a real app, you might have a single API call that fetches all page data.
-  const [
-    heroData,
-    aboutData,
-    galleryData,
-    servicesData,
-    portfolioData,
-    testimonialsData,
-    videoData,
-    contactData,
-    footerData,
-  ] = await Promise.all([
-    db.getHero(),
-    db.getAbout(),
-    db.getGallery(),
-    db.getServices(),
-    db.getPortfolio(),
-    db.getTestimonials(),
-    db.getVideo(),
-    db.getContact(),
-    db.getFooter(),
-  ]);
-
+export default function Home() {
+  // Data fetching is now handled by each individual Client Component.
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <Header />
-      <HeroSection data={heroData} />
-      <AboutSection data={aboutData} />
-      <ServicesSection data={servicesData} />
-      <GallerySection data={galleryData} />
-      <PortfolioSection data={portfolioData} />
-      <TestimonialsSection data={testimonialsData} />
-      <VideoSection data={videoData} />
-      <ContactSection contactData={contactData} />
-      <Footer data={footerData} />
+      <HeroSection />
+      <AboutSection />
+      <ServicesSection />
+      <GallerySection />
+      <PortfolioSection />
+      <TestimonialsSection />
+      <VideoSection />
+      <ContactSection />
+      <Footer />
     </main>
   );
 }

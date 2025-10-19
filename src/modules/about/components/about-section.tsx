@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import type { AboutData } from "@/modules/about/about.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
@@ -11,19 +12,47 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from "embla-carousel-autoplay";
 import React from "react";
 
-type AboutSectionProps = {
-  data: AboutData;
-};
+export function AboutSection() {
+  const [data, setData] = useState<AboutData | null>(null);
 
-export function AboutSection({ data }: AboutSectionProps) {
-  const hasFeatures = data.features && data.features.length > 0;
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch('/api/about');
+        const fetchedData: AboutData = await res.json();
+        setData(fetchedData);
+      } catch (error) {
+        console.error("Failed to fetch about data:", error);
+      }
+    }
+    fetchData();
+  }, []);
   
   const plugin = React.useRef(
     Autoplay({ delay: 5000, stopOnInteraction: true })
   );
+
+  if (!data) {
+    return (
+      <section id="about" className="w-full py-24 bg-secondary/50">
+        <div className="container mx-auto px-4">
+            <div className="text-center max-w-3xl mx-auto mb-12">
+              <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
+              <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
+              <Skeleton className="h-6 w-full mb-2" />
+              <Skeleton className="h-6 w-full" />
+            </div>
+            <Skeleton className="w-full h-[500px] rounded-3xl" />
+        </div>
+      </section>
+    );
+  }
+
+  const hasFeatures = data.features && data.features.length > 0;
 
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">
