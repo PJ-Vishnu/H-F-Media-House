@@ -3,7 +3,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { Poppins } from 'next/font/google'
-import { db } from '@/lib/db';
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -11,40 +10,32 @@ const poppins = Poppins({
 })
 
 // This function now only provides fallback metadata.
-// The actual dynamic metadata will be handled on the client if needed,
-// but for SEO, server-generated is best. This will use data at build time.
-export async function generateMetadata(): Promise<Metadata> {
-  const seoData = await db.getSEO();
-  
-  const title = seoData?.title || 'H&F Media House';
-  const description = seoData?.description || 'Creative Film & Photo Production';
-
-  return {
-    title,
-    description,
-    keywords: seoData?.keywords,
+// The dynamic metadata is handled by the client-side fetching in the pages.
+export const metadata: Metadata = {
+    title: 'H&F Media House | Creative Film & Photo Production',
+    description: 'A creative film and photo production house based in New York, specializing in cinematic storytelling for weddings, brands, and events.',
+    keywords: 'film production, photography, video services, new york, wedding videographer, brand content',
     openGraph: {
-      title,
-      description,
+      title: 'H&F Media House | Creative Film & Photo Production',
+      description: 'A creative film and photo production house based in New York, specializing in cinematic storytelling for weddings, brands, and events.',
       type: 'website',
-      url: seoData?.url || '/',
+      url: 'https://hf-media-house.com',
       images: [
         {
-          url: seoData?.ogImage || '',
+          url: '/og-image.png', // A default OG image in public folder
           width: 1200,
           height: 630,
-          alt: title,
+          alt: 'H&F Media House',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
-      images: [seoData?.ogImage || ''],
+      title: 'H&F Media House | Creative Film & Photo Production',
+      description: 'A creative film and photo production house based in New York, specializing in cinematic storytelling for weddings, brands, and events.',
+      images: ['/og-image.png'],
     },
   };
-}
 
 
 export default function RootLayout({
