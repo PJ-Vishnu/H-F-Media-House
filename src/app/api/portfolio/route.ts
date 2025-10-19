@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import type { PortfolioItem } from '@/modules/portfolio/portfolio.schema';
 import fs from 'fs';
 import path from 'path';
+import { verifyAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 
 // GET /api/portfolio
@@ -12,23 +14,33 @@ export async function GET() {
     const data = await db.getPortfolio();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Failed to fetch portfolio:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 // POST /api/portfolio
 export async function POST(req: Request) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const body = await req.json();
         const newItem = await db.addPortfolioItem(body);
         return NextResponse.json(newItem, { status: 201 });
     } catch (error) {
+        console.error('Failed to add portfolio item:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // PUT /api/portfolio?id=...
 export async function PUT(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -38,12 +50,17 @@ export async function PUT(req: NextRequest) {
         const updatedItem = await db.updatePortfolioItem(id, body);
         return NextResponse.json(updatedItem, { status: 200 });
     } catch (error) {
+        console.error('Failed to update portfolio item:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // DELETE /api/portfolio?id=...
 export async function DELETE(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -56,7 +73,7 @@ export async function DELETE(req: NextRequest) {
         
         if (itemToDelete && itemToDelete.imageUrl) {
             const filePath = path.join(process.cwd(), 'public', itemToDelete.imageUrl);
-            if (fs.existsSync(filePath)) {
+            if (fs.existsSync(filePath) && !itemToDelete.imageUrl.startsWith('https://')) {
                 try {
                     fs.unlinkSync(filePath);
                 } catch (fileError) {

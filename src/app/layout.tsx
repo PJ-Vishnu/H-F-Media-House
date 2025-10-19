@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -9,7 +10,9 @@ const poppins = Poppins({
   weight: ['300', '400', '500', '600', '700', '800', '900']
 })
 
-
+// This function now only provides fallback metadata.
+// The actual dynamic metadata will be handled on the client if needed,
+// but for SEO, server-generated is best. This will use data at build time.
 export async function generateMetadata(): Promise<Metadata> {
   const seoData = await db.getSEO();
   
@@ -27,10 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
       url: seoData?.url || '/',
       images: [
         {
-          url: seoData?.ogImage || 'https://picsum.photos/1200/630',
+          url: seoData?.ogImage || '',
           width: 1200,
           height: 630,
-          alt: 'H&F Media House',
+          alt: title,
         },
       ],
     },
@@ -38,7 +41,7 @@ export async function generateMetadata(): Promise<Metadata> {
       card: 'summary_large_image',
       title,
       description,
-      images: [seoData?.ogImage || 'https://picsum.photos/1200/630'],
+      images: [seoData?.ogImage || ''],
     },
   };
 }

@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import fs from 'fs';
 import path from 'path';
+import { verifyAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 // GET /api/gallery
 export async function GET() {
@@ -11,23 +13,33 @@ export async function GET() {
     const data = await db.getGallery();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Failed to fetch gallery:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 // POST /api/gallery
 export async function POST(req: Request) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const body = await req.json();
         const newImage = await db.addGalleryImage(body);
         return NextResponse.json(newImage, { status: 201 });
     } catch (error) {
+        console.error('Failed to add gallery image:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // PUT /api/gallery?id=...
 export async function PUT(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -37,6 +49,7 @@ export async function PUT(req: NextRequest) {
         const updatedImage = await db.updateGalleryImage(id, body);
         return NextResponse.json(updatedImage, { status: 200 });
     } catch (error) {
+        console.error('Failed to update gallery image:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
@@ -44,26 +57,26 @@ export async function PUT(req: NextRequest) {
 
 // DELETE /api/gallery?id=...
 export async function DELETE(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
             return NextResponse.json({ message: 'Image ID is required' }, { status: 400 });
         }
 
-        // First, get the image data to find the file path
         const imageToDelete = await db.getGalleryImageById(id);
         
-        // Then, delete the record from the database
         await db.deleteGalleryImage(id);
         
-        // Finally, delete the file from the filesystem
         if (imageToDelete && imageToDelete.src) {
             const filePath = path.join(process.cwd(), 'public', imageToDelete.src);
             if (fs.existsSync(filePath)) {
                 try {
                     fs.unlinkSync(filePath);
                 } catch (fileError) {
-                    // Log the error but don't fail the request, as the DB entry is gone.
                     console.error(`Failed to delete file: ${filePath}`, fileError);
                 }
             }

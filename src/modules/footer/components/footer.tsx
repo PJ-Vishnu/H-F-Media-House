@@ -20,6 +20,7 @@ export function Footer() {
           fetch('/api/footer'),
           fetch('/api/contact'),
         ]);
+        if (!footerRes.ok || !contactRes.ok) throw new Error('Failed to fetch data');
         const footerJson: FooterData = await footerRes.json();
         const contactJson: ContactData = await contactRes.json();
         setFooterData(footerJson);
@@ -37,8 +38,8 @@ export function Footer() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div>
-                  <Skeleton className="h-10 w-40" />
-                  <Skeleton className="h-4 w-full mt-4" />
+                  <Skeleton className="h-10 w-40 mb-4" />
+                  <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-4 w-3/4 mt-2" />
               </div>
               <div>
@@ -55,6 +56,11 @@ export function Footer() {
                     <Skeleton className="h-6 w-6 rounded-full" />
                   </div>
               </div>
+               <div>
+                  <Skeleton className="h-6 w-32 mb-4" />
+                   <Skeleton className="h-4 w-full" />
+                   <Skeleton className="h-4 w-full mt-2" />
+              </div>
           </div>
           <div className="mt-12 pt-8 border-t border-slate-700 text-center text-sm">
             <Skeleton className="h-4 w-1/2 mx-auto" />
@@ -65,12 +71,7 @@ export function Footer() {
   }
 
   const socials = contactData.socials || {};
-  const exploreLinks = [
-    { title: 'Home', url: '/' },
-    { title: 'About Us', url: '#about' },
-    { title: 'Contact Us', url: '#contact' },
-    { title: 'Services', url: '#services' },
-  ];
+  const exploreLinks = footerData.links || [];
 
   return (
     <footer className="w-full bg-gray-900 text-slate-300 py-16">
@@ -99,6 +100,14 @@ export function Footer() {
                   {socials.linkedin && <Link href={socials.linkedin}><Linkedin className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                   {socials.youtube && <Link href={socials.youtube}><Youtube className="h-6 w-6 hover:text-white transition-colors" /></Link>}
                 </div>
+            </div>
+            <div>
+                 <h4 className="font-bold text-white mb-4">CONTACT</h4>
+                 <div className="text-sm space-y-2">
+                    <p>{contactData.address}</p>
+                    <p>{contactData.email}</p>
+                    <p>{contactData.phone}</p>
+                 </div>
             </div>
         </div>
         <div className="mt-12 pt-8 border-t border-slate-700 text-center text-sm">

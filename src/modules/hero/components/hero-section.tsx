@@ -16,6 +16,7 @@ export function HeroSection() {
     async function fetchData() {
       try {
         const res = await fetch('/api/hero');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: HeroData = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -30,7 +31,7 @@ export function HeroSection() {
       <section id="hero" className="w-full pt-20 md:pt-32 lg:pt-40 bg-background overflow-hidden">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center text-center">
-            <Skeleton className="h-8 w-48 mb-2" />
+            <Skeleton className="h-6 w-48 mb-2" />
             <Skeleton className="h-16 w-full max-w-4xl mb-4" />
             <Skeleton className="h-6 w-full max-w-2xl mb-8" />
             <Skeleton className="h-12 w-40 rounded-full" />

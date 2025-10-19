@@ -15,6 +15,7 @@ export function ServicesSection() {
     async function fetchData() {
       try {
         const res = await fetch('/api/services');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: Service[] = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -46,7 +47,6 @@ export function ServicesSection() {
   return (
     <section id="services" className="w-full py-24 bg-background">
       <ScrollFadeIn className="container mx-auto px-4">
-        {/* Section heading */}
         <div className="text-center mb-12">
           <p className="text-primary font-semibold tracking-widest uppercase mb-2">
             What We Do Best
@@ -61,24 +61,20 @@ export function ServicesSection() {
           </p>
         </div>
 
-        {/* Services grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {data.map((service) => (
             <div
               key={service.id}
-              className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300"
+              className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
             >
-              {/* Background Image */}
               {service?.image && (
                 <Image
-                  src={service?.image}
+                  src={service.image}
                   alt={service.title}
                   fill
-                  style={{objectFit: 'cover'}}
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
                 />
               )}
-
-              {/* Overlay Content */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6 text-white">
                 <div className="mb-2">
                     <DynamicIcon name={service.icon} className="h-8 w-8 text-primary" />

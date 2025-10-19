@@ -5,6 +5,7 @@ import React from 'react';
 import * as LucideIcons from 'lucide-react';
 import { type LucideProps } from 'lucide-react';
 
+// Define a type for all possible icon names from lucide-react
 type IconName = keyof typeof LucideIcons;
 
 interface DynamicIconProps extends LucideProps {
@@ -18,13 +19,15 @@ export function DynamicIcon({ name, ...props }: DynamicIconProps) {
   if (!name) {
     return <FallbackIcon {...props} />;
   }
-  // Capitalize the first letter of the name to match lucide-react export convention (e.g., "camera" -> "Camera")
-  const iconName = (name.charAt(0).toUpperCase() + name.slice(1)) as IconName;
+  
+  // Lucide-react exports icons in PascalCase (e.g., "camera" becomes "Camera")
+  // This formatter attempts to match that convention.
+  const iconName = name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join('') as IconName;
   
   const IconComponent = LucideIcons[iconName] as React.ComponentType<LucideProps> | undefined;
 
   if (!IconComponent) {
-    console.warn(`Icon "${iconName}" not found in lucide-react. Rendering fallback.`);
+    console.warn(`Icon "${iconName}" not found in lucide-react. Rendering fallback icon.`);
     return <FallbackIcon {...props} />;
   }
 

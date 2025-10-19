@@ -47,8 +47,13 @@ async function connectToDb(): Promise<Db> {
 
 // Helper to remove _id and set id
 function mapDoc<T>(doc: WithId<any>): T {
+  if (!doc) return doc;
   const { _id, ...rest } = doc;
   return { ...rest, id: _id.toHexString() } as T;
+}
+
+function mapDocs<T>(docs: WithId<any>[]): T[] {
+    return docs.map(mapDoc);
 }
 
 
@@ -56,8 +61,10 @@ async function fetchSingle<T>(collectionName: string, fallback: T): Promise<T> {
   try {
     const db = await connectToDb();
     const data = await db.collection<T>(collectionName).findOne({});
+    // The initial data might not have an _id, so we don't map it.
+    // We only map when we're sure there's a document from the DB.
     if (!data) return fallback;
-    return JSON.parse(JSON.stringify(data));
+    return mapDoc(data);
   } catch (error) {
     console.warn(`Could not fetch from ${collectionName}, returning fallback data. Error:`, (error as Error).message);
     return fallback;
@@ -68,7 +75,7 @@ async function fetchMultiple<T>(collectionName: string, fallback: T[], sort: any
   try {
     const db = await connectToDb();
     const data = await db.collection<any>(collectionName).find().sort(sort).toArray();
-    return data.map(mapDoc);
+    return mapDocs(data);
   } catch (error) {
     console.warn(`Could not fetch from ${collectionName}, returning fallback data. Error:`, (error as Error).message);
     return fallback;
@@ -80,7 +87,8 @@ async function fetchMultiple<T>(collectionName: string, fallback: T[], sort: any
 export const db = {
   // ADMIN
   getAdmin: async (): Promise<AdminUser | null> => {
-    return fetchSingle<AdminUser>('admin', { email: 'admin@example.com', passwordHash: '$2a$10$f2bdecn2G5p3lH3b1j3b1u2o3e1r1b1i1o1g1i1e1i' });
+    const db = await connectToDb();
+    return db.collection<AdminUser>('admin').findOne({});
   },
   updateAdminPassword: async (passwordHash: string) => {
     const db = await connectToDb();
@@ -106,10 +114,10 @@ export const db = {
   },
   updateHero: async (data: HeroData) => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
-    const result = await db.collection('hero').updateOne({}, { $set: updateData }, { upsert: true });
+    const { id, ...updateData } = data as any;
+    await db.collection('hero').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('hero').findOne({});
-    return updatedDoc;
+    return mapDoc(updatedDoc);
   },
   
   // GALLERY
@@ -131,7 +139,7 @@ export const db = {
   updateGalleryImage: async (id: string, data: Partial<GalleryImage>): Promise<GalleryImage | undefined> => {
     const db = await connectToDb();
     const { ObjectId } = await import('mongodb');
-    const { _id, ...updateData } = data as any; // Prevent _id from being in $set
+    const { id: itemId, ...updateData } = data as any; // Prevent id from being in $set
     await db.collection('gallery').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     const updatedDoc = await db.collection('gallery').findOne({ _id: new ObjectId(id) });
     return updatedDoc ? mapDoc(updatedDoc) : undefined;
@@ -154,7 +162,7 @@ export const db = {
     if(bulkOps.length > 0) {
         await db.collection('gallery').bulkWrite(bulkOps);
     }
-    return db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc) as GalleryImage[]);
+    return db.collection<GalleryImage>('gallery').find().sort({ order: 1 }).toArray().then(mapDocs);
   },
 
   // ABOUT
@@ -175,17 +183,17 @@ export const db = {
     }
     return data;
   },
-  updateAbout: async (data: AboutData): Promise<AboutData | null> => {
+  updateAbout: async (data: AboutData): Promise<AboutData> => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
+    const { id, ...updateData } = data as any;
     await db.collection('about').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('about').findOne({});
-    return updatedDoc ? mapDoc<AboutData>(updatedDoc) : null;
+    return mapDoc(updatedDoc);
   },
 
   // SERVICES
   getServices: async (): Promise<Service[]> => {
-    return fetchMultiple<Service>('services', []);
+    return fetchMultiple<Service>('services', [], { _id: 1 });
   },
   getServiceById: async (id: string): Promise<WithId<Service> | null> => {
     const db = await connectToDb();
@@ -200,7 +208,7 @@ export const db = {
   updateService: async (id: string, data: Partial<Service>): Promise<Service | undefined> => {
     const db = await connectToDb();
     const { ObjectId } = await import('mongodb');
-    const { _id, ...updateData } = data as any;
+    const { id: itemId, ...updateData } = data as any;
     await db.collection('services').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     const updatedDoc = await db.collection('services').findOne({ _id: new ObjectId(id) });
     return updatedDoc ? mapDoc(updatedDoc) : undefined;
@@ -246,12 +254,12 @@ export const db = {
     if(bulkOps.length > 0) {
         await db.collection('portfolio').bulkWrite(bulkOps);
     }
-    return db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray().then(docs => docs.map(mapDoc) as PortfolioItem[]);
+    return db.collection<PortfolioItem>('portfolio').find().sort({ order: 1 }).toArray().then(mapDocs);
   },
   updatePortfolioItem: async (id: string, data: Partial<PortfolioItem>): Promise<PortfolioItem | undefined> => {
     const db = await connectToDb();
     const { ObjectId } = await import('mongodb');
-    const { _id, ...updateData } = data as any; // Prevent _id from being in $set
+    const { id: itemId, ...updateData } = data as any;
     await db.collection('portfolio').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     const updatedDoc = await db.collection('portfolio').findOne({ _id: new ObjectId(id) });
     return updatedDoc ? mapDoc(updatedDoc) : undefined;
@@ -259,7 +267,7 @@ export const db = {
 
   // TESTIMONIALS
   getTestimonials: async (): Promise<Testimonial[]> => {
-    return fetchMultiple<Testimonial>('testimonials', []);
+    return fetchMultiple<Testimonial>('testimonials', [], { _id: 1 });
   },
   getTestimonialById: async (id: string): Promise<WithId<Testimonial> | null> => {
     const db = await connectToDb();
@@ -274,7 +282,7 @@ export const db = {
   updateTestimonial: async (id: string, data: Partial<Testimonial>): Promise<Testimonial | undefined> => {
     const db = await connectToDb();
     const { ObjectId } = await import('mongodb');
-    const { _id, ...updateData } = data as any;
+    const { id: itemId, ...updateData } = data as any;
     await db.collection('testimonials').updateOne({ _id: new ObjectId(id) }, { $set: updateData });
     const updatedDoc = await db.collection('testimonials').findOne({ _id: new ObjectId(id) });
     return updatedDoc ? mapDoc(updatedDoc) : undefined;
@@ -298,9 +306,10 @@ export const db = {
   },
   updateVideo: async (data: VideoData): Promise<VideoData> => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
+    const { id, ...updateData } = data as any;
     await db.collection('video').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('video').findOne({});
+    return mapDoc(updatedDoc);
   },
   
   // CONTACT
@@ -313,12 +322,12 @@ export const db = {
         socials: { facebook: '#', twitter: '#', instagram: '#', linkedin: '#', youtube: '#' },
     });
   },
-  updateContact: async (data: ContactData): Promise<ContactData | null> => {
+  updateContact: async (data: ContactData): Promise<ContactData> => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
+    const { id, ...updateData } = data as any;
     await db.collection('contact').updateOne({}, { $set: updateData }, { upsert: true });
     const updatedDoc = await db.collection('contact').findOne({});
-    return updatedDoc ? JSON.parse(JSON.stringify(updatedDoc)) : null;
+    return mapDoc(updatedDoc);
   },
 
   // FOOTER
@@ -335,9 +344,10 @@ export const db = {
   },
   updateFooter: async (data: FooterData): Promise<FooterData> => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
+    const { id, ...updateData } = data as any;
     await db.collection('footer').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('footer').findOne({});
+    return mapDoc(updatedDoc);
   },
 
   // SEO
@@ -352,9 +362,10 @@ export const db = {
   },
   updateSEO: async (data: SEOData): Promise<SEOData> => {
     const db = await connectToDb();
-    const { _id, ...updateData } = data as any;
+    const { id, ...updateData } = data as any;
     await db.collection('seo').updateOne({}, { $set: updateData }, { upsert: true });
-    return data;
+    const updatedDoc = await db.collection('seo').findOne({});
+    return mapDoc(updatedDoc);
   },
 
   // INQUIRIES

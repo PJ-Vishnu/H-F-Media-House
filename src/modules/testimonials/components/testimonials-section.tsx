@@ -13,11 +13,13 @@ import Autoplay from "embla-carousel-autoplay";
 
 export function TestimonialsSection() {
   const [data, setData] = useState<Testimonial[] | null>(null);
+  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch('/api/testimonials');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: Testimonial[] = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -26,10 +28,6 @@ export function TestimonialsSection() {
     }
     fetchData();
   }, []);
-
-  const plugin = useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
 
   if (!data) {
     return (
@@ -49,6 +47,8 @@ export function TestimonialsSection() {
       </section>
     );
   }
+
+  if (data.length === 0) return null;
 
   return (
     <section id="testimonials" className="w-full py-24 bg-background">
@@ -75,7 +75,9 @@ export function TestimonialsSection() {
                             <Card className="rounded-xl shadow-lg p-8 h-full bg-card hover:bg-primary/10 transition-colors">
                                 <CardContent className="p-0 flex flex-col items-start text-left h-full">
                                     <div className="flex items-center mb-4">
-                                        <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.author}`} alt={testimonial.author} width={50} height={50} className="rounded-full object-cover" />
+                                        <div className="relative w-12 h-12 rounded-full overflow-hidden">
+                                            <Image src={testimonial.avatar || `https://i.pravatar.cc/150?u=${testimonial.id}`} alt={testimonial.author} fill className="object-cover" />
+                                        </div>
                                         <div className="ml-4">
                                            <div className="font-bold text-lg">{testimonial.author}</div>
                                            <div className="text-sm text-muted-foreground">{testimonial.company}</div>

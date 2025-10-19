@@ -2,6 +2,8 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import type { Testimonial } from '@/modules/testimonials/testimonials.schema';
+import { verifyAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 // GET /api/testimonials
 export async function GET() {
@@ -9,12 +11,17 @@ export async function GET() {
     const data = await db.getTestimonials();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Failed to fetch testimonials:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 // POST /api/testimonials
 export async function POST(req: Request) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const body: Omit<Testimonial, 'id'> = await req.json();
         const newItem = await db.addTestimonial(body);
@@ -27,6 +34,10 @@ export async function POST(req: Request) {
 
 // PUT /api/testimonials?id=...
 export async function PUT(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -43,6 +54,10 @@ export async function PUT(req: NextRequest) {
 
 // DELETE /api/testimonials?id=...
 export async function DELETE(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {

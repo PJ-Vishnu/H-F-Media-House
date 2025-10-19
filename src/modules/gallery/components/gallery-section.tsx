@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
@@ -10,14 +10,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from "embla-carousel-autoplay";
 
 function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
-  if (!images || images.length === 0) {
-    return [];
-  }
+  if (!images || images.length === 0) return [];
 
   const slides: GalleryImage[][] = [];
   let currentSlide: GalleryImage[] = [];
   let currentArea = 0;
-  const maxArea = 16; // 4x4 grid
+  const maxArea = 4 * 4; // 4x4 grid
 
   images.forEach(image => {
     const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
@@ -25,9 +23,7 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
     const imageArea = colSpan * rowSpan;
 
     if (imageArea > maxArea) {
-      if (currentSlide.length > 0) {
-        slides.push(currentSlide);
-      }
+      if (currentSlide.length > 0) slides.push(currentSlide);
       slides.push([image]);
       currentSlide = [];
       currentArea = 0;
@@ -44,20 +40,19 @@ function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
     }
   });
 
-  if (currentSlide.length > 0) {
-    slides.push(currentSlide);
-  }
-
+  if (currentSlide.length > 0) slides.push(currentSlide);
   return slides;
 }
 
 export function GallerySection() {
   const [data, setData] = useState<GalleryImage[] | null>(null);
+  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch('/api/gallery');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: GalleryImage[] = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -66,10 +61,6 @@ export function GallerySection() {
     }
     fetchData();
   }, []);
-
-  const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
 
   if (!data) {
      return (
@@ -80,14 +71,14 @@ export function GallerySection() {
               <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
               <Skeleton className="h-6 w-full max-w-3xl mx-auto" />
             </div>
-            <Skeleton className="w-full h-[50vh] rounded-lg" />
+            <Skeleton className="w-full aspect-video rounded-lg" />
         </div>
       </section>
     );
   }
   
   if (data.length === 0) {
-    return null;
+    return null; // Don't render section if there are no images
   }
 
   const slides = groupImagesIntoSlides(data);
@@ -104,7 +95,7 @@ export function GallerySection() {
         </div>
 
         <Carousel 
-          opts={{ loop: true }}
+          opts={{ loop: true, align: 'start' }}
           plugins={[plugin.current]}
           onMouseEnter={plugin.current.stop}
           onMouseLeave={plugin.current.reset}
@@ -113,8 +104,8 @@ export function GallerySection() {
           <CarouselContent>
             {slides.map((slide, slideIndex) => (
               <CarouselItem key={slideIndex}>
-                <div className="p-1">
-                  <div className="grid grid-cols-4 grid-rows-4 gap-4 aspect-video">
+                <div className="p-1 aspect-video">
+                  <div className="grid grid-cols-4 grid-rows-4 gap-4 h-full">
                     {slide.map((image) => {
                       const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
                       const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
@@ -144,8 +135,8 @@ export function GallerySection() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-[-50px]" />
-          <CarouselNext className="right-[-50px]" />
+          <CarouselPrevious className="left-2" />
+          <CarouselNext className="right-2" />
         </Carousel>
       </ScrollFadeIn>
     </section>

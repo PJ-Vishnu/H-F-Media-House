@@ -4,6 +4,8 @@ import { db } from '@/lib/db';
 import type { Service } from '@/modules/services/services.schema';
 import fs from 'fs';
 import path from 'path';
+import { verifyAuth } from '@/lib/auth';
+import { cookies } from 'next/headers';
 
 // GET /api/services
 export async function GET() {
@@ -11,23 +13,33 @@ export async function GET() {
     const data = await db.getServices();
     return NextResponse.json(data);
   } catch (error) {
+    console.error('Failed to fetch services:', error);
     return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
   }
 }
 
 // POST /api/services
 export async function POST(req: Request) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const body: Omit<Service, 'id'> = await req.json();
         const newItem = await db.addService(body);
         return NextResponse.json(newItem, { status: 201 });
     } catch (error) {
+        console.error('Failed to add service:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // PUT /api/services?id=...
 export async function PUT(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -37,12 +49,17 @@ export async function PUT(req: NextRequest) {
         const updatedItem = await db.updateService(id, body);
         return NextResponse.json(updatedItem, { status: 200 });
     } catch (error) {
+        console.error('Failed to update service:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }
 
 // DELETE /api/services?id=...
 export async function DELETE(req: NextRequest) {
+    const token = cookies().get('user-token')?.value;
+    if (!token || !(await verifyAuth(token))) {
+      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
     try {
         const id = req.nextUrl.searchParams.get('id');
         if (!id) {
@@ -65,6 +82,7 @@ export async function DELETE(req: NextRequest) {
         
         return NextResponse.json({ message: 'Item deleted successfully' }, { status: 200 });
     } catch (error) {
+        console.error('Failed to delete service:', error);
         return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
     }
 }

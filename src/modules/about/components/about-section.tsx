@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import type { AboutData } from "@/modules/about/about.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
@@ -14,15 +14,16 @@ import {
 } from "@/components/ui/carousel";
 import { Skeleton } from '@/components/ui/skeleton';
 import Autoplay from "embla-carousel-autoplay";
-import React from "react";
 
 export function AboutSection() {
   const [data, setData] = useState<AboutData | null>(null);
+  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
 
   useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch('/api/about');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: AboutData = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -31,10 +32,6 @@ export function AboutSection() {
     }
     fetchData();
   }, []);
-  
-  const plugin = React.useRef(
-    Autoplay({ delay: 5000, stopOnInteraction: true })
-  );
 
   if (!data) {
     return (
@@ -43,8 +40,8 @@ export function AboutSection() {
             <div className="text-center max-w-3xl mx-auto mb-12">
               <Skeleton className="h-6 w-1/3 mx-auto mb-2" />
               <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
-              <Skeleton className="h-6 w-full mb-2" />
-              <Skeleton className="h-6 w-full" />
+              <Skeleton className="h-5 w-full mb-2" />
+              <Skeleton className="h-5 w-5/6 mx-auto" />
             </div>
             <Skeleton className="w-full h-[500px] rounded-3xl" />
         </div>
@@ -57,7 +54,6 @@ export function AboutSection() {
   return (
     <section id="about" className="w-full py-24 bg-secondary/50">
       <ScrollFadeIn className="container mx-auto px-4">
-        {/* Section heading */}
         <div className="text-center max-w-3xl mx-auto mb-12">
           <p className="text-primary font-semibold tracking-widest uppercase mb-2">
             Passion. Creativity. Precision.
@@ -70,7 +66,6 @@ export function AboutSection() {
           </p>
         </div>
 
-        {/* Full-width image with overlayed cards */}
         <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl">
           {data.imageUrl && (
             <Image
@@ -89,7 +84,7 @@ export function AboutSection() {
                   {(data.features || []).map((feature, i) => (
                       <div
                           key={i}
-                          className="bg-black/60 text-white rounded-xl p-6 w-full max-w-sm h-1/2 backdrop-blur-sm flex flex-col"
+                          className="bg-black/60 text-white rounded-xl p-6 w-full max-w-sm h-auto backdrop-blur-sm flex flex-col"
                       >
                           <h3 className="text-lg font-semibold mb-2">
                           {feature.title}

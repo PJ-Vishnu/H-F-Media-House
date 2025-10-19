@@ -18,6 +18,7 @@ export function PortfolioSection() {
     async function fetchData() {
       try {
         const res = await fetch('/api/portfolio');
+        if (!res.ok) throw new Error('Failed to fetch');
         const fetchedData: PortfolioItem[] = await res.json();
         setData(fetchedData);
       } catch (error) {
@@ -41,14 +42,16 @@ export function PortfolioSection() {
                 <Skeleton className="h-10 w-20 rounded-full" />
              </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Skeleton className="h-80 w-full" />
-              <Skeleton className="h-80 w-full" />
-              <Skeleton className="h-80 w-full" />
+              <Skeleton className="h-80 w-full rounded-lg" />
+              <Skeleton className="h-80 w-full rounded-lg" />
+              <Skeleton className="h-80 w-full rounded-lg" />
             </div>
         </div>
       </section>
     );
   }
+  
+  if (data.length === 0) return null;
 
   const categories = ['All', ...Array.from(new Set(data.map(item => item.category)))];
   
@@ -86,8 +89,7 @@ export function PortfolioSection() {
                   src={item.imageUrl}
                   alt={item.title}
                   fill
-                  style={{objectFit: 'cover'}}
-                  className="transition-transform group-hover:scale-105"
+                  className="object-cover transition-transform group-hover:scale-105"
                 />
               </div>
               <CardContent className="p-6">

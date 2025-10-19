@@ -34,6 +34,7 @@ export function ContactSection() {
         async function fetchData() {
           try {
             const res = await fetch('/api/contact');
+            if (!res.ok) throw new Error('Failed to fetch');
             const fetchedData: ContactData = await res.json();
             setContactData(fetchedData);
           } catch (error) {
@@ -45,13 +46,7 @@ export function ContactSection() {
 
     const form = useForm<z.infer<typeof inquirySchema>>({
         resolver: zodResolver(inquirySchema),
-        defaultValues: {
-            firstName: "",
-            lastName: "",
-            email: "",
-            phone: "",
-            message: "",
-        }
+        defaultValues: { firstName: "", lastName: "", email: "", phone: "", message: "" }
     });
 
     async function onSubmit(values: z.infer<typeof inquirySchema>) {
@@ -62,23 +57,11 @@ export function ContactSection() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(values),
             });
-
-            if (!res.ok) {
-                throw new Error("Failed to send message. Please try again.");
-            }
-
-            toast({
-                title: "Message Sent!",
-                description: "Thank you for reaching out. We'll get back to you soon.",
-            });
+            if (!res.ok) throw new Error("Failed to send message. Please try again.");
+            toast({ title: "Message Sent!", description: "Thank you for reaching out. We'll get back to you soon." });
             form.reset();
-
         } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: "Submission Error",
-                description: error instanceof Error ? error.message : "An unknown error occurred.",
-            })
+            toast({ variant: 'destructive', title: "Submission Error", description: error instanceof Error ? error.message : "An unknown error occurred." });
         } finally {
             setIsLoading(false);
         }
@@ -106,7 +89,6 @@ export function ContactSection() {
             </section>
         );
     }
-
 
   return (
     <section id="contact" className="w-full py-24 bg-background">
@@ -151,7 +133,7 @@ export function ContactSection() {
             </div>
             <div className="relative w-full h-96 lg:h-full rounded-xl overflow-hidden shadow-2xl">
               {contactData.imageUrl ? (
-                <Image src={contactData.imageUrl} alt="Camera gear" fill style={{objectFit: 'cover'}}/>
+                <Image src={contactData.imageUrl} alt="Camera gear" fill className="object-cover"/>
               ) : (
                 <div className="w-full h-full bg-muted flex items-center justify-center">
                     <p className="text-muted-foreground">Image not available</p>

@@ -1,4 +1,5 @@
 
+import { Header } from '@/components/sections/header';
 import { HeroSection } from '@/modules/hero/components/hero-section';
 import { AboutSection } from '@/modules/about/components/about-section';
 import { GallerySection } from '@/modules/gallery/components/gallery-section';
@@ -8,10 +9,8 @@ import { TestimonialsSection } from '@/modules/testimonials/components/testimoni
 import { VideoSection } from '@/modules/video/components/video-section';
 import { ContactSection } from '@/modules/contact/components/contact-section';
 import { Footer } from '@/modules/footer/components/footer';
-import { Header } from '@/components/sections/header';
 
 export default function Home() {
-  // Data fetching is now handled by each individual Client Component.
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <Header />
