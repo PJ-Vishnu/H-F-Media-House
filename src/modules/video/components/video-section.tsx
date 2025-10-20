@@ -46,7 +46,7 @@ const VideoPlayer = ({ data }: { data: VideoData }) => {
       <div onClick={() => setPlay(true)} className="aspect-video relative rounded-xl overflow-hidden shadow-2xl cursor-pointer group">
         {thumbnailUrl && <Image src={thumbnailUrl} alt="Video thumbnail" fill className="object-cover" />}
         <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-            <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full transition-transform group-hover:scale-110">
+            <Button variant="ghost" size="icon" className="w-20 h-20 bg-white/30 hover:bg-white/50 rounded-full transition-transform group-hover:scale-110" aria-label="Play video">
                 <Play className="text-white w-10 h-10 ml-1 fill-white" />
             </Button>
         </div>
