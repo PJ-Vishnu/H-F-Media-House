@@ -110,6 +110,7 @@ export function Carousel({ images, className }: CarouselProps) {
                 alt={image.alt}
                 width={800}
                 height={600}
+                priority={i < visibleCount}
                 className="object-cover w-full h-full rounded-xl shadow-2xl"
               />
             </div>
@@ -130,13 +131,14 @@ export function Carousel({ images, className }: CarouselProps) {
                   alt={image.alt}
                   width={800}
                   height={600}
+                  priority={i === 0}
                   className="object-cover w-full h-full rounded-xl shadow-2xl"
                 />
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2 bg-black/40 text-white" />
-          <CarouselNext className="right-2 bg-black/40 text-white" />
+          <CarouselPrevious aria-label="Previous image" className="left-2 bg-black/40 text-white" />
+          <CarouselNext aria-label="Next image" className="right-2 bg-black/40 text-white" />
         </ShadcnCarousel>
       </div>
 

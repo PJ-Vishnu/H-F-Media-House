@@ -317,7 +317,7 @@ export default function HeroAdminPage() {
                              <FormItem>
                                 <FormLabel>Image {index + 1}</FormLabel>
                                 <FormControl>
-                                  <Input type="file" onChange={(e) => handleFileChange(e, index)} className="mb-2"/>
+                                  <Input aria-label={`Upload image for item ${index + 1}`} type="file" onChange={(e) => handleFileChange(e, index)} className="mb-2"/>
                                 </FormControl>
                                 <FormMessage />
                              </FormItem>

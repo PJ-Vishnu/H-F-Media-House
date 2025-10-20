@@ -78,12 +78,16 @@ export function ContactSection() {
                     </div>
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                         <div className="space-y-4">
-                            <Skeleton className="h-10 w-full" />
-                            <Skeleton className="h-10 w-full" />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Skeleton className="h-12 w-full" />
+                                <Skeleton className="h-12 w-full" />
+                            </div>
+                            <Skeleton className="h-12 w-full" />
+                            <Skeleton className="h-12 w-full" />
                             <Skeleton className="h-24 w-full" />
-                            <Skeleton className="h-12 w-40" />
+                            <Skeleton className="h-12 w-40 rounded-full" />
                         </div>
-                        <Skeleton className="h-96 w-full rounded-xl" />
+                        <Skeleton className="h-[550px] w-full rounded-xl" />
                     </div>
                 </div>
             </section>
@@ -131,7 +135,7 @@ export function ContactSection() {
                     </form>
                 </Form>
             </div>
-            <div className="relative w-full h-96 lg:h-full rounded-xl overflow-hidden shadow-2xl">
+            <div className="relative w-full h-96 lg:h-full min-h-[550px] rounded-xl overflow-hidden shadow-2xl">
               {contactData.imageUrl ? (
                 <Image src={contactData.imageUrl} alt="Camera gear" fill className="object-cover"/>
               ) : (

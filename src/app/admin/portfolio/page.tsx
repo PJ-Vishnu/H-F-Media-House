@@ -246,7 +246,7 @@ export default function PortfolioAdminPage() {
 
                         <div className="w-48 space-y-2 flex-shrink-0">
                           {currentSrc && <Image src={currentSrc} alt={field.title} width={192} height={108} className="object-cover rounded-md aspect-video bg-muted" />}
-                          <Input type="file" onChange={(e) => handleFileChange(e, index)} />
+                          <Input aria-label={`Upload image for ${field.title}`} type="file" onChange={(e) => handleFileChange(e, index)} />
                         </div>
 
                         <Button
@@ -286,4 +286,3 @@ export default function PortfolioAdminPage() {
     </div>
   );
 }
-

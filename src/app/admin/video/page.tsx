@@ -233,6 +233,7 @@ export default function VideoAdminPage() {
                         <FormLabel>Upload Video File</FormLabel>
                         <FormControl>
                         <Input 
+                            aria-label="Upload video file"
                             type="file" 
                             accept="video/*" 
                             onChange={(e) => handleFileChange(e, 'video')}
@@ -254,7 +255,7 @@ export default function VideoAdminPage() {
                         <FormLabel>Video Thumbnail</FormLabel>
                             <FormControl>
                             <div>
-                                <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'thumbnail')} className="mb-2" disabled={isLoading}/>
+                                <Input aria-label="Upload video thumbnail" type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'thumbnail')} className="mb-2" disabled={isLoading}/>
                                 {thumbnailPreview && <Image src={thumbnailPreview} alt="Preview" width={192} height={108} className="w-48 h-auto mt-2 rounded-md object-cover bg-muted" />}
                             </div>
                         </FormControl>

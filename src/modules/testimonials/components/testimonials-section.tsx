@@ -38,7 +38,7 @@ export function TestimonialsSection() {
             <Skeleton className="h-10 w-2/3 mx-auto mb-6" />
             <Skeleton className="h-6 w-full max-w-2xl mx-auto" />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
               <Skeleton className="h-64 w-full rounded-xl" />
               <Skeleton className="h-64 w-full rounded-xl hidden md:block" />
               <Skeleton className="h-64 w-full rounded-xl hidden lg:block" />
@@ -95,8 +95,8 @@ export function TestimonialsSection() {
                     </CarouselItem>
                 ))}
             </CarouselContent>
-            <CarouselPrevious />
-            <CarouselNext />
+            <CarouselPrevious aria-label="Previous testimonial" />
+            <CarouselNext aria-label="Next testimonial" />
         </Carousel>
       </ScrollFadeIn>
     </section>

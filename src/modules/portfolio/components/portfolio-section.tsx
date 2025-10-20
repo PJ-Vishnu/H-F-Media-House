@@ -42,9 +42,9 @@ export function PortfolioSection() {
                 <Skeleton className="h-10 w-20 rounded-full" />
              </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Skeleton className="h-80 w-full rounded-lg" />
-              <Skeleton className="h-80 w-full rounded-lg" />
-              <Skeleton className="h-80 w-full rounded-lg" />
+              <Skeleton className="h-[420px] w-full rounded-lg" />
+              <Skeleton className="h-[420px] w-full rounded-lg" />
+              <Skeleton className="h-[420px] w-full rounded-lg" />
             </div>
         </div>
       </section>

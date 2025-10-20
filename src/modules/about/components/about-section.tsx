@@ -120,8 +120,8 @@ export function AboutSection() {
                           </CarouselItem>
                       ))}
                     </CarouselContent>
-                    <CarouselPrevious className="left-[-1rem]" />
-                    <CarouselNext className="right-[-1rem]" />
+                    <CarouselPrevious aria-label="Previous feature" className="left-[-1rem]" />
+                    <CarouselNext aria-label="Next feature" className="right-[-1rem]" />
                  </Carousel>
               </div>
             </>

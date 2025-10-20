@@ -236,7 +236,7 @@ export default function TestimonialsAdminPage() {
                               <div className="flex items-center gap-4">
                                 {currentSrc && <Image src={currentSrc} alt={form.getValues(`testimonials.${index}.author`)} width={60} height={60} className="rounded-full bg-muted object-cover" />}
                                 <div className="flex-grow">
-                                  <Input type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
+                                  <Input aria-label={`Upload avatar for ${form.getValues(`testimonials.${index}.author`)}`} type="file" accept="image/*" onChange={(e) => handleFileChange(e, index)} disabled={isSubmitting} />
                                 </div>
                               </div>
                               <FormMessage />
@@ -269,4 +269,3 @@ export default function TestimonialsAdminPage() {
     </div>
   );
 }
-

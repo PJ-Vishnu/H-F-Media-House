@@ -135,8 +135,8 @@ export function GallerySection() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="left-2" />
-          <CarouselNext className="right-2" />
+          <CarouselPrevious aria-label="Previous slide" className="left-2" />
+          <CarouselNext aria-label="Next slide" className="right-2" />
         </Carousel>
       </ScrollFadeIn>
     </section>
