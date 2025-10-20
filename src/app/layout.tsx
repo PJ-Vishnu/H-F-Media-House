@@ -6,7 +6,8 @@ import { Poppins } from 'next/font/google'
 
 const poppins = Poppins({
   subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700', '800', '900']
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  variable: '--font-poppins',
 })
 
 // This function now only provides fallback metadata.
@@ -45,7 +46,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className="!scroll-smooth">
-      <body className={`${poppins.className} font-body antialiased min-h-screen bg-background text-foreground`}>
+      <body className={`${poppins.variable} font-body antialiased min-h-screen bg-background text-foreground`}>
         {children}
         <Toaster />
       </body>

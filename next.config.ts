@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
     ],
+    unoptimized: false,
   },
    webpack: (config, { isServer }) => {
     // This is to allow Next.js to handle file uploads correctly.
@@ -42,6 +43,7 @@ const nextConfig: NextConfig = {
      config.externals = [...config.externals, 'mock-aws-s3', 'aws-sdk', 'nock'];
     return config;
   },
+  swcMinify: false,
 };
 
 export default nextConfig;
