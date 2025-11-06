@@ -1,36 +1,15 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
-import type { FooterData } from '@/modules/footer/footer.schema';
-import type { ContactData } from '@/modules/contact/contact.schema';
 import { FooterLogo } from '@/components/shared/footerLogo';
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getFooterData, getFooterContactData } from '../footer.data';
 
-export function Footer() {
-  const [footerData, setFooterData] = useState<FooterData | null>(null);
-  const [contactData, setContactData] = useState<ContactData | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const [footerRes, contactRes] = await Promise.all([
-          fetch('/api/footer'),
-          fetch('/api/contact'),
-        ]);
-        if (!footerRes.ok || !contactRes.ok) throw new Error('Failed to fetch data');
-        const footerJson: FooterData = await footerRes.json();
-        const contactJson: ContactData = await contactRes.json();
-        setFooterData(footerJson);
-        setContactData(contactJson);
-      } catch (error) {
-        console.error("Failed to fetch footer/contact data:", error);
-      }
-    }
-    fetchData();
-  }, []);
+export async function Footer() {
+  const [footerData, contactData] = await Promise.all([
+    getFooterData(),
+    getFooterContactData(),
+  ]);
 
   if (!footerData || !contactData) {
     return (

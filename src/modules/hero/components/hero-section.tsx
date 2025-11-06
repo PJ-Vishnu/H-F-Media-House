@@ -1,30 +1,13 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
-import type { HeroData } from '@/modules/hero/hero.schema';
 import { Button } from '@/components/ui/button';
 import { Carousel } from '@/components/shared/cylinder-carousel';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { getHeroData } from '../hero.data';
 
-export function HeroSection() {
-  const [data, setData] = useState<HeroData | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/hero');
-        if (!res.ok) throw new Error('Failed to fetch');
-        const fetchedData: HeroData = await res.json();
-        setData(fetchedData);
-      } catch (error) {
-        console.error("Failed to fetch hero data:", error);
-      }
-    }
-    fetchData();
-  }, []);
+export async function HeroSection() {
+  const data = await getHeroData();
 
   if (!data) {
     return (

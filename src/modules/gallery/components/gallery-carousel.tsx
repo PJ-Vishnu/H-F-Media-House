@@ -1,0 +1,95 @@
+
+"use client";
+
+import React, { useRef } from 'react';
+import Image from 'next/image';
+import type { GalleryImage } from '@/modules/gallery/gallery.schema';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay";
+
+function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
+  if (!images || images.length === 0) return [];
+
+  const slides: GalleryImage[][] = [];
+  let currentSlide: GalleryImage[] = [];
+  let currentArea = 0;
+  const maxArea = 4 * 4; // 4x4 grid
+
+  images.forEach(image => {
+    const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
+    const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
+    const imageArea = colSpan * rowSpan;
+
+    if (imageArea > maxArea) {
+      if (currentSlide.length > 0) slides.push(currentSlide);
+      slides.push([image]);
+      currentSlide = [];
+      currentArea = 0;
+      return;
+    }
+
+    if (currentArea + imageArea > maxArea && currentSlide.length > 0) {
+      slides.push(currentSlide);
+      currentSlide = [image];
+      currentArea = imageArea;
+    } else {
+      currentSlide.push(image);
+      currentArea += imageArea;
+    }
+  });
+
+  if (currentSlide.length > 0) slides.push(currentSlide);
+  return slides;
+}
+
+export function GalleryCarousel({ images }: { images: GalleryImage[] }) {
+    const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
+    const slides = groupImagesIntoSlides(images);
+
+    return (
+        <Carousel 
+          opts={{ loop: true, align: 'start' }}
+          plugins={[plugin.current]}
+          onMouseEnter={plugin.current.stop}
+          onMouseLeave={plugin.current.reset}
+          className="w-full"
+        >
+          <CarouselContent>
+            {slides.map((slide, slideIndex) => (
+              <CarouselItem key={slideIndex}>
+                <div className="p-1 aspect-video">
+                  <div className="grid grid-cols-4 grid-rows-4 gap-4 h-full">
+                    {slide.map((image) => {
+                      const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
+                      const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
+
+                      return (
+                        <div
+                          key={image.id}
+                          className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl"
+                          style={{
+                            gridColumn: `span ${colSpan}`,
+                            gridRow: `span ${rowSpan}`,
+                          }}
+                        >
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            fill
+                            sizes={`(max-width: 768px) ${100 / colSpan}vw, (max-width: 1200px) ${50 / colSpan}vw, ${33 / colSpan}vw`}
+                            className="object-cover"
+                          />
+                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious aria-label="Previous slide" className="left-2" />
+          <CarouselNext aria-label="Next slide" className="right-2" />
+        </Carousel>
+    )
+}

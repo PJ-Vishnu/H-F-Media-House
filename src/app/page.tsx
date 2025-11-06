@@ -10,7 +10,7 @@ import { VideoSection } from '@/modules/video/components/video-section';
 import { ContactSection } from '@/modules/contact/components/contact-section';
 import { Footer } from '@/modules/footer/components/footer';
 
-export default function Home() {
+export default async function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-between">
       <Header />

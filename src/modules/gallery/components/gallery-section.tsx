@@ -1,66 +1,11 @@
 
-"use client";
-
-import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
-import type { GalleryImage } from '@/modules/gallery/gallery.schema';
 import { ScrollFadeIn } from '@/components/shared/scroll-fade-in';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Skeleton } from '@/components/ui/skeleton';
-import Autoplay from "embla-carousel-autoplay";
+import { getGalleryData } from '../gallery.data';
+import { GalleryCarousel } from './gallery-carousel';
 
-function groupImagesIntoSlides(images: GalleryImage[]): GalleryImage[][] {
-  if (!images || images.length === 0) return [];
-
-  const slides: GalleryImage[][] = [];
-  let currentSlide: GalleryImage[] = [];
-  let currentArea = 0;
-  const maxArea = 4 * 4; // 4x4 grid
-
-  images.forEach(image => {
-    const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
-    const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
-    const imageArea = colSpan * rowSpan;
-
-    if (imageArea > maxArea) {
-      if (currentSlide.length > 0) slides.push(currentSlide);
-      slides.push([image]);
-      currentSlide = [];
-      currentArea = 0;
-      return;
-    }
-
-    if (currentArea + imageArea > maxArea && currentSlide.length > 0) {
-      slides.push(currentSlide);
-      currentSlide = [image];
-      currentArea = imageArea;
-    } else {
-      currentSlide.push(image);
-      currentArea += imageArea;
-    }
-  });
-
-  if (currentSlide.length > 0) slides.push(currentSlide);
-  return slides;
-}
-
-export function GallerySection() {
-  const [data, setData] = useState<GalleryImage[] | null>(null);
-  const plugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: true }));
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/gallery');
-        if (!res.ok) throw new Error('Failed to fetch');
-        const fetchedData: GalleryImage[] = await res.json();
-        setData(fetchedData);
-      } catch (error) {
-        console.error("Failed to fetch gallery data:", error);
-      }
-    }
-    fetchData();
-  }, []);
+export async function GallerySection() {
+  const data = await getGalleryData();
 
   if (!data) {
      return (
@@ -81,8 +26,6 @@ export function GallerySection() {
     return null; // Don't render section if there are no images
   }
 
-  const slides = groupImagesIntoSlides(data);
-
   return (
     <section id="gallery" className="w-full py-24 bg-background">
       <ScrollFadeIn className="container mx-auto px-4">
@@ -94,50 +37,7 @@ export function GallerySection() {
           </p>
         </div>
 
-        <Carousel 
-          opts={{ loop: true, align: 'start' }}
-          plugins={[plugin.current]}
-          onMouseEnter={plugin.current.stop}
-          onMouseLeave={plugin.current.reset}
-          className="w-full"
-        >
-          <CarouselContent>
-            {slides.map((slide, slideIndex) => (
-              <CarouselItem key={slideIndex}>
-                <div className="p-1 aspect-video">
-                  <div className="grid grid-cols-4 grid-rows-4 gap-4 h-full">
-                    {slide.map((image) => {
-                      const colSpan = Math.max(1, Math.min(image.colSpan || 1, 4));
-                      const rowSpan = Math.max(1, Math.min(image.rowSpan || 1, 4));
-
-                      return (
-                        <div
-                          key={image.id}
-                          className="relative rounded-xl overflow-hidden group shadow-lg transition-all duration-300 hover:shadow-2xl"
-                          style={{
-                            gridColumn: `span ${colSpan}`,
-                            gridRow: `span ${rowSpan}`,
-                          }}
-                        >
-                          <Image
-                            src={image.src}
-                            alt={image.alt}
-                            fill
-                            sizes={`(max-width: 768px) ${100 / colSpan}vw, (max-width: 1200px) ${50 / colSpan}vw, ${33 / colSpan}vw`}
-                            className="object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors" />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious aria-label="Previous slide" className="left-2" />
-          <CarouselNext aria-label="Next slide" className="right-2" />
-        </Carousel>
+        <GalleryCarousel images={data} />
       </ScrollFadeIn>
     </section>
   );

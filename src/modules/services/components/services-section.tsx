@@ -1,29 +1,12 @@
 
-"use client";
-
-import { useState, useEffect } from 'react';
 import Image from "next/image";
-import type { Service } from "@/modules/services/services.schema";
 import { ScrollFadeIn } from "@/components/shared/scroll-fade-in";
 import { Skeleton } from '@/components/ui/skeleton';
 import { DynamicIcon } from '@/components/shared/dynamic-icon';
+import { getServicesData } from "../services.data";
 
-export function ServicesSection() {
-  const [data, setData] = useState<Service[] | null>(null);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch('/api/services');
-        if (!res.ok) throw new Error('Failed to fetch');
-        const fetchedData: Service[] = await res.json();
-        setData(fetchedData);
-      } catch (error) {
-        console.error("Failed to fetch services data:", error);
-      }
-    }
-    fetchData();
-  }, []);
+export async function ServicesSection() {
+  const data = await getServicesData();
 
   if (!data) {
      return (
