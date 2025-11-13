@@ -1,9 +1,10 @@
 
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from 'react';
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import Autoplay from "embla-carousel-autoplay";
 import {
   Carousel as ShadcnCarousel,
   CarouselContent,
@@ -63,7 +64,7 @@ export function Carousel({ images, className }: CarouselProps) {
   return (
     <div
       className={cn(
-        "relative w-full h-[400px] overflow-hidden flex items-center justify-center",
+        "relative w-full h-[400px] md:min-h-[50vh] overflow-hidden flex items-center justify-center",
         className
       )}
     >
@@ -89,7 +90,7 @@ export function Carousel({ images, className }: CarouselProps) {
 
         {/* marquee track */}
         <div
-          className="flex will-change-transform"
+          className="flex h-full will-change-transform"
           style={marqueeStyle}
           // Use a class name for animation; CSS below uses the same keyframe and variables
         >
@@ -102,7 +103,7 @@ export function Carousel({ images, className }: CarouselProps) {
                 flex: "0 0 auto",
                 paddingLeft: "0.5rem",
                 paddingRight: "0.5rem",
-                height: "400px",
+                height: "100%",
               }}
             >
               <Image
@@ -122,7 +123,15 @@ export function Carousel({ images, className }: CarouselProps) {
           Small screens: shadcn carousel, no arcs
           ------------------------- */}
       <div className="flex md:hidden relative w-full h-[400px]">
-        <ShadcnCarousel className="w-full">
+        <ShadcnCarousel
+          className="w-full"
+          plugins={[
+            Autoplay({
+              delay: 3000,
+            }),
+          ]}
+          opts={{ loop: true }}
+        >
           <CarouselContent>
             {images.map((image, i) => (
               <CarouselItem key={i} className="w-full h-[400px]">
